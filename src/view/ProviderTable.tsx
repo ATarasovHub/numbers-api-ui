@@ -49,12 +49,12 @@ export const ProviderTable: React.FC = () => {
                     <TableCell>
                         Status
                     </TableCell>
-                    <TableCell>
-                        Country Id
-                    </TableCell>
-                    <TableCell>
-                        Country name
-                    </TableCell>
+                    {/*<TableCell>*/}
+                    {/*    Country Id*/}
+                    {/*</TableCell>*/}
+                    {/*<TableCell>*/}
+                    {/*    Country name*/}
+                    {/*</TableCell>*/}
                     <TableCell>
                         Total numbers
                     </TableCell>
@@ -71,10 +71,14 @@ export const ProviderTable: React.FC = () => {
             </TableHead>
             <TableBody>
                 {providers.map(p => (
-                    <TableRow key={`provider-table-row-${p.numberProviderId}`}>
-                        <TableCell>{p.numberProviderId}</TableCell>
-                        <TableCell>{p.numberProviderName}</TableCell>
+                    <TableRow key={`provider-table-row-${p.providerId}`}>
+                        <TableCell>{p.providerId}</TableCell>
+                        <TableCell>{p.providerName}</TableCell>
                         <TableCell>{checkStatus(p.deletedAt)}</TableCell>
+                        <TableCell>{p.totalNumbers}</TableCell>
+                        <TableCell>{p.totalAssignedNumbers}</TableCell>
+                        <TableCell>{p.totalNumbers - p.totalAssignedNumbers}</TableCell>
+                        <TableCell>{p.totalMonthlyCost}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>
