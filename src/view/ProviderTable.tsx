@@ -1,16 +1,25 @@
 import React, {useEffect, useState} from 'react'
-import {Table, TableBody, TableCell, TableHead, TableRow, IconButton, Collapse, Box, Typography} from "@mui/material";
+import {TableBody, TableCell, TableHead, TableRow, IconButton, Collapse, Box, Typography } from "@mui/material";
 import {CountryStats, NumberProvider} from "../utils/domain";
 import {isDefined} from "../utils/util";
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import {
+    StyledTable,
+    StyledTableRow,
+    StyledPaper,
+    ExpandableRow,
+    CollapsibleCell,
+    CollapsibleContent,
+    ActionButton
+} from './styles/ProviderTable.styles';
 
 interface CountryStatsTableProps {
     stats: CountryStats[]
 }
 
 const CountryStatsTable: React.FC<CountryStatsTableProps> = ({stats}) => (
-    <Table size="small" aria-label="country stats">
+    <StyledTable  size="small" ariaLabel="country stats">
         <TableHead>
             <TableRow>
                 <TableCell>Country Id</TableCell>
@@ -33,7 +42,7 @@ const CountryStatsTable: React.FC<CountryStatsTableProps> = ({stats}) => (
                 </TableRow>
             ))}
         </TableBody>
-    </Table>
+    </StyledTable >
 )
 
 interface ProviderRowProps {
@@ -60,7 +69,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({provider, key}) => {
 
     return (
         <React.Fragment>
-            <TableRow>
+            <StyledTableRow>
                 <TableCell>{provider.providerId}</TableCell>
                 <TableCell>{provider.providerName}</TableCell>
                 <TableCell>{checkStatus(provider.deletedAt)}</TableCell>
@@ -69,26 +78,28 @@ const ProviderRow: React.FC<ProviderRowProps> = ({provider, key}) => {
                 <TableCell>{provider.totalNumbers - provider.totalAssignedNumbers}</TableCell>
                 <TableCell>{provider.totalMonthlyCost}</TableCell>
                 <TableCell>
-                    <IconButton
-                        size="small"
-                        onClick={() => setOpen(!open)}
-                    >
-                        {open ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
-                    </IconButton>
+                    <ActionButton>
+                        <IconButton
+                            size="small"
+                            onClick={() => setOpen(!open)}
+                        >
+                            {open ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
+                        </IconButton>
+                    </ActionButton>
                 </TableCell>
-            </TableRow>
-            <TableRow>
-                <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={8}>
+            </StyledTableRow>
+            <ExpandableRow>
+                <CollapsibleCell colSpan={8}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
-                        <Box sx={{margin: 1}}>
+                        <CollapsibleContent>
                             <Typography variant="h6" gutterBottom component="div">
                                 Country Statistics
                             </Typography>
                             <CountryStatsTable stats={provider.countryStats || []}/>
-                        </Box>
+                        </CollapsibleContent>
                     </Collapse>
-                </TableCell>
-            </TableRow>
+                </CollapsibleCell>
+            </ExpandableRow>
         </React.Fragment>
     );
 };
@@ -111,24 +122,26 @@ export const ProviderTable: React.FC = () => {
     }, [])
 
     return (
-        <Table>
-            <TableHead>
-                <TableRow>
-                    <TableCell>Provider Id</TableCell>
-                    <TableCell>Provider name</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Total numbers</TableCell>
-                    <TableCell>Assigned numbers</TableCell>
-                    <TableCell>Not assigned numbers</TableCell>
-                    <TableCell>Total monthly cost</TableCell>
-                    <TableCell>Actions</TableCell>
-                </TableRow>
-            </TableHead>
-            <TableBody>
-                {providers.map(provider => (
-                    <ProviderRow key={provider.providerId} provider={provider}/>
-                ))}
-            </TableBody>
-        </Table>
+        <StyledPaper>
+            <StyledTable>
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Provider Id</TableCell>
+                        <TableCell>Provider name</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Total numbers</TableCell>
+                        <TableCell>Assigned numbers</TableCell>
+                        <TableCell>Not assigned numbers</TableCell>
+                        <TableCell>Total monthly cost</TableCell>
+                        <TableCell>Actions</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {providers.map(provider => (
+                        <ProviderRow key={provider.providerId} provider={provider}/>
+                    ))}
+                </TableBody>
+            </StyledTable>
+        </StyledPaper>
     )
 }
