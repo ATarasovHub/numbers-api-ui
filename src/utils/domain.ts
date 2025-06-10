@@ -9,7 +9,7 @@ export interface NumberProvider {
     countryStats: CountryStats[]
 }
 
-interface CountryStats {
+export interface CountryStats {
     countryId: number
     countryName:string
     countryCode: string

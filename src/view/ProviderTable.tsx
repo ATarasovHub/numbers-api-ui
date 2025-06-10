@@ -1,10 +1,21 @@
 import React, {useEffect, useState} from 'react'
 import {Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
-import {NumberProvider} from "../utils/domain";
+import {CountryStats, NumberProvider} from "../utils/domain";
 import {isDefined} from "../utils/util";
+
+interface CountryStatsTableProps {
+    stats: CountryStats[]
+}
+
+const CountryStatsTable: React.FC<CountryStatsTableProps> = ({stats}) => (
+    <Table size="small" aria-label="country stats">
+
+    </Table>
+)
 
 export const ProviderTable: React.FC = () => {
     const [providers, setProviders] = useState<NumberProvider[]>([])
+    const [open, setOpen] = React.useState(false);
 
     useEffect(() => {
         console.log("Hello")
@@ -79,6 +90,11 @@ export const ProviderTable: React.FC = () => {
                         <TableCell>{p.totalAssignedNumbers}</TableCell>
                         <TableCell>{p.totalNumbers - p.totalAssignedNumbers}</TableCell>
                         <TableCell>{p.totalMonthlyCost}</TableCell>
+                        <TableCell>
+                            <IconButton size="small" onClick={() => toggleRow(provider.providerId)}>
+                            {isOpen ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                        </IconButton>
+                        </TableCell>
                     </TableRow>
                 ))}
             </TableBody>
