@@ -151,7 +151,7 @@ interface CountryStats {
     countryName: string;
     totalNumbers: number;
     assignedNumbers: number;
-    monthlyCost: number;
+    totalMonthlyCost: number;
 }
 
 interface ProviderFormData {
@@ -208,7 +208,7 @@ const CreateProviderForm: React.FC<CreateProviderFormProps> = ({ onProviderCreat
                 countryName: '',
                 totalNumbers: 0,
                 assignedNumbers: 0,
-                monthlyCost: 0
+                totalMonthlyCost: 0
             }]
         }));
     };
@@ -447,8 +447,8 @@ const CreateProviderForm: React.FC<CreateProviderFormProps> = ({ onProviderCreat
                                             <Label>Monthly Cost ($)</Label>
                                             <Input
                                                 type="number"
-                                                value={countryStat.monthlyCost}
-                                                onChange={(e) => handleCountryStatsChange(index, 'monthlyCost', Number(e.target.value))}
+                                                value={countryStat.totalMonthlyCost}
+                                                onChange={(e) => handleCountryStatsChange(index, 'totalMonthlyCost', Number(e.target.value))}
                                                 disabled={isSubmitting}
                                                 min="0"
                                                 step="0.01"
