@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from 'react'
-import {TableBody, TableCell, TableHead, TableRow, IconButton, Collapse, Box, Typography } from "@mui/material";
+import {TableBody, TableCell, TableHead, TableRow, IconButton, Collapse, Box, Typography, Button, Dialog } from "@mui/material";
 import {CountryStats, NumberProvider} from "../utils/domain";
 import {isDefined} from "../utils/util";
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import AddIcon from '@mui/icons-material/Add';
+import CreateProviderForm from '../view/components/CreateProviderForm';
 import {
     StyledTable,
     StyledTableRow,
@@ -12,7 +14,7 @@ import {
     CollapsibleCell,
     CollapsibleContent,
     ActionButton
-} from './styles/ProviderTable.styles';
+} from './styles/ProviderTableStyles';
 
 interface CountryStatsTableProps {
     stats: CountryStats[]
@@ -105,7 +107,8 @@ const ProviderRow: React.FC<ProviderRowProps> = ({provider, key}) => {
 };
 
 export const ProviderTable: React.FC = () => {
-    const [providers, setProviders] = useState<NumberProvider[]>([])
+    const [providers, setProviders] = useState<NumberProvider[]>([]);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     useEffect(() => {
         fetch(`/provider`)
@@ -121,27 +124,53 @@ export const ProviderTable: React.FC = () => {
             });
     }, [])
 
+    const handleProviderCreated = (newProvider: NumberProvider) => {
+        setProviders(prev => [...prev, newProvider]);
+        setIsDialogOpen(false);
+    };
+
     return (
-        <StyledPaper>
-            <StyledTable>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Provider Id</TableCell>
-                        <TableCell>Provider name</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Total numbers</TableCell>
-                        <TableCell>Assigned numbers</TableCell>
-                        <TableCell>Not assigned numbers</TableCell>
-                        <TableCell>Total monthly cost</TableCell>
-                        <TableCell>Actions</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {providers.map(provider => (
-                        <ProviderRow key={provider.providerId} provider={provider}/>
-                    ))}
-                </TableBody>
-            </StyledTable>
-        </StyledPaper>
+        <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setIsDialogOpen(true)}
+                >
+                    Create Provider
+                </Button>
+            </Box>
+
+            <Dialog
+                open={isDialogOpen}
+                onClose={() => setIsDialogOpen(false)}
+                maxWidth="sm"
+                fullWidth
+            >
+                <CreateProviderForm onProviderCreated={handleProviderCreated} />
+            </Dialog>
+
+            <StyledPaper>
+                <StyledTable>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Provider Id</TableCell>
+                            <TableCell>Provider name</TableCell>
+                            <TableCell>Status</TableCell>
+                            <TableCell>Total numbers</TableCell>
+                            <TableCell>Assigned numbers</TableCell>
+                            <TableCell>Not assigned numbers</TableCell>
+                            <TableCell>Total monthly cost</TableCell>
+                            <TableCell>Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {providers.map(provider => (
+                            <ProviderRow key={provider.providerId} provider={provider}/>
+                        ))}
+                    </TableBody>
+                </StyledTable>
+            </StyledPaper>
+        </Box>
     )
 }
