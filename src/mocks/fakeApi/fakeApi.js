@@ -26,20 +26,6 @@ export default function () {
                 return newProvider;
             });
 
-            this.delete("/number/:numberId", (schema, request) => {
-                const numberId = Number(request.params.numberId);
-                let found = false;
-                provider.forEach(p => p.countryStats.forEach(cs => {
-                    if (cs.numbers) {
-                        const before = cs.numbers.length;
-                        cs.numbers = cs.numbers.filter(n => n.numberId !== numberId);
-                        if (cs.numbers.length < before) found = true;
-                    }
-                }));
-                console.log(`---------- deleteNumberById for id=${numberId} ------------`, found ? 'DELETED' : 'NOT FOUND');
-                return new Response(204);
-            });
-
             this.put("/number/:number", (schema, request) => {
                 const number = request.params.number;
                 const numberInfos = JSON.parse(request.requestBody);
@@ -61,7 +47,6 @@ export default function () {
                 return updatedNumber || numberInfos;
             });
 
-            // Фейковый PUT /country-stats/:countryId
             this.put("/country-stats/:countryId", (schema, request) => {
                 const countryId = Number(request.params.countryId);
                 const updateData = JSON.parse(request.requestBody);
@@ -82,7 +67,7 @@ export default function () {
 
                 if (found) {
                     console.log(`---------- updateCountryStat for id=${countryId} ------------ UPDATED`);
-                    // Находим и возвращаем всего провайдера, чтобы обновить UI
+            
                     const updatedProvider = provider.find(p => p.countryStats.some(cs => cs.countryId === countryId));
                     return updatedProvider;
                 } else {
@@ -91,7 +76,7 @@ export default function () {
                 }
             });
 
-            // Фейковый PUT /provider/:providerId
+    
             this.put("/provider/:providerId", (schema, request) => {
                 const providerId = Number(request.params.providerId);
                 const updateData = JSON.parse(request.requestBody);

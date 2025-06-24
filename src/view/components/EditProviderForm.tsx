@@ -48,7 +48,7 @@ const EditProviderForm: React.FC<EditProviderFormProps> = ({ open, onClose, prov
             onProviderUpdated(updatedProvider);
             onClose();
         } catch (e) {
-            alert('Ошибка при сохранении');
+            alert('Failed to save');
         } finally {
             setIsSaving(false);
         }
@@ -57,15 +57,15 @@ const EditProviderForm: React.FC<EditProviderFormProps> = ({ open, onClose, prov
     return (
         <Modal open={open} onClose={onClose}>
             <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'background.paper', boxShadow: 24, p: 4, borderRadius: 2, minWidth: 320 }}>
-                <Typography variant="h6" mb={2}>Редактировать провайдера</Typography>
+                <Typography variant="h6" mb={2}>Edit provider</Typography>
                 <TextField label="Provider Name" name="providerName" value={editData.providerName || ''} onChange={handleEditChange} fullWidth margin="normal" />
                 <TextField label="Total Countries" name="totalCountries" type="number" value={editData.totalCountries || 0} onChange={handleEditChange} fullWidth margin="normal" />
                 <TextField label="Total Numbers" name="totalNumbers" type="number" value={editData.totalNumbers || 0} onChange={handleEditChange} fullWidth margin="normal" />
                 <TextField label="Total Assigned Numbers" name="totalAssignedNumbers" type="number" value={editData.totalAssignedNumbers || 0} onChange={handleEditChange} fullWidth margin="normal" />
                 <TextField label="Total Monthly Cost" name="totalMonthlyCost" type="number" value={editData.totalMonthlyCost || 0} onChange={handleEditChange} fullWidth margin="normal" />
                 <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>
-                    <Button onClick={onClose} disabled={isSaving}>Отмена</Button>
-                    <Button variant="contained" onClick={handleEditSave} disabled={isSaving}>Сохранить</Button>
+                    <Button onClick={onClose} disabled={isSaving}>Cancel</Button>
+                    <Button variant="contained" onClick={handleEditSave} disabled={isSaving}>Save</Button>
                 </Box>
             </Box>
         </Modal>

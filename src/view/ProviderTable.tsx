@@ -92,7 +92,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({provider, onProviderUpdated, k
             onProviderUpdated(updatedProvider);
             setEditingCountryStat(null);
         } catch (e) {
-            alert('Ошибка при сохранении статистики страны');
+            alert('Failed to save country statistics');
         }
     };
 
