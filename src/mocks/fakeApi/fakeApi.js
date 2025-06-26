@@ -1,8 +1,8 @@
 import {createServer} from "miragejs"
 import {provider} from "../data/provider";
+import {customer} from "../data/customer";
 
-
-export default function () {
+export default function makeFakeApiServer() {
     createServer({
         routes() {
             this.get("/provider", () => {
@@ -75,7 +75,6 @@ export default function () {
                     return new Response(404, {}, { message: 'CountryStat not found' });
                 }
             });
-
     
             this.put("/provider/:providerId", (schema, request) => {
                 const providerId = Number(request.params.providerId);
@@ -95,6 +94,10 @@ export default function () {
                     console.log(`---------- updateProvider for id=${providerId} ------------ NOT FOUND`);
                     return new Response(404, {}, { message: 'Provider not found' });
                 }
+            });
+
+            this.get("/customer/overview", (schema, request) => {
+               return customer;
             });
         }
     })

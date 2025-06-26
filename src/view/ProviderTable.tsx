@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import {TableBody, TableCell, TableHead, TableRow, IconButton, Collapse, Box, Typography, Modal, Button, TextField } from "@mui/material";
+import {TableBody, TableCell, TableHead, TableRow, IconButton, Collapse, Box, Typography, Modal, Button } from "@mui/material";
 import {CountryStats, NumberProvider} from "../utils/domain";
 import {isDefined} from "../utils/util";
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -16,6 +16,7 @@ import {
 } from './styles/ProviderTableStyles';
 import EditProviderForm from "./components/EditProviderForm";
 import EditCountryStatsForm from "./components/EditCountryStatsForm";
+import CreateProviderForm from "./components/CreateProviderForm";
 
 interface CountryStatsTableProps {
     stats: CountryStats[],
@@ -153,6 +154,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({provider, onProviderUpdated, k
 
 export const ProviderTable: React.FC = () => {
     const [providers, setProviders] = useState<NumberProvider[]>([])
+    const [createProviderOpen, setCreateProviderOpen] = useState(false);
 
     useEffect(() => {
         fetch(`/provider`)
@@ -176,27 +178,46 @@ export const ProviderTable: React.FC = () => {
         );
     };
 
+    const handleProviderCreated = (newProvider: NumberProvider) => {
+        setProviders(prev => [...prev, newProvider]);
+        setCreateProviderOpen(false);
+    };
+
     return (
-        <StyledPaper>
-            <StyledTable>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Provider Id</TableCell>
-                        <TableCell>Provider name</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Total numbers</TableCell>
-                        <TableCell>Assigned numbers</TableCell>
-                        <TableCell>Not assigned numbers</TableCell>
-                        <TableCell>Total monthly cost</TableCell>
-                        <TableCell>Actions</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {providers.map(provider => (
-                        <ProviderRow key={provider.providerId} provider={provider} onProviderUpdated={handleProviderUpdate} />
-                    ))}
-                </TableBody>
-            </StyledTable>
-        </StyledPaper>
-    )
+        <>
+            <StyledPaper>
+                <Box display="flex" justifyContent="flex-end" alignItems="center" mb={2}>
+                    <Button variant="contained" color="primary" onClick={() => setCreateProviderOpen(true)}>
+                        Add provider
+                    </Button>
+                </Box>
+                <StyledTable>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Provider Id</TableCell>
+                            <TableCell>Provider name</TableCell>
+                            <TableCell>Status</TableCell>
+                            <TableCell>Total numbers</TableCell>
+                            <TableCell>Assigned numbers</TableCell>
+                            <TableCell>Not assigned numbers</TableCell>
+                            <TableCell>Total monthly cost</TableCell>
+                            <TableCell>Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {providers.map(provider => (
+                            <ProviderRow key={provider.providerId} provider={provider} onProviderUpdated={handleProviderUpdate} />
+                        ))}
+                    </TableBody>
+                </StyledTable>
+                <Modal open={createProviderOpen} onClose={() => setCreateProviderOpen(false)}>
+                    <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'background.paper', boxShadow: 24, p: 4, borderRadius: 2, minWidth: 400, maxHeight: '80vh', overflowY: 'auto' }}>
+                        <CreateProviderForm
+                            onProviderCreated={handleProviderCreated}
+                        />
+                    </Box>
+                </Modal>
+            </StyledPaper>
+        </>
+    );
 }

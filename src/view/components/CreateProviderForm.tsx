@@ -87,13 +87,6 @@ const CountryStatsContainer = styled(Box)(({ theme }) => ({
     marginBottom: '1rem',
 }));
 
-const CountryStatsRow = styled(Box)({
-    display: 'flex',
-    alignItems: 'end',
-    gap: '1rem',
-    marginBottom: '0.5rem',
-});
-
 const AddButton = styled('button')(({ theme }) => ({
     backgroundColor: theme.palette.secondary.main,
     color: theme.palette.secondary.contrastText,
@@ -367,7 +360,6 @@ const CreateProviderForm: React.FC<CreateProviderFormProps> = ({ onProviderCreat
 
                 <Divider />
 
-                {/* Country Statistics */}
                 <FormSection>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                         <SectionTitle>Country Statistics</SectionTitle>
