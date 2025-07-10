@@ -12,6 +12,21 @@ interface EditCountryStatsFormProps {
 const EditCountryStatsForm: React.FC<EditCountryStatsFormProps> = ({ open, onClose, countryStat, onSave }) => {
     const [editData, setEditData] = useState<Partial<CountryStats>>({});
     const [isSaving, setIsSaving] = useState(false);
+    const [fromNumber, setFromNumber] = useState('');
+    const [toNumber, setToNumber] = useState('');
+    const [size, setSize] = useState(0);
+    const [numberType, setNumberType] = useState('');
+    const [serviceSms, setServiceSms] = useState(false);
+    const [serviceVoice, setServiceVoice] = useState(false);
+    type Range = {
+  fromNumber: string;
+  toNumber: string;
+  size: number;
+  numberType: string;
+  serviceSms: boolean;
+  serviceVoice: boolean;
+};
+const [ranges, setRanges] = useState<Range[]>([]); // массив для новых диапазонов
 
     useEffect(() => {
         if (countryStat) {
@@ -39,6 +54,29 @@ const EditCountryStatsForm: React.FC<EditCountryStatsFormProps> = ({ open, onClo
         setIsSaving(true);
         onSave({ ...countryStat, ...editData });
         setIsSaving(false);
+    };
+
+    const handleAddRange = () => {
+        if (fromNumber && toNumber) {
+            setRanges(prev => [
+                ...prev,
+                {
+                    fromNumber,
+                    toNumber,
+                    size,
+                    numberType,
+                    serviceSms,
+                    serviceVoice
+                }
+            ]);
+           
+            setFromNumber('');
+            setToNumber('');
+            setSize(0);
+            setNumberType('');
+            setServiceSms(false);
+            setServiceVoice(false);
+        }
     };
 
     return (

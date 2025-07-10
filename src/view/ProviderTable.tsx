@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import {TableBody, TableCell, TableHead, TableRow, IconButton, Collapse, Box, Typography, Modal, Button } from "@mui/material";
+import {TableBody, TableCell, TableHead, TableRow, IconButton, Collapse, Box, Typography, Modal, Button, TextField, Select, MenuItem, InputAdornment } from "@mui/material";
 import {CountryStats, NumberProvider} from "../utils/domain";
 import {isDefined} from "../utils/util";
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -24,7 +24,7 @@ interface CountryStatsTableProps {
 }
 
 const CountryStatsTable: React.FC<CountryStatsTableProps> = ({stats, onEdit}) => (
-    <StyledTable  size="small" aria-label="country stats">
+    <StyledTable  size="small">
         <TableHead>
             <TableRow>
                 <TableCell>Country Id</TableCell>
@@ -153,46 +153,179 @@ const ProviderRow: React.FC<ProviderRowProps> = ({provider, onProviderUpdated, k
 };
 
 export const ProviderTable: React.FC = () => {
-    const [providers, setProviders] = useState<NumberProvider[]>([])
+    const [allProviders, setAllProviders] = useState<NumberProvider[]>([]);
+    const [filteredProviders, setFilteredProviders] = useState<NumberProvider[]>([]);
+    const [displayedProviders, setDisplayedProviders] = useState<NumberProvider[]>([]);
+    const [filters, setFilters] = useState({
+        providerId: '',
+        providerName: '',
+        status: '',
+        totalNumbers: '',
+        totalNumbersOp: '>=',
+        totalMonthlyCost: '',
+        totalMonthlyCostOp: '>=',
+    });
     const [createProviderOpen, setCreateProviderOpen] = useState(false);
 
     useEffect(() => {
         fetch(`/provider`)
             .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}`);
-                }
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json();
             })
-            .then((providers: NumberProvider[]) => setProviders(providers))
+            .then((data: NumberProvider[]) => {
+                setAllProviders(data);
+                setDisplayedProviders(data.slice(0, 10));
+            })
             .catch(error => {
-                Error(error.message || 'Something went wrong');
+                console.error("Failed to fetch providers:", error.message || 'Something went wrong');
             });
-    }, [])
+    }, []);
+
+    useEffect(() => {
+        const isAllFiltersEmpty =
+            !filters.providerId &&
+            !filters.providerName &&
+            !filters.status &&
+            !filters.totalNumbers &&
+            !filters.totalMonthlyCost;
+        if (isAllFiltersEmpty) {
+            setFilteredProviders([]);
+            setDisplayedProviders(allProviders.slice(0, 10));
+            return;
+        }
+        let filtered = allProviders.filter(provider => {
+            const status = provider.deletedAt && provider.deletedAt !== '' ? 'deleted' : 'active';
+            let pass = true;
+            if (filters.providerId && !provider.providerId.toString().includes(filters.providerId)) pass = false;
+            if (filters.providerName && !provider.providerName.toLowerCase().includes(filters.providerName)) pass = false;
+            if (filters.status && !status.includes(filters.status)) pass = false;
+            if (filters.totalNumbers) {
+                const val = Number(filters.totalNumbers);
+                if (filters.totalNumbersOp === '>=') pass = pass && (provider.totalNumbers >= val);
+                if (filters.totalNumbersOp === '<=') pass = pass && (provider.totalNumbers <= val);
+            }
+            if (filters.totalMonthlyCost) {
+                const val = Number(filters.totalMonthlyCost);
+                if (filters.totalMonthlyCostOp === '>=') pass = pass && (provider.totalMonthlyCost >= val);
+                if (filters.totalMonthlyCostOp === '<=') pass = pass && (provider.totalMonthlyCost <= val);
+            }
+            return pass;
+        });
+        setFilteredProviders(filtered);
+        setDisplayedProviders(filtered);
+    }, [allProviders, filters]);
+
+    const handleFilterChange = (field: string, value: string) => {
+        setFilters(prev => ({ ...prev, [field]: value }));
+    };
 
     const handleProviderUpdate = (updatedProvider: NumberProvider) => {
-        setProviders(prevProviders =>
-            prevProviders.map(p =>
-                p.providerId === updatedProvider.providerId ? updatedProvider : p
-            )
+        const newProviders = allProviders.map(p =>
+            p.providerId === updatedProvider.providerId ? updatedProvider : p
         );
+        setAllProviders(newProviders);
     };
 
     const handleProviderCreated = (newProvider: NumberProvider) => {
-        setProviders(prev => [...prev, newProvider]);
+        const newProviders = [...allProviders, newProvider];
+        setAllProviders(newProviders);
         setCreateProviderOpen(false);
     };
 
     return (
         <>
             <StyledPaper>
-                <Box display="flex" justifyContent="flex-end" alignItems="center" mb={2}>
+                <Box display="flex" justifyContent="flex-end" alignItems="center" mb={2} p={2}>
                     <Button variant="contained" color="primary" onClick={() => setCreateProviderOpen(true)}>
                         Add provider
                     </Button>
                 </Box>
                 <StyledTable>
                     <TableHead>
+                        <TableRow>
+                            <TableCell>
+                                <TextField
+                                    value={filters.providerId}
+                                    onChange={e => handleFilterChange('providerId', e.target.value)}
+                                    placeholder="ID"
+                                    variant="standard"
+                                    size="small"
+                                    fullWidth
+                                />
+                            </TableCell>
+                            <TableCell>
+                                <TextField
+                                    value={filters.providerName}
+                                    onChange={e => handleFilterChange('providerName', e.target.value)}
+                                    placeholder="Name"
+                                    variant="standard"
+                                    size="small"
+                                    fullWidth
+                                />
+                            </TableCell>
+                            <TableCell>
+                                <TextField
+                                    value={filters.status}
+                                    onChange={e => handleFilterChange('status', e.target.value)}
+                                    placeholder="Status"
+                                    variant="standard"
+                                    size="small"
+                                    fullWidth
+                                />
+                            </TableCell>
+                            <TableCell>
+                                <Box display="flex" alignItems="center">
+                                    <Select
+                                        value={filters.totalNumbersOp}
+                                        onChange={e => handleFilterChange('totalNumbersOp', e.target.value as string)}
+                                        variant="standard"
+                                        size="small"
+                                        sx={{ minWidth: 50 }}
+                                    >
+                                        <MenuItem value=">=">&ge;</MenuItem>
+                                        <MenuItem value="<=">&le;</MenuItem>
+                                    </Select>
+                                    <TextField
+                                        value={filters.totalNumbers}
+                                        onChange={e => handleFilterChange('totalNumbers', e.target.value)}
+                                        placeholder="Total numbers"
+                                        variant="standard"
+                                        size="small"
+                                        fullWidth
+                                        sx={{ ml: 1 }}
+                                        type="number"
+                                    />
+                                </Box>
+                            </TableCell>
+                            <TableCell />
+                            <TableCell />
+                            <TableCell>
+                                <Box display="flex" alignItems="center">
+                                    <Select
+                                        value={filters.totalMonthlyCostOp}
+                                        onChange={e => handleFilterChange('totalMonthlyCostOp', e.target.value as string)}
+                                        variant="standard"
+                                        size="small"
+                                        sx={{ minWidth: 50 }}
+                                    >
+                                        <MenuItem value=">=">&ge;</MenuItem>
+                                        <MenuItem value="<=">&le;</MenuItem>
+                                    </Select>
+                                    <TextField
+                                        value={filters.totalMonthlyCost}
+                                        onChange={e => handleFilterChange('totalMonthlyCost', e.target.value)}
+                                        placeholder="Monthly cost"
+                                        variant="standard"
+                                        size="small"
+                                        fullWidth
+                                        sx={{ ml: 1 }}
+                                        type="number"
+                                    />
+                                </Box>
+                            </TableCell>
+                            <TableCell>Actions</TableCell>
+                        </TableRow>
                         <TableRow>
                             <TableCell>Provider Id</TableCell>
                             <TableCell>Provider name</TableCell>
@@ -205,7 +338,7 @@ export const ProviderTable: React.FC = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {providers.map(provider => (
+                        {displayedProviders.map(provider => (
                             <ProviderRow key={provider.providerId} provider={provider} onProviderUpdated={handleProviderUpdate} />
                         ))}
                     </TableBody>

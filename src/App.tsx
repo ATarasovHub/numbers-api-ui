@@ -1,24 +1,44 @@
 import React, { useState } from 'react';
-import {ProviderTable} from "./view/ProviderTable";
+import { ProviderTable } from "./view/ProviderTable";
 import fakeApi from "./mocks/fakeApi/fakeApi";
-import {CustomerTable} from "./view/CustomerTable";
-import Header from "./view/components/Header";
-
+import { CustomerTable } from "./view/CustomerTable";
+import Header, { Page } from "./view/components/Header";
+import ProviderAdminPage from "./view/ProviderAdminPage";
 
 function App() {
-    const [page, setPage] = useState<'customers' | 'providers'>('providers');
+    const [page, setPage] = useState<Page>('providers');
+
+    const renderPage = () => {
+        switch (page) {
+            case 'providers':
+                return <ProviderAdminPage />;
+            case 'customers':
+                return <CustomerTable />;
+            case 'number_assignment':
+            case 'number_reservation':
+            case 'number_range_admin':
+            case 'used_number_range_admin':
+            case 'overview':
+            case 'provider_statistic':
+            case 'history_account':
+            case 'history_numberassignment':
+            case 'info':
+                return <div>Page: {page}</div>;
+            default:
+                return <ProviderTable />;
+        }
+    }
 
     return (
         <div className="App">
             <Header page={page} setPage={setPage} />
-            {page === 'providers' && <ProviderTable />}
-            {page === 'customers' && <CustomerTable />}
+            {renderPage()}
         </div>
     );
 }
 
 if (process.env.NODE_ENV === "development") {
-    fakeApi()
+    fakeApi();
 }
 
 export default App;

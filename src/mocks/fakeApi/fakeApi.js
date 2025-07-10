@@ -43,7 +43,6 @@ export default function makeFakeApiServer() {
                         });
                     }
                 }));
-                console.log(`---------- updateNumberForProvider for ${number} ------------`, found ? 'UPDATED' : 'NOT FOUND');
                 return updatedNumber || numberInfos;
             });
 
@@ -66,12 +65,9 @@ export default function makeFakeApiServer() {
                 }
 
                 if (found) {
-                    console.log(`---------- updateCountryStat for id=${countryId} ------------ UPDATED`);
-            
                     const updatedProvider = provider.find(p => p.countryStats.some(cs => cs.countryId === countryId));
                     return updatedProvider;
                 } else {
-                    console.log(`---------- updateCountryStat for id=${countryId} ------------ NOT FOUND`);
                     return new Response(404, {}, { message: 'CountryStat not found' });
                 }
             });
@@ -88,16 +84,143 @@ export default function makeFakeApiServer() {
                     }
                 }
                 if (updatedProvider) {
-                    console.log(`---------- updateProvider for id=${providerId} ------------ UPDATED`);
                     return updatedProvider;
                 } else {
-                    console.log(`---------- updateProvider for id=${providerId} ------------ NOT FOUND`);
                     return new Response(404, {}, { message: 'Provider not found' });
+                }
+            });
+
+            this.put("/customer/:customerName/change", (schema, request) => {
+                const customerName = request.params.customerName;
+                const customerDTO = JSON.parse(request.requestBody);
+                let updatedCustomer = null;
+
+                for (let i = 0; i < customer.length; i++) {
+                    if (customer[i].customerName === customerName) {
+                        customer[i] = { ...customer[i], ...customerDTO };
+                        updatedCustomer = customer[i];
+                        break;
+                    }
+                }
+
+                if (updatedCustomer) {
+                    return updatedCustomer;
+                } else {
+                    return new Response(404, {}, { message: 'Customer not found' });
                 }
             });
 
             this.get("/customer/overview", (schema, request) => {
                return customer;
+            });
+
+            this.get("/provider/short", () => {
+                return provider.map(p => ({
+                    numberProviderId: p.providerId,
+                    numberProviderName: p.providerName,
+                    deletedAt: p.deletedAt || null
+                }));
+            });
+
+            this.get("/provider/:providerId", (schema, request) => {
+                const providerId = Number(request.params.providerId);
+                const found = provider.find(p => p.providerId === providerId);
+                return found || {};
+            });
+
+            this.get("/provider/:providerId/numbers", (schema, request) => {
+                const providerId = Number(request.params.providerId);
+                const found = provider.find(p => p.providerId === providerId);
+                if (!found) return [];
+                let numbers = [];
+                found.countryStats.forEach(cs => {
+                    if (cs.numbers) {
+                        numbers = numbers.concat(cs.numbers.map(n => n.number));
+                    }
+                });
+                return numbers;
+            });
+
+            this.get("/numbers", () => {
+                let numbers = [];
+                provider.forEach(p => p.countryStats.forEach(cs => {
+                    if (cs.numbers) {
+                        numbers = numbers.concat(cs.numbers);
+                    }
+                }));
+                return numbers;
+            });
+
+            this.get("/numbers/:number", (schema, request) => {
+                const number = request.params.number;
+                let foundNumber = null;
+                provider.forEach(p => p.countryStats.forEach(cs => {
+                    if (cs.numbers) {
+                        cs.numbers.forEach(n => {
+                            if (String(n.number) === String(number)) {
+                                foundNumber = n;
+                            }
+                        });
+                    }
+                }));
+                return foundNumber || {};
+            });
+
+            this.post("/numbers", (schema, request) => {
+                const newNumbers = JSON.parse(request.requestBody);
+                if (provider[0] && provider[0].countryStats[0]) {
+                    if (!provider[0].countryStats[0].numbers) provider[0].countryStats[0].numbers = [];
+                    provider[0].countryStats[0].numbers = provider[0].countryStats[0].numbers.concat(newNumbers);
+                }
+                return newNumbers;
+            });
+
+            this.put("/numbers/:number", (schema, request) => {
+                const number = request.params.number;
+                const numberInfos = JSON.parse(request.requestBody);
+                let updatedNumber = null;
+                provider.forEach(p => p.countryStats.forEach(cs => {
+                    if (cs.numbers) {
+                        cs.numbers = cs.numbers.map(n => {
+                            if (String(n.number) === String(number)) {
+                                updatedNumber = { ...n, ...numberInfos };
+                                return updatedNumber;
+                            }
+                            return n;
+                        });
+                    }
+                }));
+                return updatedNumber || numberInfos;
+            });
+
+            this.get("/countries", () => {
+                const all = [];
+                provider.forEach(p => p.countryStats.forEach(cs => {
+                    if (!all.find(c => c.countryId === cs.countryId)) {
+                        all.push({ countryId: cs.countryId, countryName: cs.countryName, countryCode: cs.countryCode });
+                    }
+                }));
+                return all;
+            });
+            this.get("/provisioning-types", () => {
+                return [
+                    { id: 1, name: "Auto" },
+                    { id: 2, name: "Manual" }
+                ];
+            });
+            this.get("/connection-types", () => {
+                return [
+                    { id: 1, name: "SMPP" },
+                    { id: 2, name: "HTTP" },
+                    { id: 3, name: "SIP" }
+                ];
+            });
+            this.get("/number-types", () => {
+                return [
+                    { id: 1, name: "Mobile" },
+                    { id: 2, name: "Landline" },
+                    { id: 3, name: "Toll-Free" }
+                ];
             });
         }
     })
