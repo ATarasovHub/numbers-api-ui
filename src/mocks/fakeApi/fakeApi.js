@@ -114,6 +114,11 @@ export default function makeFakeApiServer() {
                return customer;
             });
 
+            this.get("/customer/overview/:customerName", (_, request) => {
+                const customerName = request.params.customerName;
+                return customer.filter(c => c.customerName === customerName);
+            });
+
             this.get("/provider/short", () => {
                 return provider.map(p => ({
                     numberProviderId: p.providerId,
