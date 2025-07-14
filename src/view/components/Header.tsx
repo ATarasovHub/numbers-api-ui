@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, Button, Box, Menu, MenuItem } from '@mui/material';
 
-export type Page = 'providers' | 'customers' | 'number_assignment' | 'number_reservation' | 'number_range_admin' | 'used_number_range_admin' | 'overview' | 'provider_statistic' | 'history_account' | 'history_numberassignment' | 'info';
+export type Page = 'providers' | 'customers' | 'customer_request_overview' | 'number_assignment' | 'number_reservation' | 'number_range_admin' | 'used_number_range_admin' | 'overview' | 'provider_statistic' | 'history_account' | 'history_numberassignment' | 'info';
 
 interface HeaderProps {
     page: Page;
@@ -48,7 +48,7 @@ const Header: React.FC<HeaderProps> = ({ page, setPage }) => {
         { label: 'Number Reservation', page: 'number_reservation' },
         { label: 'Number Range Administration', page: 'number_range_admin' },
         { label: 'Used Number Range Administration', page: 'used_number_range_admin' },
-        { label: 'Customer Request overview', page: 'customers' },
+        { label: 'Customer Request overview', page: 'customer_request_overview' },
         { label: 'Provider Administration', page: 'providers' },
     ];
 

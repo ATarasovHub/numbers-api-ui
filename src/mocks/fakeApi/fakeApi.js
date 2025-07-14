@@ -167,11 +167,20 @@ export default function makeFakeApiServer() {
             });
 
             this.post("/numbers", (schema, request) => {
-                const newNumbers = JSON.parse(request.requestBody);
-                if (provider[0] && provider[0].countryStats[0]) {
-                    if (!provider[0].countryStats[0].numbers) provider[0].countryStats[0].numbers = [];
-                    provider[0].countryStats[0].numbers = provider[0].countryStats[0].numbers.concat(newNumbers);
-                }
+                const newNumbers = JSON.parse(request.requestBody); // массив объектов
+                newNumbers.forEach(numObj => {
+                    // Найти нужную страну
+                    const country = provider
+                        .flatMap(p => p.countryStats)
+                        .find(cs => cs.countryId === numObj.countryId);
+                    if (country) {
+                        if (!country.numbers) country.numbers = [];
+                        // Проверка на дубликаты
+                        if (!country.numbers.some(n => n.number === numObj.number)) {
+                            country.numbers.push(numObj);
+                        }
+                    }
+                });
                 return newNumbers;
             });
 

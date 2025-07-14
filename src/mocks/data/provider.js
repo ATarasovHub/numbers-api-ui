@@ -14,7 +14,13 @@ export const provider = [
                 "countryCode": "MAC",
                 "totalNumbers": 4,
                 "assignedNumbers": 4,
-                "totalMonthlyCost": 0
+                "totalMonthlyCost": 0,
+                "numbers": [
+                    {"number": 1234, "numberType": "Mobile", "serviceSms": true, "serviceVoice": false},
+                    {"number": 1235, "numberType": "Mobile", "serviceSms": true, "serviceVoice": false},
+                    {"number": 1236, "numberType": "Landline", "serviceSms": false, "serviceVoice": true},
+                    {"number": 1237, "numberType": "Landline", "serviceSms": false, "serviceVoice": true}
+                ]
             }
         ]
     },
@@ -33,7 +39,11 @@ export const provider = [
                 "countryCode": "USA",
                 "totalNumbers": 162,
                 "assignedNumbers": 161,
-                "totalMonthlyCost": 0
+                "totalMonthlyCost": 0,
+                "numbers": [
+                    {"number": 2001, "numberType": "Mobile", "serviceSms": true, "serviceVoice": true},
+                    {"number": 2002, "numberType": "Landline", "serviceSms": false, "serviceVoice": true}
+                ]
             }
         ]
     },

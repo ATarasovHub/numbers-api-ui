@@ -1,11 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Paper, TextField, Select, MenuItem, Button, Checkbox, FormControlLabel, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
-import providersData from '../mocks/data/providers';
 import provisioningTypesData from '../mocks/data/provisioningTypes';
 import countriesData from '../mocks/data/countries';
 import connectionTypesData from '../mocks/data/connectionTypes';
 import numberTypesData from '../mocks/data/numberTypes';
 import providerDetailsData from '../mocks/data/providerDetails';
+import {
+  boxStyle,
+  subtitle2Style,
+  subtitle1Style,
+  paperStyle,
+  gridStyle,
+  flexAlignCenterGap1,
+  flexAlignCenterGap1Mb1,
+  minWidth200,
+  minWidth150,
+  width120,
+  width60,
+  flexGap1,
+  tableSubtitle2,
+  tableNoNumbers,
+  paperNoMargin
+} from './styles/ProviderAdminPageStyles';
 
 const providerDetailsTyped: { [key: string]: any } = providerDetailsData;
 
@@ -22,8 +38,25 @@ const ProviderAdminPage: React.FC = () => {
     const [connectionTypes, setConnectionTypes] = useState<{ id: string; name: string }[]>([]);
     const [numberTypes, setNumberTypes] = useState<{ id: string; name: string }[]>([]);
 
+    const [fromNumber, setFromNumber] = useState('');
+    const [toNumber, setToNumber] = useState('');
+    const [addNumberType, setAddNumberType] = useState('');
+    const [addServiceSms, setAddServiceSms] = useState(false);
+    const [addServiceVoice, setAddServiceVoice] = useState(false);
+    const [addCountryId, setAddCountryId] = useState('');
+    const [isAddingNumbers, setIsAddingNumbers] = useState(false);
+
     useEffect(() => {
-        fakeApi(providersData).then((data) => setProviders(data));
+        fetch('/provider')
+            .then(res => res.json())
+            .then(data => {
+                setProviders(
+                    data.map((p: any) => ({
+                        numberProviderId: p.providerId,
+                        numberProviderName: p.providerName
+                    }))
+                );
+            });
         fakeApi(provisioningTypesData).then((data) => setProvisioningTypes(data));
         fakeApi(countriesData).then((data) => setCountries(data));
         fakeApi(connectionTypesData).then((data) => setConnectionTypes(data));
@@ -32,7 +65,9 @@ const ProviderAdminPage: React.FC = () => {
 
     useEffect(() => {
         if (selectedProviderId) {
-            fakeApi(providerDetailsTyped[selectedProviderId] || null).then((data) => setProviderDetails(data));
+            fetch(`/provider/${selectedProviderId}`)
+                .then(res => res.json())
+                .then(data => setProviderDetails(data));
         } else {
             setProviderDetails(null);
         }
@@ -43,19 +78,61 @@ const ProviderAdminPage: React.FC = () => {
     };
 
     const handleSave = () => {
-        alert('Сохранено!\n' + JSON.stringify(providerDetails, null, 2));
+        alert('Saved!\n' + JSON.stringify(providerDetails, null, 2));
+    };
+
+    const handleAddNumbers = async () => {
+        if (!fromNumber || !toNumber || !addCountryId || !addNumberType) {
+            alert('Please fill all fields for number range!');
+            return;
+        }
+        const from = Number(fromNumber);
+        const to = Number(toNumber);
+        if (isNaN(from) || isNaN(to) || from > to) {
+            alert('Invalid number range!');
+            return;
+        }
+        setIsAddingNumbers(true);
+        const numbers = [];
+        for (let n = from; n <= to; n++) {
+            numbers.push({
+                number: n,
+                countryId: Number(addCountryId),
+                numberType: addNumberType,
+                serviceSms: addServiceSms,
+                serviceVoice: addServiceVoice
+            });
+        }
+        try {
+            await fetch('/numbers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(numbers)
+            });
+            alert('Numbers added!');
+            setFromNumber('');
+            setToNumber('');
+            setAddNumberType('');
+            setAddServiceSms(false);
+            setAddServiceVoice(false);
+            setAddCountryId('');
+        } catch (e) {
+            alert('Failed to add numbers');
+        } finally {
+            setIsAddingNumbers(false);
+        }
     };
 
     return (
-        <Box sx={{ p: 2 }}>
-            <Typography variant="subtitle2" sx={{ mb: 1, color: 'gray' }}>
+        <Box sx={boxStyle}>
+            <Typography variant="subtitle2" sx={subtitle2Style}>
                 <span style={{fontSize: '1rem', color: '#888'}}>Administration &gt; Provider Administration</span>
             </Typography>
-            <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Provider Administration</Typography>
-                <Box display="flex" alignItems="center" gap={1}>
+            <Paper variant="outlined" sx={paperStyle}>
+                <Typography variant="subtitle1" sx={subtitle1Style}>Provider Administration</Typography>
+                <Box sx={flexAlignCenterGap1}>
                     <Typography sx={{ minWidth: 70 }}>Provider</Typography>
-                    <Select size="small" displayEmpty sx={{ minWidth: 200 }} value={selectedProviderId} onChange={e => setSelectedProviderId(e.target.value)}>
+                    <Select size="small" displayEmpty sx={minWidth200} value={selectedProviderId} onChange={e => setSelectedProviderId(e.target.value)}>
                         <MenuItem value=""><em>click to select</em></MenuItem>
                         {providers.map((p: any) => (
                             <MenuItem key={p.numberProviderId} value={p.numberProviderId}>{p.numberProviderName}</MenuItem>
@@ -63,95 +140,86 @@ const ProviderAdminPage: React.FC = () => {
                     </Select>
                 </Box>
             </Paper>
-            <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Provider (Edit / Create)</Typography>
-                <Box display="grid" gridTemplateColumns="180px 1fr" gap={1} alignItems="center">
+            <Paper variant="outlined" sx={paperStyle}>
+                <Typography variant="subtitle1" sx={subtitle1Style}>Provider (Edit / Create)</Typography>
+                <Box sx={gridStyle}>
+                    <Typography>Provider ID</Typography>
+                    <TextField size="small" fullWidth value={providerDetails?.providerId || ''} InputProps={{ readOnly: true }} />
                     <Typography>Provider Name</Typography>
                     <TextField size="small" fullWidth value={providerDetails?.providerName || ''} onChange={e => handleProviderDetailChange('providerName', e.target.value)} />
-                    <Typography>Stocklimit Warning</Typography>
-                    <TextField size="small" fullWidth value={providerDetails?.stockLimitWarning || ''} onChange={e => handleProviderDetailChange('stockLimitWarning', e.target.value)} />
-                    <Typography>Thresholdlimit Warning</Typography>
-                    <TextField size="small" fullWidth value={providerDetails?.thresholdLimitWarning || ''} onChange={e => handleProviderDetailChange('thresholdLimitWarning', e.target.value)} />
-                    <Typography>Provisioning Type</Typography>
-                    <Select size="small" displayEmpty fullWidth value={providerDetails?.provisioningTypeId || ''} onChange={e => handleProviderDetailChange('provisioningTypeId', e.target.value)}>
-                        <MenuItem value=""><em>start typing for select</em></MenuItem>
-                        {provisioningTypes.map((t: any) => (
-                            <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
-                        ))}
-                    </Select>
+                    <Typography>Deleted At</Typography>
+                    <TextField size="small" fullWidth value={providerDetails?.deletedAt || ''} InputProps={{ readOnly: true }} />
+                    <Typography>Total Countries</Typography>
+                    <TextField size="small" fullWidth value={providerDetails?.totalCountries || 0} onChange={e => handleProviderDetailChange('totalCountries', e.target.value)} />
+                    <Typography>Total Numbers</Typography>
+                    <TextField size="small" fullWidth value={providerDetails?.totalNumbers || 0} onChange={e => handleProviderDetailChange('totalNumbers', e.target.value)} />
+                    <Typography>Total Assigned Numbers</Typography>
+                    <TextField size="small" fullWidth value={providerDetails?.totalAssignedNumbers || 0} onChange={e => handleProviderDetailChange('totalAssignedNumbers', e.target.value)} />
+                    <Typography>Total Monthly Cost</Typography>
+                    <TextField size="small" fullWidth value={providerDetails?.totalMonthlyCost || 0} onChange={e => handleProviderDetailChange('totalMonthlyCost', e.target.value)} />
+                </Box>
+            </Paper>
+            <Paper variant="outlined" sx={paperStyle}>
+                <Typography variant="subtitle1" sx={subtitle1Style}>Add Number(s) <span style={{fontWeight:400, fontSize:'0.95em'}}>(just leave it empty if you only want to edit/create a provider)</span></Typography>
+                <Box sx={flexAlignCenterGap1Mb1}>
+                    <Typography>From Number</Typography>
+                    <TextField size="small" sx={width120} value={fromNumber} onChange={e => setFromNumber(e.target.value)} />
+                    <Typography>To Number</Typography>
+                    <TextField size="small" sx={width120} value={toNumber} onChange={e => setToNumber(e.target.value)} />
+                    <Typography>Size</Typography>
+                    <TextField size="small" sx={width60} value={fromNumber && toNumber ? Math.max(0, Number(toNumber) - Number(fromNumber) + 1) : 0} disabled />
+                </Box>
+                <Box sx={flexAlignCenterGap1Mb1}>
                     <Typography>Country</Typography>
-                    <Select size="small" displayEmpty fullWidth value={providerDetails?.countryId || ''} onChange={e => handleProviderDetailChange('countryId', e.target.value)}>
-                        <MenuItem value=""><em>start typing for select</em></MenuItem>
+                    <Select size="small" displayEmpty sx={minWidth150} value={addCountryId} onChange={e => setAddCountryId(e.target.value)}>
+                        <MenuItem value=""><em>click to select</em></MenuItem>
                         {countries.map((c: any) => (
                             <MenuItem key={c.countryId} value={c.countryId}>{c.countryName}</MenuItem>
                         ))}
                     </Select>
-                    <Typography>Connection Types</Typography>
-                    <Select size="small" displayEmpty fullWidth value={providerDetails?.connectionTypeId || ''} onChange={e => handleProviderDetailChange('connectionTypeId', e.target.value)}>
-                        <MenuItem value=""><em>click to select</em></MenuItem>
-                        {connectionTypes.map((ct: any) => (
-                            <MenuItem key={ct.id} value={ct.id}>{ct.name}</MenuItem>
-                        ))}
-                    </Select>
-                </Box>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Add Number(s) <span style={{fontWeight:400, fontSize:'0.95em'}}>(just leave it empty if you only want to edit/create a provider)</span></Typography>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                    <Typography>From Number</Typography>
-                    <TextField size="small" sx={{ width: 120 }} />
-                    <Typography>To Number</Typography>
-                    <TextField size="small" sx={{ width: 120 }} />
-                    <Typography>Size</Typography>
-                    <TextField size="small" sx={{ width: 60 }} value={0} />
-                </Box>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
                     <Typography>Numbertype</Typography>
-                    <Select size="small" displayEmpty sx={{ minWidth: 150 }}>
+                    <Select size="small" displayEmpty sx={minWidth150} value={addNumberType} onChange={e => setAddNumberType(e.target.value)}>
                         <MenuItem value=""><em>click to select</em></MenuItem>
                         {numberTypes.map((nt: any) => (
                             <MenuItem key={nt.id} value={nt.id}>{nt.name}</MenuItem>
                         ))}
                     </Select>
                     <Typography>Service</Typography>
-                    <FormControlLabel control={<Checkbox />} label="SMS" />
-                    <FormControlLabel control={<Checkbox />} label="Voice" />
+                    <FormControlLabel control={<Checkbox checked={addServiceSms} onChange={e => setAddServiceSms(e.target.checked)} />} label="SMS" />
+                    <FormControlLabel control={<Checkbox checked={addServiceVoice} onChange={e => setAddServiceVoice(e.target.checked)} />} label="Voice" />
                 </Box>
-                <Box display="flex" gap={1}>
-                    <Button variant="contained" size="small" onClick={handleSave}>Save (update/create)</Button>
+                <Box sx={flexGap1}>
+                    <Button variant="contained" size="small" onClick={handleAddNumbers} disabled={isAddingNumbers}>Save (add numbers)</Button>
                     <Button variant="outlined" size="small">Show Platinum Numbers</Button>
                 </Box>
             </Paper>
-            <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Guessed Platinum Numbers!</Typography>
+            <Paper variant="outlined" sx={paperNoMargin}>
+                <Typography variant="subtitle1" sx={subtitle1Style}>Current Ranges</Typography>
+                {selectedProviderId && (
+                    <Typography variant="subtitle2" sx={tableSubtitle2}>
+                        Provider: {providers.find(p => p.numberProviderId === selectedProviderId)?.numberProviderName || '—'}
+                    </Typography>
+                )}
                 <Table size="small">
                     <TableHead>
                         <TableRow>
-                            <TableCell>Platinum Number</TableCell>
-                            <TableCell>Reason why platinum</TableCell>
+                            <TableCell>Country Id</TableCell>
+                            <TableCell>Country Name</TableCell>
+                            <TableCell>Country Code</TableCell>
+                            <TableCell>Total Numbers</TableCell>
+                            <TableCell>Assigned Numbers</TableCell>
+                            <TableCell>Monthly Cost</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                       
-                    </TableBody>
-                </Table>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Current Ranges</Typography>
-                <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>From Number</TableCell>
-                            <TableCell>To Number</TableCell>
-                            <TableCell>Entries</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                       {providerDetails?.countryStats?.map((cs: any) => (
+                        {providerDetails?.countryStats?.map((cs: any) => (
                             <TableRow key={cs.countryId}>
-                                <TableCell>{cs.countryCode}</TableCell>
+                                <TableCell>{cs.countryId}</TableCell>
                                 <TableCell>{cs.countryName}</TableCell>
+                                <TableCell>{cs.countryCode}</TableCell>
                                 <TableCell>{cs.totalNumbers}</TableCell>
+                                <TableCell>{cs.assignedNumbers}</TableCell>
+                                <TableCell>{cs.totalMonthlyCost}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

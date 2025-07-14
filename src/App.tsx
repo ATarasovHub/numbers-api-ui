@@ -4,6 +4,7 @@ import fakeApi from "./mocks/fakeApi/fakeApi";
 import { CustomerTable } from "./view/CustomerTable";
 import Header, { Page } from "./view/components/Header";
 import ProviderAdminPage from "./view/ProviderAdminPage";
+import CustomerRequestOverview from "./view/CustomerRequestOverview";
 
 function App() {
     const [page, setPage] = useState<Page>('providers');
@@ -13,7 +14,10 @@ function App() {
             case 'providers':
                 return <ProviderAdminPage />;
             case 'customers':
-                return <CustomerTable />;
+                // return <CustomerTable />;
+                return <CustomerRequestOverview />;
+            case 'customer_request_overview':
+                return <CustomerRequestOverview />;
             case 'number_assignment':
             case 'number_reservation':
             case 'number_range_admin':
