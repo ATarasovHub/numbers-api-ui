@@ -1,11 +1,43 @@
 import React, { useEffect, useState } from 'react';
-import { TableBody, TableCell, TableHead, TableRow, Box, Typography, Button, TextField, Select, MenuItem } from "@mui/material";
-import { StyledTable, StyledTableRow, StyledPaper } from './styles/ProviderTableStyles';
+import {
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    Box,
+    Typography,
+    Button,
+    TextField,
+    Select,
+    MenuItem,
+    Paper,
+    Table,
+    Collapse,
+    IconButton
+} from "@mui/material";
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
-interface Customer {
+export interface Customer {
     customerId: number;
     customerName: string;
     productType: string;
+    totalNumbers: number;
+    proAccounts: CustomerOverviewProAccount[];
+    proCountry: CustomerOverviewProCountry[];
+}
+
+export interface CustomerOverviewProAccount {
+    techAccountId: number;
+    techAccountName: string;
+    totalAccounts: number;
+    totalNumbers: number;
+}
+
+export interface CustomerOverviewProCountry {
+    countryId: number;
+    countryName: string;
+    totalAccounts: number;
     totalNumbers: number;
 }
 
@@ -20,6 +52,7 @@ export const CustomerTable: React.FC = () => {
         totalNumbers: '',
         totalNumbersOp: '>=',
     });
+    const [openRows, setOpenRows] = useState<{ [key: number]: boolean }>({});
 
     useEffect(() => {
         fetch('/customer/overview')
@@ -31,7 +64,7 @@ export const CustomerTable: React.FC = () => {
                 setAllCustomers(data);
                 setDisplayedCustomers(data.slice(0, 10));
             })
-            .catch(error => {
+            .catch(() => {
                 setAllCustomers([]);
                 setDisplayedCustomers([]);
             });
@@ -75,7 +108,7 @@ export const CustomerTable: React.FC = () => {
         if (!editedCustomer) return;
 
         try {
-            const response = await fetch(`/customer/${editedCustomer.customerName}/change`, {
+            const response = await fetch(`/customer/overview/${editedCustomer.customerId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(editedCustomer),
@@ -107,17 +140,21 @@ export const CustomerTable: React.FC = () => {
         }
     };
 
+    const handleRowToggle = (customerId: number) => {
+        setOpenRows(prev => ({ ...prev, [customerId]: !prev[customerId] }));
+    };
+
     return (
-        <StyledPaper>
+        <Paper sx={{ p: 2 }}>
             <Box display="flex" justifyContent="flex-start" alignItems="center" mb={2}>
                 <Typography variant="h6">Customers</Typography>
             </Box>
-            <StyledTable>
+            <Table>
                 <TableHead>
                     <TableRow>
                         <TableCell />
                         <TableCell>
-                           <TextField
+                            <TextField
                                 value={filters.customerName}
                                 onChange={e => handleFilterChange('customerName', e.target.value)}
                                 placeholder="Name"
@@ -152,78 +189,141 @@ export const CustomerTable: React.FC = () => {
                             </Box>
                         </TableCell>
                         <TableCell />
+                        <TableCell />
+                        <TableCell />
                     </TableRow>
                     <TableRow>
-                        <TableCell>Customer Id</TableCell>
+                        <TableCell />
                         <TableCell>Customer Name</TableCell>
                         <TableCell>Product Type</TableCell>
                         <TableCell>Total Numbers</TableCell>
+                        <TableCell>Accounts</TableCell>
+                        <TableCell>Countries</TableCell>
                         <TableCell align="right">Actions</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {displayedCustomers.map((customer) => (
-                        <StyledTableRow key={customer.customerId}>
-                            {editingCustomerId === customer.customerId ? (
-                                <>
-                                    <TableCell>{editedCustomer?.customerId}</TableCell>
-                                    <TableCell>
-                                        <TextField
-                                            name="customerName"
-                                            value={editedCustomer?.customerName || ''}
-                                            onChange={handleInputChange}
-                                            size="small"
-                                            variant="standard"
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <TextField
-                                            name="productType"
-                                            value={editedCustomer?.productType || ''}
-                                            onChange={handleInputChange}
-                                            size="small"
-                                            variant="standard"
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <TextField
-                                            name="totalNumbers"
-                                            type="number"
-                                            value={editedCustomer?.totalNumbers || 0}
-                                            onChange={handleInputChange}
-                                            size="small"
-                                            variant="standard"
-                                        />
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        <Button onClick={handleSaveClick} size="small" variant="contained" color="primary" sx={{ mr: 1 }}>Save</Button>
-                                        <Button onClick={handleCancelClick} size="small" variant="outlined">Cancel</Button>
-                                    </TableCell>
-                                </>
-                            ) : (
-                                <>
-                                    <TableCell>{customer.customerId}</TableCell>
-                                    <TableCell>{customer.customerName}</TableCell>
-                                    <TableCell>{customer.productType}</TableCell>
-                                    <TableCell>{customer.totalNumbers}</TableCell>
-                                    <TableCell align="right">
-                                        <Button
-                                            onClick={() => handleEditClick(customer)}
-                                            size="small"
-                                            variant="outlined"
-                                            disabled={editingCustomerId !== null && editingCustomerId !== customer.customerId}
-                                        >
-                                            Edit
-                                        </Button>
-                                    </TableCell>
-                                </>
-                            )}
-                        </StyledTableRow>
+                        <React.Fragment key={customer.customerId}>
+                            <TableRow>
+                                <TableCell>
+                                    <IconButton size="small" onClick={() => handleRowToggle(customer.customerId)}>
+                                        {openRows[customer.customerId] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                                    </IconButton>
+                                </TableCell>
+                                {editingCustomerId === customer.customerId ? (
+                                    <>
+                                        <TableCell>
+                                            <TextField
+                                                name="customerName"
+                                                value={editedCustomer?.customerName || ''}
+                                                onChange={handleInputChange}
+                                                size="small"
+                                                variant="standard"
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <TextField
+                                                name="productType"
+                                                value={editedCustomer?.productType || ''}
+                                                onChange={handleInputChange}
+                                                size="small"
+                                                variant="standard"
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <TextField
+                                                name="totalNumbers"
+                                                type="number"
+                                                value={editedCustomer?.totalNumbers || 0}
+                                                onChange={handleInputChange}
+                                                size="small"
+                                                variant="standard"
+                                            />
+                                        </TableCell>
+                                        <TableCell>-</TableCell>
+                                        <TableCell>-</TableCell>
+                                        <TableCell align="right">
+                                            <Button onClick={handleSaveClick} size="small" variant="contained" color="primary" sx={{ mr: 1 }}>Save</Button>
+                                            <Button onClick={handleCancelClick} size="small" variant="outlined">Cancel</Button>
+                                        </TableCell>
+                                    </>
+                                ) : (
+                                    <>
+                                        <TableCell>{customer.customerName}</TableCell>
+                                        <TableCell>{customer.productType}</TableCell>
+                                        <TableCell>{customer.totalNumbers}</TableCell>
+                                        <TableCell>{customer.proAccounts.length}</TableCell>
+                                        <TableCell>{customer.proCountry.length}</TableCell>
+                                        <TableCell align="right">
+                                            <Button
+                                                onClick={() => handleEditClick(customer)}
+                                                size="small"
+                                                variant="outlined"
+                                                disabled={editingCustomerId !== null && editingCustomerId !== customer.customerId}
+                                            >
+                                                Edit
+                                            </Button>
+                                        </TableCell>
+                                    </>
+                                )}
+                            </TableRow>
+                            <TableRow>
+                                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
+                                    <Collapse in={openRows[customer.customerId]} timeout="auto" unmountOnExit>
+                                        <Box margin={1}>
+                                            <Typography variant="subtitle2">Accounts:</Typography>
+                                            <Table size="small">
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <TableCell>ID</TableCell>
+                                                        <TableCell>Name</TableCell>
+                                                        <TableCell>Total Accounts</TableCell>
+                                                        <TableCell>Total Numbers</TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                    {customer.proAccounts.map(acc => (
+                                                        <TableRow key={acc.techAccountId}>
+                                                            <TableCell>{acc.techAccountId}</TableCell>
+                                                            <TableCell>{acc.techAccountName}</TableCell>
+                                                            <TableCell>{acc.totalAccounts}</TableCell>
+                                                            <TableCell>{acc.totalNumbers}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                            <Typography variant="subtitle2" sx={{ mt: 2 }}>Countries:</Typography>
+                                            <Table size="small">
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <TableCell>ID</TableCell>
+                                                        <TableCell>Name</TableCell>
+                                                        <TableCell>Total Accounts</TableCell>
+                                                        <TableCell>Total Numbers</TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                    {customer.proCountry.map(country => (
+                                                        <TableRow key={country.countryId}>
+                                                            <TableCell>{country.countryId}</TableCell>
+                                                            <TableCell>{country.countryName}</TableCell>
+                                                            <TableCell>{country.totalAccounts}</TableCell>
+                                                            <TableCell>{country.totalNumbers}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </Box>
+                                    </Collapse>
+                                </TableCell>
+                            </TableRow>
+                        </React.Fragment>
                     ))}
                 </TableBody>
-            </StyledTable>
-        </StyledPaper>
+            </Table>
+        </Paper>
     );
-}
+};
 
 export default CustomerTable;

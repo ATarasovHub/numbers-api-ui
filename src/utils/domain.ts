@@ -17,3 +17,26 @@ export interface CountryStats {
     assignedNumbers: number
     totalMonthlyCost: number
 }
+
+export interface CustomerOverview {
+    customerId: number
+    customerName: string
+    productType: string
+    totalNumbers: number
+    proAccounts: CustomerOverviewProAccount[]
+    proCountry: CustomerOverviewProCountry[]
+}
+
+export interface CustomerOverviewProAccount {
+    techAccountId: number
+    techAccountName: string
+    totalAccounts: number
+    totalNumbers: number
+}
+
+export interface CustomerOverviewProCountry {
+    countryId: number
+    countryName: string
+    totalAccounts: number
+    totalNumbers: number
+}
