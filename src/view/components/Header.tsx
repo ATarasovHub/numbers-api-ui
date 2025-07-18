@@ -1,7 +1,21 @@
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, Button, Box, Menu, MenuItem } from '@mui/material';
 
-export type Page = 'providers' | 'customers' | 'customer_request_overview' | 'number_assignment' | 'number_reservation' | 'number_range_admin' | 'used_number_range_admin' | 'overview' | 'provider_statistic' | 'history_account' | 'history_numberassignment' | 'info';
+export type Page =
+    | 'providers'
+    | 'customers'
+    | 'customer_request_overview'
+    | 'number_assignment'
+    | 'number_reservation'
+    | 'number_range_admin'
+    | 'used_number_range_admin'
+    | 'overview'
+    | 'provider_statistic'
+    | 'history_account'
+    | 'history_numberassignment'
+    | 'info'
+    | 'provider_overview'
+    | 'customer_overview';
 
 interface HeaderProps {
     page: Page;
@@ -29,20 +43,8 @@ const NavButton = ({ children, ...props }: any) => (
 const Header: React.FC<HeaderProps> = ({ page, setPage }) => {
     const [adminAnchorEl, setAdminAnchorEl] = useState<null | HTMLElement>(null);
     const [historyAnchorEl, setHistoryAnchorEl] = useState<null | HTMLElement>(null);
+    const [overviewAnchorEl, setOverviewAnchorEl] = useState<null | HTMLElement>(null);
 
-    const handleOpen = (setter: React.Dispatch<React.SetStateAction<HTMLElement | null>>) => (event: React.MouseEvent<HTMLElement>) => {
-        setter(event.currentTarget);
-    };
-
-    const handleClose = (setter: React.Dispatch<React.SetStateAction<HTMLElement | null>>) => () => {
-        setter(null);
-    };
-
-    const handleMenuClick = (page: Page, setter: React.Dispatch<React.SetStateAction<HTMLElement | null>>) => () => {
-        setPage(page);
-        setter(null);
-    };
-    
     const administrationPages: { label: string, page: Page }[] = [
         { label: 'Number Assignment', page: 'number_assignment' },
         { label: 'Number Reservation', page: 'number_reservation' },
@@ -58,6 +60,23 @@ const Header: React.FC<HeaderProps> = ({ page, setPage }) => {
         { label: 'History (Numberassignment)', page: 'history_numberassignment' },
     ];
 
+    const overviewPages: { label: string, page: Page }[] = [
+        { label: 'Provider Overview', page: 'provider_overview' },
+        { label: 'Customer Overview', page: 'customer_overview' },
+    ];
+
+    const handleOpen = (setter: React.Dispatch<React.SetStateAction<HTMLElement | null>>) => (event: React.MouseEvent<HTMLElement>) => {
+        setter(event.currentTarget);
+    };
+
+    const handleClose = (setter: React.Dispatch<React.SetStateAction<HTMLElement | null>>) => () => {
+        setter(null);
+    };
+
+    const handleMenuClick = (page: Page, setter: React.Dispatch<React.SetStateAction<HTMLElement | null>>) => () => {
+        setPage(page);
+        setter(null);
+    };
 
     return (
         <AppBar position="static" sx={{ backgroundColor: '#333' }}>
@@ -82,9 +101,21 @@ const Header: React.FC<HeaderProps> = ({ page, setPage }) => {
                         </Menu>
                     </Box>
 
-                    <NavButton onClick={() => setPage('overview')}>
-                        OVERVIEW
-                    </NavButton>
+                    <Box onMouseLeave={handleClose(setOverviewAnchorEl)}>
+                        <NavButton onMouseEnter={handleOpen(setOverviewAnchorEl)}>
+                            OVERVIEW
+                        </NavButton>
+                        <Menu
+                            anchorEl={overviewAnchorEl}
+                            open={Boolean(overviewAnchorEl)}
+                            onClose={handleClose(setOverviewAnchorEl)}
+                            MenuListProps={{ onMouseLeave: handleClose(setOverviewAnchorEl) }}
+                        >
+                            {overviewPages.map(p => (
+                                <MenuItem key={p.page} onClick={handleMenuClick(p.page, setOverviewAnchorEl)}>{p.label}</MenuItem>
+                            ))}
+                        </Menu>
+                    </Box>
 
                     <Box onMouseLeave={handleClose(setHistoryAnchorEl)}>
                         <NavButton onMouseEnter={handleOpen(setHistoryAnchorEl)}>

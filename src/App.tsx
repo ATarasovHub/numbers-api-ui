@@ -22,6 +22,9 @@ function App() {
             case 'number_range_admin':
             case 'used_number_range_admin':
             case 'overview':
+            case 'provider_overview':
+                return <ProviderTable />;
+            case 'customer_overview':
                 return <CustomerTable />;
             case 'provider_statistic':
             case 'history_account':
