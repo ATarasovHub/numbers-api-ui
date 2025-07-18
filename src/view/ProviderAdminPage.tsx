@@ -77,8 +77,32 @@ const ProviderAdminPage: React.FC = () => {
         setProviderDetails((prev: any) => ({ ...prev, [field]: value }));
     };
 
-    const handleSave = () => {
-        alert('Saved!\n' + JSON.stringify(providerDetails, null, 2));
+    const handleSave = async () => {
+        if (!providerDetails?.providerId) {
+            alert('No provider selected');
+            return;
+        }
+        try {
+            const res = await fetch(`/provider/${providerDetails.providerId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    providerName: providerDetails.providerName ?? '',
+                    totalCountries: providerDetails.totalCountries ?? '',
+                    totalNumbers: providerDetails.totalNumbers ?? '',
+                    totalAssignedNumbers: providerDetails.totalAssignedNumbers ?? '',
+                    totalMonthlyCost: providerDetails.totalMonthlyCost ?? ''
+                })
+            });
+            if (!res.ok) throw new Error('Failed to update provider');
+            alert('Provider updated!');
+            // Reload details
+            fetch(`/provider/${providerDetails.providerId}`)
+                .then(res => res.json())
+                .then(data => setProviderDetails(data));
+        } catch (e) {
+            alert('Failed to update provider');
+        }
     };
 
     const handleAddNumbers = async () => {
@@ -157,6 +181,9 @@ const ProviderAdminPage: React.FC = () => {
                     <TextField size="small" fullWidth value={providerDetails?.totalAssignedNumbers || 0} onChange={e => handleProviderDetailChange('totalAssignedNumbers', e.target.value)} />
                     <Typography>Total Monthly Cost</Typography>
                     <TextField size="small" fullWidth value={providerDetails?.totalMonthlyCost || 0} onChange={e => handleProviderDetailChange('totalMonthlyCost', e.target.value)} />
+                </Box>
+                <Box sx={{ mt: 2 }}>
+                    <Button variant="contained" onClick={handleSave}>Save Provider</Button>
                 </Box>
             </Paper>
             <Paper variant="outlined" sx={paperStyle}>

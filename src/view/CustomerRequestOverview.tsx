@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Paper, TextField, Select, MenuItem, Button, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
 import providerData from '../mocks/data/providers';
 import provisioningTypesData from '../mocks/data/provisioningTypes';
@@ -30,6 +30,7 @@ const CustomerRequestOverview: React.FC = () => {
   const [bp, setBp] = useState('');
   const [comment, setComment] = useState('');
   const [requestDate, setRequestDate] = useState('2025-07-14');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // State for search form
   const [searchProvisioningType, setSearchProvisioningType] = useState('');
@@ -39,11 +40,72 @@ const CustomerRequestOverview: React.FC = () => {
   // Provisioning table data
   const [provisioning, setProvisioning] = useState(mockProvisioning);
 
+  // State for providers from API
+  const [providers, setProviders] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/provider')
+      .then(res => res.json())
+      .then(data => setProviders(data));
+  }, []);
+
+  const handleCreate = async () => {
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        requestedNumbers: Number(requestedNumbers),
+        providerId: provider,
+        bp,
+        comment,
+        requestDate,
+      };
+      // Можно использовать любой фейковый эндпоинт, например /customer-request
+      const res = await fetch('/customer-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Failed to create request');
+      const data = await res.json();
+      alert('Customer request created!\n' + JSON.stringify(data, null, 2));
+      setRequestedNumbers('');
+      setProvider('');
+      setBp('');
+      setComment('');
+      setRequestDate('2025-07-14');
+    } catch (e: any) {
+      alert('Error: ' + (e.message || e));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    const params = new URLSearchParams();
+    if (searchProvider) params.append('providerId', searchProvider);
+    if (searchBp) params.append('bp', searchBp);
+    // Можно добавить другие параметры поиска при необходимости
+    const res = await fetch('/customer-request?' + params.toString());
+    if (res.ok) {
+      const data = await res.json();
+      setProvisioning((data as any[]).map((r: any) => ({
+        provider: providers.find(p => String(p.providerId) === String(r.providerId))?.providerName || r.providerId,
+        bp: r.bp,
+        comment: r.comment,
+        requestedNumbers: r.requestedNumbers,
+        date: r.requestDate,
+      })));
+    } else {
+      setProvisioning([]);
+    }
+  };
+
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="subtitle2" sx={{ fontSize: '1rem', color: '#888', mb: 1 }}>
         Administration &gt; Customer Request overview
       </Typography>
+      {/* Удалён блок с тестовым номером */}
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
         <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Create New Customer Request</Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 600 }}>
@@ -55,7 +117,7 @@ const CustomerRequestOverview: React.FC = () => {
             <Typography sx={{ minWidth: 170 }}>Provider</Typography>
             <Select size="small" displayEmpty value={provider} onChange={e => setProvider(e.target.value)} sx={{ minWidth: 200 }}>
               <MenuItem value=""><em>click to select</em></MenuItem>
-              {mockProviders.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
+              {providers.map(p => <MenuItem key={p.providerId} value={p.providerId}>{p.providerName}</MenuItem>)}
             </Select>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -74,7 +136,7 @@ const CustomerRequestOverview: React.FC = () => {
             <TextField size="small" type="date" value={requestDate} onChange={e => setRequestDate(e.target.value)} sx={{ minWidth: 200 }} />
           </Box>
           <Box>
-            <Button variant="contained">Create</Button>
+            <Button variant="contained" onClick={handleCreate} disabled={isSubmitting}>Create</Button>
           </Box>
         </Box>
       </Paper>
@@ -89,14 +151,14 @@ const CustomerRequestOverview: React.FC = () => {
           <Typography sx={{ minWidth: 100 }}>Provider</Typography>
           <Select size="small" displayEmpty value={searchProvider} onChange={e => setSearchProvider(e.target.value)} sx={{ minWidth: 200 }}>
             <MenuItem value=""><em>click to select</em></MenuItem>
-            {mockProviders.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
+            {providers.map(p => <MenuItem key={p.providerId} value={p.providerId}>{p.providerName}</MenuItem>)}
           </Select>
           <Typography sx={{ minWidth: 50 }}>BP</Typography>
           <Select size="small" displayEmpty value={searchBp} onChange={e => setSearchBp(e.target.value)} sx={{ minWidth: 200 }}>
             <MenuItem value=""><em>start typing for select</em></MenuItem>
             {mockBps.map(b => <MenuItem key={b.id} value={b.id}>{b.name}</MenuItem>)}
           </Select>
-          <Button variant="contained" sx={{ ml: 2 }}>search</Button>
+          <Button variant="contained" sx={{ ml: 2 }} onClick={handleSearch}>search</Button>
           <Button variant="outlined" color="error" sx={{ ml: 1 }}>delete with selected criteria</Button>
         </Box>
       </Paper>

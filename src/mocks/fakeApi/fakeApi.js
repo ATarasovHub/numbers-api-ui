@@ -3,6 +3,8 @@ import {provider} from "../data/provider";
 import {customer} from "../data/customer";
 
 export default function makeFakeApiServer() {
+    // Local array to store customer requests
+    let customerRequests = [];
     createServer({
         routes() {
             this.get("/provider", () => {
@@ -235,6 +237,21 @@ export default function makeFakeApiServer() {
                     { id: 2, name: "Landline" },
                     { id: 3, name: "Toll-Free" }
                 ];
+            });
+            this.post('/customer-request', (schema, request) => {
+                const req = JSON.parse(request.requestBody);
+                req.id = customerRequests.length + 1;
+                customerRequests.push(req);
+                return req;
+            });
+            this.get('/customer-request', (schema, request) => {
+                const { providerId, bp, requestedNumbers, requestDate } = request.queryParams;
+                let filtered = customerRequests;
+                if (providerId) filtered = filtered.filter(r => String(r.providerId) === String(providerId));
+                if (bp) filtered = filtered.filter(r => String(r.bp) === String(bp));
+                if (requestedNumbers) filtered = filtered.filter(r => String(r.requestedNumbers) === String(requestedNumbers));
+                if (requestDate) filtered = filtered.filter(r => String(r.requestDate) === String(requestDate));
+                return filtered;
             });
         }
     })

@@ -19,7 +19,17 @@ export const provider = [
                     {"number": 1234, "numberType": "Mobile", "serviceSms": true, "serviceVoice": false},
                     {"number": 1235, "numberType": "Mobile", "serviceSms": true, "serviceVoice": false},
                     {"number": 1236, "numberType": "Landline", "serviceSms": false, "serviceVoice": true},
-                    {"number": 1237, "numberType": "Landline", "serviceSms": false, "serviceVoice": true}
+                    {"number": 1237, "numberType": "Landline", "serviceSms": false, "serviceVoice": true},
+                    {
+                        "number": 9999,
+                        "numberType": "Mobile",
+                        "serviceSms": true,
+                        "serviceVoice": true,
+                        "comment": "Test number",
+                        "status": "active",
+                        "createdAt": "2024-07-01T12:00:00Z",
+                        "updatedAt": "2024-07-10T15:30:00Z"
+                    }
                 ]
             }
         ]
