@@ -1,71 +1,138 @@
-import React, {useEffect, useState} from 'react'
-import {TableBody, TableCell, TableHead, TableRow, IconButton, Collapse, Box, Typography, Modal, Button, TextField, Select, MenuItem, InputAdornment } from "@mui/material";
-import {CountryStats, NumberProvider} from "../utils/domain";
-import {isDefined} from "../utils/util";
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import EditIcon from '@mui/icons-material/Edit';
+import React, { useEffect, useState } from 'react';
 import {
-    StyledTable,
-    StyledTableRow,
-    StyledPaper,
-    ExpandableRow,
-    CollapsibleCell,
-    CollapsibleContent,
-    ActionButton
-} from './styles/ProviderTableStyles';
-import EditProviderForm from "./components/EditProviderForm";
-import EditCountryStatsForm from "./components/EditCountryStatsForm";
-import CreateProviderForm from "./components/CreateProviderForm";
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    Box,
+    Typography,
+    TextField,
+    Select,
+    MenuItem,
+    Card,
+    Table,
+    Collapse,
+    IconButton,
+    Paper,
+    alpha,
+    useTheme
+} from "@mui/material";
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { CountryStats, NumberProvider } from "../utils/domain";
+import { isDefined } from "../utils/util";
 
-interface CountryStatsTableProps {
-    stats: CountryStats[],
-    onEdit: (stat: CountryStats) => void
-}
-
-const CountryStatsTable: React.FC<CountryStatsTableProps> = ({stats, onEdit}) => (
-    <StyledTable  size="small">
-        <TableHead>
-            <TableRow>
-                <TableCell>Country Id</TableCell>
-                <TableCell>Country Name</TableCell>
-                <TableCell>Total Numbers</TableCell>
-                <TableCell>Assigned Numbers</TableCell>
-                <TableCell>Not Assigned Numbers</TableCell>
-                <TableCell>Monthly Cost</TableCell>
-                <TableCell>Actions</TableCell>
-            </TableRow>
-        </TableHead>
-        <TableBody>
-            {stats.map((stat) => (
-                <TableRow key={stat.countryId}>
-                    <TableCell>{stat.countryId}</TableCell>
-                    <TableCell>{stat.countryName}</TableCell>
-                    <TableCell>{stat.totalNumbers}</TableCell>
-                    <TableCell>{stat.assignedNumbers}</TableCell>
-                    <TableCell>{stat.totalNumbers - stat.assignedNumbers}</TableCell>
-                    <TableCell>{stat.totalMonthlyCost}</TableCell>
-                    <TableCell>
-                        <IconButton size="small" onClick={() => onEdit(stat)}>
-                            <EditIcon fontSize="small" />
-                        </IconButton>
-                    </TableCell>
-                </TableRow>
-            ))}
-        </TableBody>
-    </StyledTable >
-)
-
-interface ProviderRowProps {
+export interface ProviderRowProps {
     provider: NumberProvider,
     onProviderUpdated: (updatedProvider: NumberProvider) => void,
     key?: number
 }
 
-const ProviderRow: React.FC<ProviderRowProps> = ({provider, onProviderUpdated, key}) => {
+const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
+    const theme = useTheme();
+    return (
+        <Paper
+            elevation={2}
+            sx={{
+                mb: 3,
+                borderRadius: 2,
+                overflow: 'hidden',
+                border: `1px solid ${alpha(theme.palette.divider, 0.5)}`
+            }}
+        >
+            <Table size="small">
+                <TableHead sx={{
+                    backgroundColor: alpha(theme.palette.secondary.light, 0.2)
+                }}>
+                    <TableRow>
+                        <TableCell>
+                            <Typography variant="subtitle2" fontWeight="700">Country ID</Typography>
+                        </TableCell>
+                        <TableCell>
+                            <Typography variant="subtitle2" fontWeight="700">Country Name</Typography>
+                        </TableCell>
+                        <TableCell>
+                            <Typography variant="subtitle2" fontWeight="700">Total Numbers</Typography>
+                        </TableCell>
+                        <TableCell>
+                            <Typography variant="subtitle2" fontWeight="700">Assigned Numbers</Typography>
+                        </TableCell>
+                        <TableCell>
+                            <Typography variant="subtitle2" fontWeight="700">Not Assigned Numbers</Typography>
+                        </TableCell>
+                        <TableCell>
+                            <Typography variant="subtitle2" fontWeight="700">Monthly Cost</Typography>
+                        </TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {stats && stats.length > 0 ? (
+                        stats.map((stat, idx) => (
+                            <TableRow
+                                key={stat.countryId}
+                                sx={{
+                                    backgroundColor: idx % 2 === 0 ?
+                                        alpha(theme.palette.grey[100], 0.3) :
+                                        'transparent',
+                                    '&:hover': {
+                                        backgroundColor: alpha(theme.palette.secondary.light, 0.2),
+                                    }
+                                }}
+                            >
+                                <TableCell>
+                                    <Typography variant="body2" fontWeight="500">
+                                        {stat.countryId}
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography variant="body2">
+                                        {stat.countryName}
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography variant="body2" fontWeight="500">
+                                        {stat.totalNumbers}
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography variant="body2" fontWeight="500">
+                                        {stat.assignedNumbers}
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography variant="body2" fontWeight="500">
+                                        {stat.totalNumbers - stat.assignedNumbers}
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography
+                                        variant="body2"
+                                        fontWeight="600"
+                                        color="secondary"
+                                    >
+                                        {stat.totalMonthlyCost}
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    ) : (
+                        <TableRow>
+                            <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                                <Typography variant="body2" color="textSecondary">
+                                    No country statistics available
+                                </Typography>
+                            </TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+        </Paper>
+    );
+};
+
+const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }) => {
+    const theme = useTheme();
     const [open, setOpen] = useState(false);
-    const [providerEditOpen, setProviderEditOpen] = useState(false);
-    const [editingCountryStat, setEditingCountryStat] = useState<CountryStats | null>(null);
 
     function checkStatus(deletedAt: string) {
         if (!isDefined(deletedAt)) {
@@ -73,7 +140,6 @@ const ProviderRow: React.FC<ProviderRowProps> = ({provider, onProviderUpdated, k
         }
         const now = new Date()
         const deletedDate = new Date(deletedAt)
-
         if (deletedDate > now) {
             return "Active"
         } else {
@@ -81,91 +147,148 @@ const ProviderRow: React.FC<ProviderRowProps> = ({provider, onProviderUpdated, k
         }
     }
 
-    const handleCountryStatSave = async (updatedStat: CountryStats) => {
-        try {
-            const res = await fetch(`/country-stats/${updatedStat.countryId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedStat),
-            });
-            if (!res.ok) throw new Error('Failed to update country stat');
-            const updatedProvider = await res.json();
-            onProviderUpdated(updatedProvider);
-            setEditingCountryStat(null);
-        } catch (e) {
-            alert('Failed to save country statistics');
-        }
-    };
-
     return (
         <React.Fragment>
-            <StyledTableRow>
-                <TableCell>{provider.providerId}</TableCell>
-                <TableCell>{provider.providerName}</TableCell>
-                <TableCell>{checkStatus(provider.deletedAt)}</TableCell>
-                <TableCell>{provider.totalNumbers}</TableCell>
-                <TableCell>{provider.totalAssignedNumbers}</TableCell>
-                <TableCell>{provider.totalNumbers - provider.totalAssignedNumbers}</TableCell>
-                <TableCell>{provider.totalMonthlyCost}</TableCell>
-                <TableCell>
-                    <ActionButton>
-                        <IconButton
-                            size="small"
-                            onClick={() => setOpen(!open)}
-                        >
-                            {open ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
-                        </IconButton>
-                        <IconButton
-                            size="small"
-                            onClick={() => setProviderEditOpen(true)}
-                        >
-                            <EditIcon/>
-                        </IconButton>
-                    </ActionButton>
+            <TableRow
+                sx={{
+                    backgroundColor: provider.providerId % 2 === 0 ?
+                        alpha(theme.palette.grey[50], 0.7) :
+                        alpha(theme.palette.background.paper, 0.7),
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.light, 0.1),
+                        transform: 'scale(1.005)',
+                        boxShadow: `inset 0 0 0 1px ${alpha(theme.palette.primary.main, 0.2)}`,
+                    },
+                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.3)}`
+                }}
+            >
+                <TableCell sx={{ width: '5%' }}>
+                    <IconButton
+                        aria-label="expand row"
+                        size="small"
+                        onClick={() => setOpen(!open)}
+                        sx={{
+                            color: theme.palette.primary.main,
+                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                            '&:hover': {
+                                backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                            },
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                    </IconButton>
                 </TableCell>
-            </StyledTableRow>
-            <ExpandableRow>
-                <CollapsibleCell colSpan={8}>
-                    <Collapse in={open} timeout="auto" unmountOnExit>
-                        <CollapsibleContent>
-                            <Typography variant="h6" gutterBottom component="div">
-                                Country Statistics
-                            </Typography>
-                            <CountryStatsTable stats={provider.countryStats || []} onEdit={setEditingCountryStat} />
-                        </CollapsibleContent>
+                <TableCell>
+                    <Typography variant="body2" fontWeight="600" color="text.primary">
+                        {provider.providerName}
+                    </Typography>
+                </TableCell>
+                <TableCell>
+                    <Typography variant="body2" fontWeight="500">
+                        {checkStatus(provider.deletedAt)}
+                    </Typography>
+                </TableCell>
+                <TableCell>
+                    <Typography
+                        variant="body2"
+                        fontWeight="700"
+                        color="primary"
+                        sx={{ fontSize: '1.1rem' }}
+                    >
+                        {provider.totalNumbers}
+                    </Typography>
+                </TableCell>
+                <TableCell>
+                    <Typography variant="body2" fontWeight="500">
+                        {provider.totalAssignedNumbers}
+                    </Typography>
+                </TableCell>
+                <TableCell>
+                    <Typography variant="body2" fontWeight="500">
+                        {provider.totalNumbers - provider.totalAssignedNumbers}
+                    </Typography>
+                </TableCell>
+                <TableCell>
+                    <Typography
+                        variant="body2"
+                        fontWeight="600"
+                        color="secondary"
+                    >
+                        {provider.totalMonthlyCost}
+                    </Typography>
+                </TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell
+                    style={{
+                        paddingBottom: 0,
+                        paddingTop: 0,
+                        backgroundColor: alpha(theme.palette.grey[50], 0.5)
+                    }}
+                    colSpan={7}
+                >
+                    <Collapse
+                        in={open}
+                        timeout="auto"
+                        unmountOnExit
+                    >
+                        <Box sx={{ margin: 3 }}>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    mb: 2,
+                                    pb: 1,
+                                    borderBottom: `1px dashed ${alpha(theme.palette.primary.main, 0.3)}`
+                                }}
+                            >
+                                <Typography
+                                    variant="h6"
+                                    gutterBottom
+                                    sx={{
+                                        color: theme.palette.primary.dark,
+                                        fontWeight: 700,
+                                        mr: 1
+                                    }}
+                                >
+                                    Country Statistics for
+                                </Typography>
+                                <Typography
+                                    variant="h6"
+                                    gutterBottom
+                                    sx={{
+                                        color: theme.palette.secondary.main,
+                                        fontWeight: 700
+                                    }}
+                                >
+                                    {provider.providerName}
+                                </Typography>
+                            </Box>
+                            <CountryStatsTable stats={provider.countryStats || []} />
+                        </Box>
                     </Collapse>
-                </CollapsibleCell>
-            </ExpandableRow>
-            <EditProviderForm
-                open={providerEditOpen}
-                onClose={() => setProviderEditOpen(false)}
-                provider={provider}
-                onProviderUpdated={onProviderUpdated}
-            />
-            <EditCountryStatsForm
-                open={!!editingCountryStat}
-                onClose={() => setEditingCountryStat(null)}
-                countryStat={editingCountryStat}
-                onSave={handleCountryStatSave}
-            />
+                </TableCell>
+            </TableRow>
         </React.Fragment>
     );
 };
 
 export const ProviderTable: React.FC = () => {
+    const theme = useTheme();
     const [allProviders, setAllProviders] = useState<NumberProvider[]>([]);
     const [filteredProviders, setFilteredProviders] = useState<NumberProvider[]>([]);
     const [displayedProviders, setDisplayedProviders] = useState<NumberProvider[]>([]);
     const [filters, setFilters] = useState({
-        providerId: '',
         providerName: '',
-        status: '',
         totalNumbers: '',
         totalNumbersOp: '>=',
+        totalAssignedNumbers: '',
+        totalAssignedNumbersOp: '>=',
         totalMonthlyCost: '',
         totalMonthlyCostOp: '>=',
     });
-    const [createProviderOpen, setCreateProviderOpen] = useState(false);
 
     useEffect(() => {
         fetch(`/provider`)
@@ -179,32 +302,42 @@ export const ProviderTable: React.FC = () => {
             })
             .catch(error => {
                 console.error("Failed to fetch providers:", error.message || 'Something went wrong');
+                setAllProviders([]);
+                setDisplayedProviders([]);
             });
     }, []);
 
     useEffect(() => {
         const isAllFiltersEmpty =
-            !filters.providerId &&
             !filters.providerName &&
-            !filters.status &&
             !filters.totalNumbers &&
+            !filters.totalAssignedNumbers &&
             !filters.totalMonthlyCost;
+
         if (isAllFiltersEmpty) {
             setFilteredProviders([]);
             setDisplayedProviders(allProviders.slice(0, 10));
             return;
         }
+
         let filtered = allProviders.filter(provider => {
             const status = provider.deletedAt && provider.deletedAt !== '' ? 'deleted' : 'active';
             let pass = true;
-            if (filters.providerId && !provider.providerId.toString().includes(filters.providerId)) pass = false;
-            if (filters.providerName && !provider.providerName.toLowerCase().includes(filters.providerName)) pass = false;
-            if (filters.status && !status.includes(filters.status)) pass = false;
+
+            if (filters.providerName && !provider.providerName.toLowerCase().includes(filters.providerName.toLowerCase())) pass = false;
+
             if (filters.totalNumbers) {
                 const val = Number(filters.totalNumbers);
                 if (filters.totalNumbersOp === '>=') pass = pass && (provider.totalNumbers >= val);
                 if (filters.totalNumbersOp === '<=') pass = pass && (provider.totalNumbers <= val);
             }
+
+            if (filters.totalAssignedNumbers) {
+                const val = Number(filters.totalAssignedNumbers);
+                if (filters.totalAssignedNumbersOp === '>=') pass = pass && (provider.totalAssignedNumbers >= val);
+                if (filters.totalAssignedNumbersOp === '<=') pass = pass && (provider.totalAssignedNumbers <= val);
+            }
+
             if (filters.totalMonthlyCost) {
                 const val = Number(filters.totalMonthlyCost);
                 if (filters.totalMonthlyCostOp === '>=') pass = pass && (provider.totalMonthlyCost >= val);
@@ -212,10 +345,11 @@ export const ProviderTable: React.FC = () => {
             }
             return pass;
         });
+
         setFilteredProviders(filtered);
         setDisplayedProviders(filtered);
     }, [allProviders, filters]);
-//Test
+
     const handleFilterChange = (field: string, value: string) => {
         setFilters(prev => ({ ...prev, [field]: value }));
     };
@@ -227,131 +361,312 @@ export const ProviderTable: React.FC = () => {
         setAllProviders(newProviders);
     };
 
-    const handleProviderCreated = (newProvider: NumberProvider) => {
-        const newProviders = [...allProviders, newProvider];
-        setAllProviders(newProviders);
-        setCreateProviderOpen(false);
-    };
-
     return (
-        <>
-            <StyledPaper>
-                <Box display="flex" justifyContent="flex-end" alignItems="center" mb={2} p={2}>
-                    <Button variant="contained" color="primary" onClick={() => setCreateProviderOpen(true)}>
-                        Add provider
-                    </Button>
+        <Card
+            elevation={6}
+            sx={{
+                p: { xs: 2, sm: 3 },
+                borderRadius: 3,
+                maxWidth: '100vw',
+                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                boxShadow: `0 10px 30px ${alpha(theme.palette.common.black, 0.08)}`
+            }}
+        >
+            <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={3}
+                sx={{
+                    pb: 2,
+                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                }}
+            >
+                <Typography
+                    variant="h4"
+                    component="h1"
+                    fontWeight="800"
+                    color="primary"
+                    sx={{
+                        background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                    }}
+                >
+                    Provider Overview
+                </Typography>
+            </Box>
+
+            <Paper
+                elevation={3}
+                sx={{
+                    p: 2.5,
+                    mb: 3,
+                    borderRadius: 2.5,
+                    backgroundColor: alpha(theme.palette.background.paper, 0.7),
+                    backdropFilter: 'blur(10px)',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
+                }}
+            >
+                <Box display="flex" flexWrap="wrap" gap={2} alignItems="center">
+                    <Typography variant="subtitle2" sx={{ minWidth: '100px', fontWeight: 600 }}>Filter by:</Typography>
+
+                    <TextField
+                        label="Provider Name"
+                        value={filters.providerName}
+                        onChange={e => handleFilterChange('providerName', e.target.value)}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                            minWidth: 220, // Увеличена ширина
+                            '& .MuiOutlinedInput-root': {
+                                '& fieldset': {
+                                    borderColor: alpha(theme.palette.primary.main, 0.3),
+                                },
+                                '&:hover fieldset': {
+                                    borderColor: alpha(theme.palette.primary.main, 0.5),
+                                },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: theme.palette.primary.main,
+                                },
+                            },
+                        }}
+                    />
+
+                    <Box display="flex" alignItems="center" gap={1}>
+                        <Select
+                            value={filters.totalNumbersOp}
+                            onChange={e => handleFilterChange('totalNumbersOp', e.target.value as string)}
+                            variant="outlined"
+                            size="small"
+                            sx={{
+                                minWidth: 70,
+                                '& .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: alpha(theme.palette.primary.main, 0.3),
+                                },
+                                '&:hover .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: alpha(theme.palette.primary.main, 0.5),
+                                },
+                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: theme.palette.primary.main,
+                                },
+                            }}
+                        >
+                            <MenuItem value=">=">&ge;</MenuItem>
+                            <MenuItem value="<=">&le;</MenuItem>
+                        </Select>
+                        <TextField
+                            label="Total Numbers"
+                            value={filters.totalNumbers}
+                            onChange={e => handleFilterChange('totalNumbers', e.target.value)}
+                            variant="outlined"
+                            size="small"
+                            sx={{
+                                minWidth: 150,
+                                '& .MuiOutlinedInput-root': {
+                                    '& fieldset': {
+                                        borderColor: alpha(theme.palette.primary.main, 0.3),
+                                    },
+                                    '&:hover fieldset': {
+                                        borderColor: alpha(theme.palette.primary.main, 0.5),
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: theme.palette.primary.main,
+                                    },
+                                },
+                            }}
+                            type="number"
+                        />
+                    </Box>
+
+                    <Box display="flex" alignItems="center" gap={1}>
+                        <Select
+                            value={filters.totalAssignedNumbersOp}
+                            onChange={e => handleFilterChange('totalAssignedNumbersOp', e.target.value as string)}
+                            variant="outlined"
+                            size="small"
+                            sx={{
+                                minWidth: 70,
+                                '& .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: alpha(theme.palette.primary.main, 0.3),
+                                },
+                                '&:hover .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: alpha(theme.palette.primary.main, 0.5),
+                                },
+                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: theme.palette.primary.main,
+                                },
+                            }}
+                        >
+                            <MenuItem value=">=">&ge;</MenuItem>
+                            <MenuItem value="<=">&le;</MenuItem>
+                        </Select>
+                        <TextField
+                            label="Assigned Numbers"
+                            value={filters.totalAssignedNumbers}
+                            onChange={e => handleFilterChange('totalAssignedNumbers', e.target.value)}
+                            variant="outlined"
+                            size="small"
+                            sx={{
+                                minWidth: 150,
+                                '& .MuiOutlinedInput-root': {
+                                    '& fieldset': {
+                                        borderColor: alpha(theme.palette.primary.main, 0.3),
+                                    },
+                                    '&:hover fieldset': {
+                                        borderColor: alpha(theme.palette.primary.main, 0.5),
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: theme.palette.primary.main,
+                                    },
+                                },
+                            }}
+                            type="number"
+                        />
+                    </Box>
+
+                    <Box display="flex" alignItems="center" gap={1}>
+                        <Select
+                            value={filters.totalMonthlyCostOp}
+                            onChange={e => handleFilterChange('totalMonthlyCostOp', e.target.value as string)}
+                            variant="outlined"
+                            size="small"
+                            sx={{
+                                minWidth: 70,
+                                '& .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: alpha(theme.palette.primary.main, 0.3),
+                                },
+                                '&:hover .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: alpha(theme.palette.primary.main, 0.5),
+                                },
+                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: theme.palette.primary.main,
+                                },
+                            }}
+                        >
+                            <MenuItem value=">=">&ge;</MenuItem>
+                            <MenuItem value="<=">&le;</MenuItem>
+                        </Select>
+                        <TextField
+                            label="Monthly Cost"
+                            value={filters.totalMonthlyCost}
+                            onChange={e => handleFilterChange('totalMonthlyCost', e.target.value)}
+                            variant="outlined"
+                            size="small"
+                            sx={{
+                                minWidth: 150,
+                                '& .MuiOutlinedInput-root': {
+                                    '& fieldset': {
+                                        borderColor: alpha(theme.palette.primary.main, 0.3),
+                                    },
+                                    '&:hover fieldset': {
+                                        borderColor: alpha(theme.palette.primary.main, 0.5),
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: theme.palette.primary.main,
+                                    },
+                                },
+                            }}
+                            type="number"
+                        />
+                    </Box>
                 </Box>
-                <StyledTable>
+            </Paper>
+
+            <Paper
+                elevation={4}
+                sx={{
+                    borderRadius: 2.5,
+                    overflow: 'hidden',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+                    boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.06)}`
+                }}
+            >
+                <Table sx={{ minWidth: 750 }} aria-label="providers table">
                     <TableHead>
                         <TableRow>
-                            <TableCell>
-                                <TextField
-                                    value={filters.providerId}
-                                    onChange={e => handleFilterChange('providerId', e.target.value)}
-                                    placeholder="ID"
-                                    variant="standard"
-                                    size="small"
-                                    fullWidth
-                                />
-                            </TableCell>
-                            <TableCell>
-                                <TextField
-                                    value={filters.providerName}
-                                    onChange={e => handleFilterChange('providerName', e.target.value)}
-                                    placeholder="Name"
-                                    variant="standard"
-                                    size="small"
-                                    fullWidth
-                                />
-                            </TableCell>
-                            <TableCell>
-                                <TextField
-                                    value={filters.status}
-                                    onChange={e => handleFilterChange('status', e.target.value)}
-                                    placeholder="Status"
-                                    variant="standard"
-                                    size="small"
-                                    fullWidth
-                                />
-                            </TableCell>
-                            <TableCell>
-                                <Box display="flex" alignItems="center">
-                                    <Select
-                                        value={filters.totalNumbersOp}
-                                        onChange={e => handleFilterChange('totalNumbersOp', e.target.value as string)}
-                                        variant="standard"
-                                        size="small"
-                                        sx={{ minWidth: 50 }}
-                                    >
-                                        <MenuItem value=">=">&ge;</MenuItem>
-                                        <MenuItem value="<=">&le;</MenuItem>
-                                    </Select>
-                                    <TextField
-                                        value={filters.totalNumbers}
-                                        onChange={e => handleFilterChange('totalNumbers', e.target.value)}
-                                        placeholder="Total numbers"
-                                        variant="standard"
-                                        size="small"
-                                        fullWidth
-                                        sx={{ ml: 1 }}
-                                        type="number"
-                                    />
-                                </Box>
-                            </TableCell>
-                            <TableCell />
-                            <TableCell />
-                            <TableCell>
-                                <Box display="flex" alignItems="center">
-                                    <Select
-                                        value={filters.totalMonthlyCostOp}
-                                        onChange={e => handleFilterChange('totalMonthlyCostOp', e.target.value as string)}
-                                        variant="standard"
-                                        size="small"
-                                        sx={{ minWidth: 50 }}
-                                    >
-                                        <MenuItem value=">=">&ge;</MenuItem>
-                                        <MenuItem value="<=">&le;</MenuItem>
-                                    </Select>
-                                    <TextField
-                                        value={filters.totalMonthlyCost}
-                                        onChange={e => handleFilterChange('totalMonthlyCost', e.target.value)}
-                                        placeholder="Monthly cost"
-                                        variant="standard"
-                                        size="small"
-                                        fullWidth
-                                        sx={{ ml: 1 }}
-                                        type="number"
-                                    />
-                                </Box>
-                            </TableCell>
-                            <TableCell>Actions</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Provider Id</TableCell>
-                            <TableCell>Provider name</TableCell>
-                            <TableCell>Status</TableCell>
-                            <TableCell>Total numbers</TableCell>
-                            <TableCell>Assigned numbers</TableCell>
-                            <TableCell>Not assigned numbers</TableCell>
-                            <TableCell>Total monthly cost</TableCell>
-                            <TableCell>Actions</TableCell>
+                            <TableCell sx={{
+                                fontWeight: '700',
+                                color: theme.palette.common.white,
+                                background: theme.palette.primary.dark,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                width: '5%'
+                            }} />
+                            <TableCell sx={{
+                                fontWeight: '700',
+                                color: theme.palette.common.white,
+                                background: theme.palette.primary.dark,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                            }}>Provider Name</TableCell>
+                            <TableCell sx={{
+                                fontWeight: '700',
+                                color: theme.palette.common.white,
+                                background: theme.palette.primary.dark,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                            }}>Status</TableCell>
+                            <TableCell sx={{
+                                fontWeight: '700',
+                                color: theme.palette.common.white,
+                                background: theme.palette.primary.dark,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                            }}>Total Numbers</TableCell>
+                            <TableCell sx={{
+                                fontWeight: '700',
+                                color: theme.palette.common.white,
+                                background: theme.palette.primary.dark,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                            }}>Assigned Numbers</TableCell>
+                            <TableCell sx={{
+                                fontWeight: '700',
+                                color: theme.palette.common.white,
+                                background: theme.palette.primary.dark,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                            }}>Not Assigned Numbers</TableCell>
+                            <TableCell sx={{
+                                fontWeight: '700',
+                                color: theme.palette.common.white,
+                                background: theme.palette.primary.dark,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                            }}>Total Monthly Cost</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {displayedProviders.map(provider => (
-                            <ProviderRow key={provider.providerId} provider={provider} onProviderUpdated={handleProviderUpdate} />
-                        ))}
+                        {displayedProviders.length > 0 ? (
+                            displayedProviders.map(provider => (
+                                <ProviderRow key={provider.providerId} provider={provider} onProviderUpdated={handleProviderUpdate} />
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            color: theme.palette.text.secondary,
+                                            fontWeight: 500
+                                        }}
+                                    >
+                                        {allProviders.length === 0 ?
+                                            "Loading provider data..." :
+                                            "No providers match the current filters"
+                                        }
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
-                </StyledTable>
-                <Modal open={createProviderOpen} onClose={() => setCreateProviderOpen(false)}>
-                    <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'background.paper', boxShadow: 24, p: 4, borderRadius: 2, minWidth: 400, maxHeight: '80vh', overflowY: 'auto' }}>
-                        <CreateProviderForm
-                            onProviderCreated={handleProviderCreated}
-                        />
-                    </Box>
-                </Modal>
-            </StyledPaper>
-        </>
+                </Table>
+            </Paper>
+        </Card>
     );
 }
-//Test
+
+export default ProviderTable;
