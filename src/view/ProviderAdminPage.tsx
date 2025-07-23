@@ -6,21 +6,21 @@ import connectionTypesData from '../mocks/data/connectionTypes';
 import numberTypesData from '../mocks/data/numberTypes';
 import providerDetailsData from '../mocks/data/providerDetails';
 import {
-  boxStyle,
-  subtitle2Style,
-  subtitle1Style,
-  paperStyle,
-  gridStyle,
-  flexAlignCenterGap1,
-  flexAlignCenterGap1Mb1,
-  minWidth200,
-  minWidth150,
-  width120,
-  width60,
-  flexGap1,
-  tableSubtitle2,
-  tableNoNumbers,
-  paperNoMargin
+    boxStyle,
+    subtitle2Style,
+    subtitle1Style,
+    paperStyle,
+    gridStyle,
+    flexAlignCenterGap1,
+    flexAlignCenterGap1Mb1,
+    minWidth200,
+    minWidth150,
+    width120,
+    width60,
+    flexGap1,
+    tableSubtitle2,
+    tableNoNumbers,
+    paperNoMargin
 } from './styles/ProviderAdminPageStyles';
 
 const providerDetailsTyped: { [key: string]: any } = providerDetailsData;
@@ -36,11 +36,9 @@ const ProviderAdminPage: React.FC = () => {
     const [provisioningTypes, setProvisioningTypes] = useState<{ id: string; name: string }[]>([]);
     const [countries, setCountries] = useState<{ countryId: string; countryName: string }[]>([]);
     const [connectionTypes, setConnectionTypes] = useState<{ id: string; name: string }[]>([]);
-    const [numberTypes, setNumberTypes] = useState<{ id: string; name: string }[]>([]);
 
     const [fromNumber, setFromNumber] = useState('');
     const [toNumber, setToNumber] = useState('');
-    const [addNumberType, setAddNumberType] = useState('');
     const [addServiceSms, setAddServiceSms] = useState(false);
     const [addServiceVoice, setAddServiceVoice] = useState(false);
     const [addCountryId, setAddCountryId] = useState('');
@@ -58,9 +56,12 @@ const ProviderAdminPage: React.FC = () => {
                 );
             });
         fakeApi(provisioningTypesData).then((data) => setProvisioningTypes(data));
-        fakeApi(countriesData).then((data) => setCountries(data));
+        fetch('/countries')
+            .then(res => res.json())
+            .then(data => setCountries(
+                data.map((c: any) => ({ countryId: String(c.countryId), countryName: c.countryName }))
+            ));
         fakeApi(connectionTypesData).then((data) => setConnectionTypes(data));
-        fakeApi(numberTypesData).then((data) => setNumberTypes(data));
     }, []);
 
     useEffect(() => {
@@ -77,36 +78,8 @@ const ProviderAdminPage: React.FC = () => {
         setProviderDetails((prev: any) => ({ ...prev, [field]: value }));
     };
 
-    const handleSave = async () => {
-        if (!providerDetails?.providerId) {
-            alert('No provider selected');
-            return;
-        }
-        try {
-            const res = await fetch(`/provider/${providerDetails.providerId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    providerName: providerDetails.providerName ?? '',
-                    totalCountries: providerDetails.totalCountries ?? '',
-                    totalNumbers: providerDetails.totalNumbers ?? '',
-                    totalAssignedNumbers: providerDetails.totalAssignedNumbers ?? '',
-                    totalMonthlyCost: providerDetails.totalMonthlyCost ?? ''
-                })
-            });
-            if (!res.ok) throw new Error('Failed to update provider');
-            alert('Provider updated!');
-            // Reload details
-            fetch(`/provider/${providerDetails.providerId}`)
-                .then(res => res.json())
-                .then(data => setProviderDetails(data));
-        } catch (e) {
-            alert('Failed to update provider');
-        }
-    };
-
     const handleAddNumbers = async () => {
-        if (!fromNumber || !toNumber || !addCountryId || !addNumberType) {
+        if (!fromNumber || !toNumber || !addCountryId) {
             alert('Please fill all fields for number range!');
             return;
         }
@@ -122,7 +95,6 @@ const ProviderAdminPage: React.FC = () => {
             numbers.push({
                 number: n,
                 countryId: Number(addCountryId),
-                numberType: addNumberType,
                 serviceSms: addServiceSms,
                 serviceVoice: addServiceVoice
             });
@@ -136,7 +108,6 @@ const ProviderAdminPage: React.FC = () => {
             alert('Numbers added!');
             setFromNumber('');
             setToNumber('');
-            setAddNumberType('');
             setAddServiceSms(false);
             setAddServiceVoice(false);
             setAddCountryId('');
@@ -182,9 +153,6 @@ const ProviderAdminPage: React.FC = () => {
                     <Typography>Total Monthly Cost</Typography>
                     <TextField size="small" fullWidth value={providerDetails?.totalMonthlyCost || 0} onChange={e => handleProviderDetailChange('totalMonthlyCost', e.target.value)} />
                 </Box>
-                <Box sx={{ mt: 2 }}>
-                    <Button variant="contained" onClick={handleSave}>Save Provider</Button>
-                </Box>
             </Paper>
             <Paper variant="outlined" sx={paperStyle}>
                 <Typography variant="subtitle1" sx={subtitle1Style}>Add Number(s) <span style={{fontWeight:400, fontSize:'0.95em'}}>(just leave it empty if you only want to edit/create a provider)</span></Typography>
@@ -198,17 +166,24 @@ const ProviderAdminPage: React.FC = () => {
                 </Box>
                 <Box sx={flexAlignCenterGap1Mb1}>
                     <Typography>Country</Typography>
-                    <Select size="small" displayEmpty sx={minWidth150} value={addCountryId} onChange={e => setAddCountryId(e.target.value)}>
+                    <Select
+                        size="small"
+                        displayEmpty
+                        sx={{ minWidth: 120 }}
+                        value={addCountryId}
+                        onChange={e => setAddCountryId(e.target.value)}
+                        MenuProps={{
+                            PaperProps: {
+                                style: {
+                                    maxHeight: 250,
+                                    width: 200
+                                }
+                            }
+                        }}
+                    >
                         <MenuItem value=""><em>click to select</em></MenuItem>
                         {countries.map((c: any) => (
                             <MenuItem key={c.countryId} value={c.countryId}>{c.countryName}</MenuItem>
-                        ))}
-                    </Select>
-                    <Typography>Numbertype</Typography>
-                    <Select size="small" displayEmpty sx={minWidth150} value={addNumberType} onChange={e => setAddNumberType(e.target.value)}>
-                        <MenuItem value=""><em>click to select</em></MenuItem>
-                        {numberTypes.map((nt: any) => (
-                            <MenuItem key={nt.id} value={nt.id}>{nt.name}</MenuItem>
                         ))}
                     </Select>
                     <Typography>Service</Typography>
@@ -217,7 +192,6 @@ const ProviderAdminPage: React.FC = () => {
                 </Box>
                 <Box sx={flexGap1}>
                     <Button variant="contained" size="small" onClick={handleAddNumbers} disabled={isAddingNumbers}>Save (add numbers)</Button>
-                    <Button variant="outlined" size="small">Show Platinum Numbers</Button>
                 </Box>
             </Paper>
             <Paper variant="outlined" sx={paperNoMargin}>
@@ -256,4 +230,4 @@ const ProviderAdminPage: React.FC = () => {
     );
 };
 
-export default ProviderAdminPage; 
+export default ProviderAdminPage;

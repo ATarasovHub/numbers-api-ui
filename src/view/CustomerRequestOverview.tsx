@@ -24,23 +24,16 @@ const mockBps = [
 ];
 
 const CustomerRequestOverview: React.FC = () => {
-  // State for create form
   const [requestedNumbers, setRequestedNumbers] = useState('');
   const [provider, setProvider] = useState('');
   const [bp, setBp] = useState('');
   const [comment, setComment] = useState('');
   const [requestDate, setRequestDate] = useState('2025-07-14');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // State for search form
   const [searchProvisioningType, setSearchProvisioningType] = useState('');
   const [searchProvider, setSearchProvider] = useState('');
   const [searchBp, setSearchBp] = useState('');
-
-  // Provisioning table data
   const [provisioning, setProvisioning] = useState(mockProvisioning);
-
-  // State for providers from API
   const [providers, setProviders] = useState<any[]>([]);
 
   useEffect(() => {
@@ -59,7 +52,6 @@ const CustomerRequestOverview: React.FC = () => {
         comment,
         requestDate,
       };
-      // Можно использовать любой фейковый эндпоинт, например /customer-request
       const res = await fetch('/customer-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -84,7 +76,6 @@ const CustomerRequestOverview: React.FC = () => {
     const params = new URLSearchParams();
     if (searchProvider) params.append('providerId', searchProvider);
     if (searchBp) params.append('bp', searchBp);
-    // Можно добавить другие параметры поиска при необходимости
     const res = await fetch('/customer-request?' + params.toString());
     if (res.ok) {
       const data = await res.json();
@@ -105,7 +96,6 @@ const CustomerRequestOverview: React.FC = () => {
       <Typography variant="subtitle2" sx={{ fontSize: '1rem', color: '#888', mb: 1 }}>
         Administration &gt; Customer Request overview
       </Typography>
-      {/* Удалён блок с тестовым номером */}
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
         <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Create New Customer Request</Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 600 }}>

@@ -14,7 +14,6 @@ function App() {
             case 'providers':
                 return <ProviderAdminPage />;
             case 'customers':
-                // return <CustomerTable />;
                 return <CustomerRequestOverview />;
             case 'customer_request_overview':
                 return <CustomerRequestOverview />;

@@ -3,7 +3,6 @@ import {provider} from "../data/provider";
 import {customer} from "../data/customer";
 
 export default function makeFakeApiServer() {
-    // Local array to store customer requests
     let customerRequests = [];
     createServer({
         routes() {
@@ -174,15 +173,13 @@ export default function makeFakeApiServer() {
             });
 
             this.post("/numbers", (schema, request) => {
-                const newNumbers = JSON.parse(request.requestBody); // массив объектов
+                const newNumbers = JSON.parse(request.requestBody);
                 newNumbers.forEach(numObj => {
-                    // Найти нужную страну
                     const country = provider
                         .flatMap(p => p.countryStats)
                         .find(cs => cs.countryId === numObj.countryId);
                     if (country) {
                         if (!country.numbers) country.numbers = [];
-                        // Проверка на дубликаты
                         if (!country.numbers.some(n => n.number === numObj.number)) {
                             country.numbers.push(numObj);
                         }
