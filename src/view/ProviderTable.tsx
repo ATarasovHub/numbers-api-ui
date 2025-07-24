@@ -55,7 +55,6 @@ const calmTheme = createTheme({
     },
 });
 
-// Компонент для отображения статуса провайдера
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     const isActive = status.toLowerCase() === 'active';
     const backgroundColor = isActive
@@ -246,7 +245,6 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
                     </IconButton>
                 </TableCell>
                 <TableCell>
-                    {/* Убран кружок, оставлен только текст */}
                     <Typography variant="body2" fontWeight="600" color="text.primary">
                         {provider.providerName}
                     </Typography>
@@ -255,25 +253,21 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
                     <StatusBadge status={status} />
                 </TableCell>
                 <TableCell>
-                    {/* Убран кружок */}
                     <Typography variant="body2" fontWeight="500" color="text.primary">
                         {new Intl.NumberFormat().format(provider.totalNumbers)}
                     </Typography>
                 </TableCell>
                 <TableCell>
-                    {/* Убран кружок */}
                     <Typography variant="body2" fontWeight="500" color="text.primary">
                         {new Intl.NumberFormat().format(provider.totalAssignedNumbers)}
                     </Typography>
                 </TableCell>
                 <TableCell>
-                    {/* Убран кружок */}
                     <Typography variant="body2" fontWeight="500" color="text.primary">
                         {new Intl.NumberFormat().format(provider.totalNumbers - provider.totalAssignedNumbers)}
                     </Typography>
                 </TableCell>
                 <TableCell>
-                    {/* Убран кружок и форматирование валюты */}
                     <Typography variant="body2" fontWeight="500" color="text.primary">
                         {new Intl.NumberFormat().format(provider.totalMonthlyCost)}
                     </Typography>
