@@ -55,6 +55,48 @@ const calmTheme = createTheme({
     },
 });
 
+// Компонент для отображения статуса провайдера
+const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
+    const isActive = status.toLowerCase() === 'active';
+    const backgroundColor = isActive
+        ? alpha(calmTheme.palette.success?.main || '#4caf50', 0.15)
+        : alpha(calmTheme.palette.error?.main || '#f44336', 0.15);
+
+    const textColor = isActive
+        ? calmTheme.palette.success?.main || '#2e7d32'
+        : calmTheme.palette.error?.main || '#c62828';
+
+    const borderColor = isActive
+        ? alpha(calmTheme.palette.success?.main || '#4caf50', 0.3)
+        : alpha(calmTheme.palette.error?.main || '#f44336', 0.3);
+
+    return (
+        <Box
+            sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                px: 1.5,
+                py: 0.5,
+                borderRadius: '16px',
+                backgroundColor,
+                color: textColor,
+                border: `1px solid ${borderColor}`,
+            }}
+        >
+            <Typography
+                variant="body2"
+                sx={{
+                    fontWeight: 600,
+                    fontSize: '0.85rem'
+                }}
+            >
+                {status}
+            </Typography>
+        </Box>
+    );
+};
+
 const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
     return (
         <Paper
@@ -72,22 +114,22 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
                 }}>
                     <TableRow>
                         <TableCell>
-                            <Typography variant="subtitle2" fontWeight="700">Country ID</Typography>
+                            <Typography variant="subtitle2" fontWeight="500">Country ID</Typography>
                         </TableCell>
                         <TableCell>
-                            <Typography variant="subtitle2" fontWeight="700">Country Name</Typography>
+                            <Typography variant="subtitle2" fontWeight="500">Country Name</Typography>
                         </TableCell>
                         <TableCell>
-                            <Typography variant="subtitle2" fontWeight="700">Total Numbers</Typography>
+                            <Typography variant="subtitle2" fontWeight="500">Total Numbers</Typography>
                         </TableCell>
                         <TableCell>
-                            <Typography variant="subtitle2" fontWeight="700">Assigned Numbers</Typography>
+                            <Typography variant="subtitle2" fontWeight="500">Assigned Numbers</Typography>
                         </TableCell>
                         <TableCell>
-                            <Typography variant="subtitle2" fontWeight="700">Not Assigned Numbers</Typography>
+                            <Typography variant="subtitle2" fontWeight="500">Not Assigned Numbers</Typography>
                         </TableCell>
                         <TableCell>
-                            <Typography variant="subtitle2" fontWeight="700">Monthly Cost</Typography>
+                            <Typography variant="subtitle2" fontWeight="500">Monthly Cost</Typography>
                         </TableCell>
                     </TableRow>
                 </TableHead>
@@ -111,39 +153,35 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
                                     </Typography>
                                 </TableCell>
                                 <TableCell>
-                                    <Typography variant="body2">
+                                    <Typography variant="body2" fontWeight="500">
                                         {stat.countryName}
                                     </Typography>
                                 </TableCell>
                                 <TableCell>
                                     <Typography variant="body2" fontWeight="500">
-                                        {stat.totalNumbers}
+                                        {new Intl.NumberFormat().format(stat.totalNumbers)}
                                     </Typography>
                                 </TableCell>
                                 <TableCell>
                                     <Typography variant="body2" fontWeight="500">
-                                        {stat.assignedNumbers}
+                                        {new Intl.NumberFormat().format(stat.assignedNumbers)}
                                     </Typography>
                                 </TableCell>
                                 <TableCell>
                                     <Typography variant="body2" fontWeight="500">
-                                        {stat.totalNumbers - stat.assignedNumbers}
+                                        {new Intl.NumberFormat().format(stat.totalNumbers - stat.assignedNumbers)}
                                     </Typography>
                                 </TableCell>
                                 <TableCell>
-                                    <Typography
-                                        variant="body2"
-                                        fontWeight="600"
-                                        color="secondary"
-                                    >
-                                        {stat.totalMonthlyCost}
+                                    <Typography variant="body2" fontWeight="500">
+                                        {new Intl.NumberFormat().format(stat.totalMonthlyCost)}
                                     </Typography>
                                 </TableCell>
                             </TableRow>
                         ))
                     ) : (
                         <TableRow>
-                            <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                            <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
                                 <Typography variant="body2" color="textSecondary">
                                     No country statistics available
                                 </Typography>
@@ -161,16 +199,18 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
 
     function checkStatus(deletedAt: string) {
         if (!isDefined(deletedAt)) {
-            return "Active"
+            return "Active";
         }
-        const now = new Date()
-        const deletedDate = new Date(deletedAt)
+        const now = new Date();
+        const deletedDate = new Date(deletedAt);
         if (deletedDate > now) {
-            return "Active"
+            return "Active";
         } else {
-            return "Deleted"
+            return "Deleted";
         }
     }
+
+    const status = checkStatus(provider.deletedAt);
 
     return (
         <React.Fragment>
@@ -206,42 +246,36 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
                     </IconButton>
                 </TableCell>
                 <TableCell>
+                    {/* Убран кружок, оставлен только текст */}
                     <Typography variant="body2" fontWeight="600" color="text.primary">
                         {provider.providerName}
                     </Typography>
                 </TableCell>
                 <TableCell>
-                    <Typography variant="body2" fontWeight="500">
-                        {checkStatus(provider.deletedAt)}
+                    <StatusBadge status={status} />
+                </TableCell>
+                <TableCell>
+                    {/* Убран кружок */}
+                    <Typography variant="body2" fontWeight="500" color="text.primary">
+                        {new Intl.NumberFormat().format(provider.totalNumbers)}
                     </Typography>
                 </TableCell>
                 <TableCell>
-                    <Typography
-                        variant="body2"
-                        fontWeight="700"
-                        color="primary"
-                        sx={{ fontSize: '1.1rem' }}
-                    >
-                        {provider.totalNumbers}
+                    {/* Убран кружок */}
+                    <Typography variant="body2" fontWeight="500" color="text.primary">
+                        {new Intl.NumberFormat().format(provider.totalAssignedNumbers)}
                     </Typography>
                 </TableCell>
                 <TableCell>
-                    <Typography variant="body2" fontWeight="500">
-                        {provider.totalAssignedNumbers}
+                    {/* Убран кружок */}
+                    <Typography variant="body2" fontWeight="500" color="text.primary">
+                        {new Intl.NumberFormat().format(provider.totalNumbers - provider.totalAssignedNumbers)}
                     </Typography>
                 </TableCell>
                 <TableCell>
-                    <Typography variant="body2" fontWeight="500">
-                        {provider.totalNumbers - provider.totalAssignedNumbers}
-                    </Typography>
-                </TableCell>
-                <TableCell>
-                    <Typography
-                        variant="body2"
-                        fontWeight="600"
-                        color="secondary"
-                    >
-                        {provider.totalMonthlyCost}
+                    {/* Убран кружок и форматирование валюты */}
+                    <Typography variant="body2" fontWeight="500" color="text.primary">
+                        {new Intl.NumberFormat().format(provider.totalMonthlyCost)}
                     </Typography>
                 </TableCell>
             </TableRow>
@@ -342,7 +376,6 @@ export const ProviderTable: React.FC = () => {
             setDisplayedProviders(allProviders.slice(0, 10));
             return;
         }
-
         let filtered = allProviders.filter(provider => {
             const status = provider.deletedAt && provider.deletedAt !== '' ? 'deleted' : 'active';
             let pass = true;
@@ -682,4 +715,5 @@ export const ProviderTable: React.FC = () => {
         </ThemeProvider>
     );
 }
+
 export default ProviderTable;

@@ -29,12 +29,14 @@ export interface Customer {
     proAccounts: CustomerOverviewProAccount[];
     proCountry: CustomerOverviewProCountry[];
 }
+
 export interface CustomerOverviewProAccount {
     techAccountId: number;
     techAccountName: string;
     totalAccounts: number;
     totalNumbers: number;
 }
+
 export interface CustomerOverviewProCountry {
     countryId: number;
     countryName: string;
@@ -125,6 +127,47 @@ export const CustomerTable: React.FC = () => {
 
     const handleRowToggle = (customerId: number) => {
         setOpenRows(prev => ({ ...prev, [customerId]: !prev[customerId] }));
+    };
+
+    // Функция для определения, является ли продукт "Voice In"
+    const isVoiceInProduct = (productType: string) => {
+        return productType.toLowerCase().includes('voice in');
+    };
+
+    // Компонент для отображения Product Type с выделением Voice In
+    const ProductTypeCell: React.FC<{ productType: string }> = ({ productType }) => {
+        if (isVoiceInProduct(productType)) {
+            return (
+                <Box
+                    sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        px: 1.5,
+                        py: 0.5,
+                        borderRadius: '16px',
+                        backgroundColor: alpha(calmTheme.palette.primary.main, 0.15),
+                        color: calmTheme.palette.primary.main,
+                        border: `1px solid ${alpha(calmTheme.palette.primary.main, 0.3)}`,
+                    }}
+                >
+                    <Typography
+                        variant="body2"
+                        sx={{
+                            fontWeight: 600,
+                            fontSize: '0.95rem'
+                        }}
+                    >
+                        {productType}
+                    </Typography>
+                </Box>
+            );
+        }
+        return (
+            <Typography variant="body2" fontWeight="500" color="text.secondary">
+                {productType}
+            </Typography>
+        );
     };
 
     return (
@@ -342,32 +385,25 @@ export const CustomerTable: React.FC = () => {
                                                 </IconButton>
                                             </TableCell>
                                             <TableCell>
-                                                <Typography variant="body2" fontWeight="600" color="text.primary">
-                                                    {customer.customerName}
+                                                    <Typography variant="body2" fontWeight="600" color="text.primary">
+                                                        {customer.customerName}
+                                                    </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <ProductTypeCell productType={customer.productType} />
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography variant="body2" fontWeight="500" color="text.primary">
+                                                    {new Intl.NumberFormat().format(customer.totalNumbers)}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell>
-                                                <Typography variant="body2" fontWeight="500" color="text.secondary">
-                                                    {customer.productType}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography
-                                                    variant="body2"
-                                                    fontWeight="700"
-                                                    color="primary"
-                                                    sx={{ fontSize: '1.1rem' }}
-                                                >
-                                                    {customer.totalNumbers}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography variant="body2" fontWeight="500">
+                                                <Typography variant="body2" fontWeight="500" color="text.primary">
                                                     {customer.proAccounts.length}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell>
-                                                <Typography variant="body2" fontWeight="500">
+                                                <Typography variant="body2" fontWeight="500" color="text.primary">
                                                     {customer.proCountry.length}
                                                 </Typography>
                                             </TableCell>
@@ -455,16 +491,16 @@ export const CustomerTable: React.FC = () => {
                                                                 }}>
                                                                     <TableRow>
                                                                         <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="700">ID</Typography>
+                                                                            <Typography variant="subtitle2" fontWeight="500">ID</Typography>
                                                                         </TableCell>
                                                                         <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="700">Name</Typography>
+                                                                            <Typography variant="subtitle2" fontWeight="500">Name</Typography>
                                                                         </TableCell>
                                                                         <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="700">Total Accounts</Typography>
+                                                                            <Typography variant="subtitle2" fontWeight="500">Total Accounts</Typography>
                                                                         </TableCell>
                                                                         <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="700">Total Numbers</Typography>
+                                                                            <Typography variant="subtitle2" fontWeight="500">Total Numbers</Typography>
                                                                         </TableCell>
                                                                     </TableRow>
                                                                 </TableHead>
@@ -489,7 +525,7 @@ export const CustomerTable: React.FC = () => {
                                                                                     </Typography>
                                                                                 </TableCell>
                                                                                 <TableCell>
-                                                                                    <Typography variant="body2">
+                                                                                    <Typography variant="body2" fontWeight="500">
                                                                                         {acc.techAccountName}
                                                                                     </Typography>
                                                                                 </TableCell>
@@ -499,12 +535,8 @@ export const CustomerTable: React.FC = () => {
                                                                                     </Typography>
                                                                                 </TableCell>
                                                                                 <TableCell>
-                                                                                    <Typography
-                                                                                        variant="body2"
-                                                                                        fontWeight="600"
-                                                                                        color="secondary"
-                                                                                    >
-                                                                                        {acc.totalNumbers}
+                                                                                    <Typography variant="body2" fontWeight="500">
+                                                                                        {new Intl.NumberFormat().format(acc.totalNumbers)}
                                                                                     </Typography>
                                                                                 </TableCell>
                                                                             </TableRow>
@@ -557,16 +589,16 @@ export const CustomerTable: React.FC = () => {
                                                                 }}>
                                                                     <TableRow>
                                                                         <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="700">ID</Typography>
+                                                                            <Typography variant="subtitle2" fontWeight="500">ID</Typography>
                                                                         </TableCell>
                                                                         <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="700">Name</Typography>
+                                                                            <Typography variant="subtitle2" fontWeight="500">Name</Typography>
                                                                         </TableCell>
                                                                         <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="700">Total Accounts</Typography>
+                                                                            <Typography variant="subtitle2" fontWeight="500">Total Accounts</Typography>
                                                                         </TableCell>
                                                                         <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="700">Total Numbers</Typography>
+                                                                            <Typography variant="subtitle2" fontWeight="500">Total Numbers</Typography>
                                                                         </TableCell>
                                                                     </TableRow>
                                                                 </TableHead>
@@ -591,7 +623,7 @@ export const CustomerTable: React.FC = () => {
                                                                                     </Typography>
                                                                                 </TableCell>
                                                                                 <TableCell>
-                                                                                    <Typography variant="body2">
+                                                                                    <Typography variant="body2" fontWeight="500">
                                                                                         {country.countryName}
                                                                                     </Typography>
                                                                                 </TableCell>
@@ -601,12 +633,8 @@ export const CustomerTable: React.FC = () => {
                                                                                     </Typography>
                                                                                 </TableCell>
                                                                                 <TableCell>
-                                                                                    <Typography
-                                                                                        variant="body2"
-                                                                                        fontWeight="600"
-                                                                                        color="secondary"
-                                                                                    >
-                                                                                        {country.totalNumbers}
+                                                                                    <Typography variant="body2" fontWeight="500">
+                                                                                        {new Intl.NumberFormat().format(country.totalNumbers)}
                                                                                     </Typography>
                                                                                 </TableCell>
                                                                             </TableRow>
