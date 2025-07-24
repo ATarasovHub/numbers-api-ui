@@ -15,7 +15,8 @@ import {
     IconButton,
     Paper,
     alpha,
-    useTheme
+    createTheme,
+    ThemeProvider
 } from "@mui/material";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -28,8 +29,33 @@ export interface ProviderRowProps {
     key?: number
 }
 
+const calmTheme = createTheme({
+    palette: {
+        primary: {
+            main: 'hsl(224, 76%, 31%)',
+            light: 'hsl(214, 95%, 93%)',
+            dark: 'hsl(224, 76%, 25%)',
+        },
+        secondary: {
+            main: 'hsl(214, 91%, 60%)',
+            light: 'hsl(214, 95%, 93%)',
+        },
+        background: {
+            default: 'hsl(210, 40%, 98%)',
+            paper: '#ffffff',
+        },
+        grey: {
+            50: 'hsl(214, 95%, 97%)',
+            100: 'hsl(214, 95%, 93%)',
+        },
+        text: {
+            primary: '#334155',
+            secondary: '#64748b',
+        }
+    },
+});
+
 const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
-    const theme = useTheme();
     return (
         <Paper
             elevation={2}
@@ -37,12 +63,12 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
                 mb: 3,
                 borderRadius: 2,
                 overflow: 'hidden',
-                border: `1px solid ${alpha(theme.palette.divider, 0.5)}`
+                border: `1px solid ${alpha(calmTheme.palette.divider, 0.5)}`
             }}
         >
             <Table size="small">
                 <TableHead sx={{
-                    backgroundColor: alpha(theme.palette.secondary.light, 0.2)
+                    backgroundColor: alpha(calmTheme.palette.secondary.light, 0.2)
                 }}>
                     <TableRow>
                         <TableCell>
@@ -72,10 +98,10 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
                                 key={stat.countryId}
                                 sx={{
                                     backgroundColor: idx % 2 === 0 ?
-                                        alpha(theme.palette.grey[100], 0.3) :
+                                        alpha(calmTheme.palette.grey[100], 0.3) :
                                         'transparent',
                                     '&:hover': {
-                                        backgroundColor: alpha(theme.palette.secondary.light, 0.2),
+                                        backgroundColor: alpha(calmTheme.palette.secondary.light, 0.2),
                                     }
                                 }}
                             >
@@ -131,7 +157,6 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
 };
 
 const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }) => {
-    const theme = useTheme();
     const [open, setOpen] = useState(false);
 
     function checkStatus(deletedAt: string) {
@@ -152,15 +177,15 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
             <TableRow
                 sx={{
                     backgroundColor: provider.providerId % 2 === 0 ?
-                        alpha(theme.palette.grey[50], 0.7) :
-                        alpha(theme.palette.background.paper, 0.7),
+                        alpha(calmTheme.palette.grey[50], 0.7) :
+                        alpha(calmTheme.palette.background.paper, 0.7),
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                        backgroundColor: alpha(theme.palette.primary.light, 0.1),
+                        backgroundColor: alpha(calmTheme.palette.primary.light, 0.1),
                         transform: 'scale(1.005)',
-                        boxShadow: `inset 0 0 0 1px ${alpha(theme.palette.primary.main, 0.2)}`,
+                        boxShadow: `inset 0 0 0 1px ${alpha(calmTheme.palette.primary.main, 0.2)}`,
                     },
-                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.3)}`
+                    borderBottom: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}`
                 }}
             >
                 <TableCell sx={{ width: '5%' }}>
@@ -169,10 +194,10 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
                         size="small"
                         onClick={() => setOpen(!open)}
                         sx={{
-                            color: theme.palette.primary.main,
-                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                            color: calmTheme.palette.primary.main,
+                            backgroundColor: alpha(calmTheme.palette.primary.main, 0.1),
                             '&:hover': {
-                                backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                                backgroundColor: alpha(calmTheme.palette.primary.main, 0.2),
                             },
                             transition: 'all 0.2s'
                         }}
@@ -225,7 +250,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
                     style={{
                         paddingBottom: 0,
                         paddingTop: 0,
-                        backgroundColor: alpha(theme.palette.grey[50], 0.5)
+                        backgroundColor: alpha(calmTheme.palette.grey[50], 0.5)
                     }}
                     colSpan={7}
                 >
@@ -241,14 +266,14 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
                                     alignItems: 'center',
                                     mb: 2,
                                     pb: 1,
-                                    borderBottom: `1px dashed ${alpha(theme.palette.primary.main, 0.3)}`
+                                    borderBottom: `1px dashed ${alpha(calmTheme.palette.primary.main, 0.3)}`
                                 }}
                             >
                                 <Typography
                                     variant="h6"
                                     gutterBottom
                                     sx={{
-                                        color: theme.palette.primary.dark,
+                                        color: calmTheme.palette.primary.dark,
                                         fontWeight: 700,
                                         mr: 1
                                     }}
@@ -259,7 +284,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
                                     variant="h6"
                                     gutterBottom
                                     sx={{
-                                        color: theme.palette.secondary.main,
+                                        color: calmTheme.palette.secondary.main,
                                         fontWeight: 700
                                     }}
                                 >
@@ -276,7 +301,6 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
 };
 
 export const ProviderTable: React.FC = () => {
-    const theme = useTheme();
     const [allProviders, setAllProviders] = useState<NumberProvider[]>([]);
     const [filteredProviders, setFilteredProviders] = useState<NumberProvider[]>([]);
     const [displayedProviders, setDisplayedProviders] = useState<NumberProvider[]>([]);
@@ -313,7 +337,6 @@ export const ProviderTable: React.FC = () => {
             !filters.totalNumbers &&
             !filters.totalAssignedNumbers &&
             !filters.totalMonthlyCost;
-
         if (isAllFiltersEmpty) {
             setFilteredProviders([]);
             setDisplayedProviders(allProviders.slice(0, 10));
@@ -323,21 +346,17 @@ export const ProviderTable: React.FC = () => {
         let filtered = allProviders.filter(provider => {
             const status = provider.deletedAt && provider.deletedAt !== '' ? 'deleted' : 'active';
             let pass = true;
-
             if (filters.providerName && !provider.providerName.toLowerCase().includes(filters.providerName.toLowerCase())) pass = false;
-
             if (filters.totalNumbers) {
                 const val = Number(filters.totalNumbers);
                 if (filters.totalNumbersOp === '>=') pass = pass && (provider.totalNumbers >= val);
                 if (filters.totalNumbersOp === '<=') pass = pass && (provider.totalNumbers <= val);
             }
-
             if (filters.totalAssignedNumbers) {
                 const val = Number(filters.totalAssignedNumbers);
                 if (filters.totalAssignedNumbersOp === '>=') pass = pass && (provider.totalAssignedNumbers >= val);
                 if (filters.totalAssignedNumbersOp === '<=') pass = pass && (provider.totalAssignedNumbers <= val);
             }
-
             if (filters.totalMonthlyCost) {
                 const val = Number(filters.totalMonthlyCost);
                 if (filters.totalMonthlyCostOp === '>=') pass = pass && (provider.totalMonthlyCost >= val);
@@ -345,7 +364,6 @@ export const ProviderTable: React.FC = () => {
             }
             return pass;
         });
-
         setFilteredProviders(filtered);
         setDisplayedProviders(filtered);
     }, [allProviders, filters]);
@@ -362,311 +380,306 @@ export const ProviderTable: React.FC = () => {
     };
 
     return (
-        <Card
-            elevation={6}
-            sx={{
-                p: { xs: 2, sm: 3 },
-                borderRadius: 3,
-                maxWidth: '100vw',
-                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                boxShadow: `0 10px 30px ${alpha(theme.palette.common.black, 0.08)}`
-            }}
-        >
-            <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={3}
+        <ThemeProvider theme={calmTheme}>
+            <Card
+                elevation={6}
                 sx={{
-                    pb: 2,
-                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                    p: { xs: 2, sm: 3 },
+                    borderRadius: 3,
+                    maxWidth: '100vw',
+                    background: `linear-gradient(135deg, ${alpha(calmTheme.palette.primary.main, 0.05)} 0%, ${alpha(calmTheme.palette.secondary.main, 0.05)} 100%)`,
+                    border: `1px solid ${alpha(calmTheme.palette.primary.main, 0.1)}`,
+                    boxShadow: `0 10px 30px ${alpha(calmTheme.palette.common.black, 0.08)}`
                 }}
             >
-                <Typography
-                    variant="h4"
-                    component="h1"
-                    fontWeight="800"
-                    color="primary"
+                <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    mb={3}
                     sx={{
-                        background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
+                        pb: 2,
+                        borderBottom: `2px solid ${alpha(calmTheme.palette.primary.main, 0.2)}`
                     }}
                 >
-                    Provider Overview
-                </Typography>
-            </Box>
-
-            <Paper
-                elevation={3}
-                sx={{
-                    p: 2.5,
-                    mb: 3,
-                    borderRadius: 2.5,
-                    backgroundColor: alpha(theme.palette.background.paper, 0.7),
-                    backdropFilter: 'blur(10px)',
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
-                }}
-            >
-                <Box display="flex" flexWrap="wrap" gap={2} alignItems="center">
-                    <Typography variant="subtitle2" sx={{ minWidth: '100px', fontWeight: 600 }}>Filter by:</Typography>
-
-                    <TextField
-                        label="Provider Name"
-                        value={filters.providerName}
-                        onChange={e => handleFilterChange('providerName', e.target.value)}
-                        variant="outlined"
-                        size="small"
+                    <Typography
+                        variant="h4"
+                        component="h1"
+                        fontWeight="800"
+                        color="primary"
                         sx={{
-                            minWidth: 220, // Увеличена ширина
-                            '& .MuiOutlinedInput-root': {
-                                '& fieldset': {
-                                    borderColor: alpha(theme.palette.primary.main, 0.3),
-                                },
-                                '&:hover fieldset': {
-                                    borderColor: alpha(theme.palette.primary.main, 0.5),
-                                },
-                                '&.Mui-focused fieldset': {
-                                    borderColor: theme.palette.primary.main,
-                                },
-                            },
+                            background: `linear-gradient(45deg, ${calmTheme.palette.primary.main}, ${calmTheme.palette.secondary.main})`,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text',
                         }}
-                    />
-
-                    <Box display="flex" alignItems="center" gap={1}>
-                        <Select
-                            value={filters.totalNumbersOp}
-                            onChange={e => handleFilterChange('totalNumbersOp', e.target.value as string)}
-                            variant="outlined"
-                            size="small"
-                            sx={{
-                                minWidth: 70,
-                                '& .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: alpha(theme.palette.primary.main, 0.3),
-                                },
-                                '&:hover .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: alpha(theme.palette.primary.main, 0.5),
-                                },
-                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: theme.palette.primary.main,
-                                },
-                            }}
-                        >
-                            <MenuItem value=">=">&ge;</MenuItem>
-                            <MenuItem value="<=">&le;</MenuItem>
-                        </Select>
-                        <TextField
-                            label="Total Numbers"
-                            value={filters.totalNumbers}
-                            onChange={e => handleFilterChange('totalNumbers', e.target.value)}
-                            variant="outlined"
-                            size="small"
-                            sx={{
-                                minWidth: 150,
-                                '& .MuiOutlinedInput-root': {
-                                    '& fieldset': {
-                                        borderColor: alpha(theme.palette.primary.main, 0.3),
-                                    },
-                                    '&:hover fieldset': {
-                                        borderColor: alpha(theme.palette.primary.main, 0.5),
-                                    },
-                                    '&.Mui-focused fieldset': {
-                                        borderColor: theme.palette.primary.main,
-                                    },
-                                },
-                            }}
-                            type="number"
-                        />
-                    </Box>
-
-                    <Box display="flex" alignItems="center" gap={1}>
-                        <Select
-                            value={filters.totalAssignedNumbersOp}
-                            onChange={e => handleFilterChange('totalAssignedNumbersOp', e.target.value as string)}
-                            variant="outlined"
-                            size="small"
-                            sx={{
-                                minWidth: 70,
-                                '& .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: alpha(theme.palette.primary.main, 0.3),
-                                },
-                                '&:hover .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: alpha(theme.palette.primary.main, 0.5),
-                                },
-                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: theme.palette.primary.main,
-                                },
-                            }}
-                        >
-                            <MenuItem value=">=">&ge;</MenuItem>
-                            <MenuItem value="<=">&le;</MenuItem>
-                        </Select>
-                        <TextField
-                            label="Assigned Numbers"
-                            value={filters.totalAssignedNumbers}
-                            onChange={e => handleFilterChange('totalAssignedNumbers', e.target.value)}
-                            variant="outlined"
-                            size="small"
-                            sx={{
-                                minWidth: 150,
-                                '& .MuiOutlinedInput-root': {
-                                    '& fieldset': {
-                                        borderColor: alpha(theme.palette.primary.main, 0.3),
-                                    },
-                                    '&:hover fieldset': {
-                                        borderColor: alpha(theme.palette.primary.main, 0.5),
-                                    },
-                                    '&.Mui-focused fieldset': {
-                                        borderColor: theme.palette.primary.main,
-                                    },
-                                },
-                            }}
-                            type="number"
-                        />
-                    </Box>
-
-                    <Box display="flex" alignItems="center" gap={1}>
-                        <Select
-                            value={filters.totalMonthlyCostOp}
-                            onChange={e => handleFilterChange('totalMonthlyCostOp', e.target.value as string)}
-                            variant="outlined"
-                            size="small"
-                            sx={{
-                                minWidth: 70,
-                                '& .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: alpha(theme.palette.primary.main, 0.3),
-                                },
-                                '&:hover .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: alpha(theme.palette.primary.main, 0.5),
-                                },
-                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: theme.palette.primary.main,
-                                },
-                            }}
-                        >
-                            <MenuItem value=">=">&ge;</MenuItem>
-                            <MenuItem value="<=">&le;</MenuItem>
-                        </Select>
-                        <TextField
-                            label="Monthly Cost"
-                            value={filters.totalMonthlyCost}
-                            onChange={e => handleFilterChange('totalMonthlyCost', e.target.value)}
-                            variant="outlined"
-                            size="small"
-                            sx={{
-                                minWidth: 150,
-                                '& .MuiOutlinedInput-root': {
-                                    '& fieldset': {
-                                        borderColor: alpha(theme.palette.primary.main, 0.3),
-                                    },
-                                    '&:hover fieldset': {
-                                        borderColor: alpha(theme.palette.primary.main, 0.5),
-                                    },
-                                    '&.Mui-focused fieldset': {
-                                        borderColor: theme.palette.primary.main,
-                                    },
-                                },
-                            }}
-                            type="number"
-                        />
-                    </Box>
+                    >
+                        Provider Overview
+                    </Typography>
                 </Box>
-            </Paper>
-
-            <Paper
-                elevation={4}
-                sx={{
-                    borderRadius: 2.5,
-                    overflow: 'hidden',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-                    boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.06)}`
-                }}
-            >
-                <Table sx={{ minWidth: 750 }} aria-label="providers table">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell sx={{
-                                fontWeight: '700',
-                                color: theme.palette.common.white,
-                                background: theme.palette.primary.dark,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px',
-                                width: '5%'
-                            }} />
-                            <TableCell sx={{
-                                fontWeight: '700',
-                                color: theme.palette.common.white,
-                                background: theme.palette.primary.dark,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px'
-                            }}>Provider Name</TableCell>
-                            <TableCell sx={{
-                                fontWeight: '700',
-                                color: theme.palette.common.white,
-                                background: theme.palette.primary.dark,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px'
-                            }}>Status</TableCell>
-                            <TableCell sx={{
-                                fontWeight: '700',
-                                color: theme.palette.common.white,
-                                background: theme.palette.primary.dark,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px'
-                            }}>Total Numbers</TableCell>
-                            <TableCell sx={{
-                                fontWeight: '700',
-                                color: theme.palette.common.white,
-                                background: theme.palette.primary.dark,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px'
-                            }}>Assigned Numbers</TableCell>
-                            <TableCell sx={{
-                                fontWeight: '700',
-                                color: theme.palette.common.white,
-                                background: theme.palette.primary.dark,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px'
-                            }}>Not Assigned Numbers</TableCell>
-                            <TableCell sx={{
-                                fontWeight: '700',
-                                color: theme.palette.common.white,
-                                background: theme.palette.primary.dark,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px'
-                            }}>Total Monthly Cost</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {displayedProviders.length > 0 ? (
-                            displayedProviders.map(provider => (
-                                <ProviderRow key={provider.providerId} provider={provider} onProviderUpdated={handleProviderUpdate} />
-                            ))
-                        ) : (
+                <Paper
+                    elevation={3}
+                    sx={{
+                        p: 2.5,
+                        mb: 3,
+                        borderRadius: 2.5,
+                        backgroundColor: alpha(calmTheme.palette.background.paper, 0.7),
+                        backdropFilter: 'blur(10px)',
+                        border: `1px solid ${alpha(calmTheme.palette.primary.main, 0.15)}`
+                    }}
+                >
+                    <Box display="flex" flexWrap="wrap" gap={2} alignItems="center">
+                        <Typography variant="subtitle2" sx={{ minWidth: '100px', fontWeight: 600 }}>Filter by:</Typography>
+                        <TextField
+                            label="Provider Name"
+                            value={filters.providerName}
+                            onChange={e => handleFilterChange('providerName', e.target.value)}
+                            variant="outlined"
+                            size="small"
+                            sx={{
+                                minWidth: 220,
+                                '& .MuiOutlinedInput-root': {
+                                    '& fieldset': {
+                                        borderColor: alpha(calmTheme.palette.primary.main, 0.3),
+                                    },
+                                    '&:hover fieldset': {
+                                        borderColor: alpha(calmTheme.palette.primary.main, 0.5),
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: calmTheme.palette.primary.main,
+                                    },
+                                },
+                            }}
+                        />
+                        <Box display="flex" alignItems="center" gap={1}>
+                            <Select
+                                value={filters.totalNumbersOp}
+                                onChange={e => handleFilterChange('totalNumbersOp', e.target.value as string)}
+                                variant="outlined"
+                                size="small"
+                                sx={{
+                                    minWidth: 70,
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: alpha(calmTheme.palette.primary.main, 0.3),
+                                    },
+                                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: alpha(calmTheme.palette.primary.main, 0.5),
+                                    },
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: calmTheme.palette.primary.main,
+                                    },
+                                }}
+                            >
+                                <MenuItem value=">=">&ge;</MenuItem>
+                                <MenuItem value="<=">&le;</MenuItem>
+                            </Select>
+                            <TextField
+                                label="Total Numbers"
+                                value={filters.totalNumbers}
+                                onChange={e => handleFilterChange('totalNumbers', e.target.value)}
+                                variant="outlined"
+                                size="small"
+                                sx={{
+                                    minWidth: 150,
+                                    '& .MuiOutlinedInput-root': {
+                                        '& fieldset': {
+                                            borderColor: alpha(calmTheme.palette.primary.main, 0.3),
+                                        },
+                                        '&:hover fieldset': {
+                                            borderColor: alpha(calmTheme.palette.primary.main, 0.5),
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                            borderColor: calmTheme.palette.primary.main,
+                                        },
+                                    },
+                                }}
+                                type="number"
+                            />
+                        </Box>
+                        <Box display="flex" alignItems="center" gap={1}>
+                            <Select
+                                value={filters.totalAssignedNumbersOp}
+                                onChange={e => handleFilterChange('totalAssignedNumbersOp', e.target.value as string)}
+                                variant="outlined"
+                                size="small"
+                                sx={{
+                                    minWidth: 70,
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: alpha(calmTheme.palette.primary.main, 0.3),
+                                    },
+                                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: alpha(calmTheme.palette.primary.main, 0.5),
+                                    },
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: calmTheme.palette.primary.main,
+                                    },
+                                }}
+                            >
+                                <MenuItem value=">=">&ge;</MenuItem>
+                                <MenuItem value="<=">&le;</MenuItem>
+                            </Select>
+                            <TextField
+                                label="Assigned Numbers"
+                                value={filters.totalAssignedNumbers}
+                                onChange={e => handleFilterChange('totalAssignedNumbers', e.target.value)}
+                                variant="outlined"
+                                size="small"
+                                sx={{
+                                    minWidth: 150,
+                                    '& .MuiOutlinedInput-root': {
+                                        '& fieldset': {
+                                            borderColor: alpha(calmTheme.palette.primary.main, 0.3),
+                                        },
+                                        '&:hover fieldset': {
+                                            borderColor: alpha(calmTheme.palette.primary.main, 0.5),
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                            borderColor: calmTheme.palette.primary.main,
+                                        },
+                                    },
+                                }}
+                                type="number"
+                            />
+                        </Box>
+                        <Box display="flex" alignItems="center" gap={1}>
+                            <Select
+                                value={filters.totalMonthlyCostOp}
+                                onChange={e => handleFilterChange('totalMonthlyCostOp', e.target.value as string)}
+                                variant="outlined"
+                                size="small"
+                                sx={{
+                                    minWidth: 70,
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: alpha(calmTheme.palette.primary.main, 0.3),
+                                    },
+                                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: alpha(calmTheme.palette.primary.main, 0.5),
+                                    },
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: calmTheme.palette.primary.main,
+                                    },
+                                }}
+                            >
+                                <MenuItem value=">=">&ge;</MenuItem>
+                                <MenuItem value="<=">&le;</MenuItem>
+                            </Select>
+                            <TextField
+                                label="Monthly Cost"
+                                value={filters.totalMonthlyCost}
+                                onChange={e => handleFilterChange('totalMonthlyCost', e.target.value)}
+                                variant="outlined"
+                                size="small"
+                                sx={{
+                                    minWidth: 150,
+                                    '& .MuiOutlinedInput-root': {
+                                        '& fieldset': {
+                                            borderColor: alpha(calmTheme.palette.primary.main, 0.3),
+                                        },
+                                        '&:hover fieldset': {
+                                            borderColor: alpha(calmTheme.palette.primary.main, 0.5),
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                            borderColor: calmTheme.palette.primary.main,
+                                        },
+                                    },
+                                }}
+                                type="number"
+                            />
+                        </Box>
+                    </Box>
+                </Paper>
+                <Paper
+                    elevation={4}
+                    sx={{
+                        borderRadius: 2.5,
+                        overflow: 'hidden',
+                        border: `1px solid ${alpha(calmTheme.palette.divider, 0.5)}`,
+                        boxShadow: `0 4px 20px ${alpha(calmTheme.palette.common.black, 0.06)}`
+                    }}
+                >
+                    <Table sx={{ minWidth: 750 }} aria-label="providers table">
+                        <TableHead>
                             <TableRow>
-                                <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
-                                    <Typography
-                                        variant="h6"
-                                        sx={{
-                                            color: theme.palette.text.secondary,
-                                            fontWeight: 500
-                                        }}
-                                    >
-                                        {allProviders.length === 0 ?
-                                            "Loading provider data..." :
-                                            "No providers match the current filters"
-                                        }
-                                    </Typography>
-                                </TableCell>
+                                <TableCell sx={{
+                                    fontWeight: '700',
+                                    color: calmTheme.palette.common.white,
+                                    background: calmTheme.palette.primary.dark,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
+                                    width: '5%'
+                                }} />
+                                <TableCell sx={{
+                                    fontWeight: '700',
+                                    color: calmTheme.palette.common.white,
+                                    background: calmTheme.palette.primary.dark,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
+                                }}>Provider Name</TableCell>
+                                <TableCell sx={{
+                                    fontWeight: '700',
+                                    color: calmTheme.palette.common.white,
+                                    background: calmTheme.palette.primary.dark,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
+                                }}>Status</TableCell>
+                                <TableCell sx={{
+                                    fontWeight: '700',
+                                    color: calmTheme.palette.common.white,
+                                    background: calmTheme.palette.primary.dark,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
+                                }}>Total Numbers</TableCell>
+                                <TableCell sx={{
+                                    fontWeight: '700',
+                                    color: calmTheme.palette.common.white,
+                                    background: calmTheme.palette.primary.dark,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
+                                }}>Assigned Numbers</TableCell>
+                                <TableCell sx={{
+                                    fontWeight: '700',
+                                    color: calmTheme.palette.common.white,
+                                    background: calmTheme.palette.primary.dark,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
+                                }}>Not Assigned Numbers</TableCell>
+                                <TableCell sx={{
+                                    fontWeight: '700',
+                                    color: calmTheme.palette.common.white,
+                                    background: calmTheme.palette.primary.dark,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
+                                }}>Total Monthly Cost</TableCell>
                             </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </Paper>
-        </Card>
+                        </TableHead>
+                        <TableBody>
+                            {displayedProviders.length > 0 ? (
+                                displayedProviders.map(provider => (
+                                    <ProviderRow key={provider.providerId} provider={provider} onProviderUpdated={handleProviderUpdate} />
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                                        <Typography
+                                            variant="h6"
+                                            sx={{
+                                                color: calmTheme.palette.text.secondary,
+                                                fontWeight: 500
+                                            }}
+                                        >
+                                            {allProviders.length === 0 ?
+                                                "Loading provider data..." :
+                                                "No providers match the current filters"
+                                            }
+                                        </Typography>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </Paper>
+            </Card>
+        </ThemeProvider>
     );
 }
-
 export default ProviderTable;
