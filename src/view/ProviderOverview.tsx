@@ -115,8 +115,11 @@ const PhoneNumbersTable: React.FC<{
     loading: boolean;
 }> = ({ countryId, countryName, phoneNumbers, loading }) => {
     const [displayedPhoneNumbersCount, setDisplayedPhoneNumbersCount] = useState<number>(0);
+    const [searchQuery, setSearchQuery] = useState<string>(""); // Новое состояние для поиска
+    const [isSearching, setIsSearching] = useState<boolean>(false); // Состояние для индикатора загрузки
     const ITEMS_PER_LOAD = 20;
 
+    // Инициализация и сброс отображаемого количества при изменении данных
     useEffect(() => {
         if (phoneNumbers.length > 0) {
             setDisplayedPhoneNumbersCount(Math.min(ITEMS_PER_LOAD, phoneNumbers.length));
@@ -134,9 +137,33 @@ const PhoneNumbersTable: React.FC<{
 
     const hasMore = displayedPhoneNumbersCount < phoneNumbers.length;
 
-    const displayedNumbers = phoneNumbers.slice(0, displayedPhoneNumbersCount);
+    // Функция для поиска номеров
+    const handleSearch = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter") {
+            const query = event.currentTarget.value.trim();
+            setSearchQuery(query);
+            setIsSearching(true);
 
-    const hasData = phoneNumbers.length > 0;
+            // Здесь можно добавить логику для реального поиска на сервере
+            // Например, отправить запрос на API с параметром searchQuery
+
+            // Для демонстрации, просто фильтруем данные локально
+            setTimeout(() => {
+                setIsSearching(false);
+            }, 500); // Моделируем задержку серверного запроса
+        }
+    };
+
+    // Фильтрация данных на основе поискового запроса
+    const filteredNumbers = searchQuery.trim() === ''
+        ? phoneNumbers // Если запрос пустой, отображаем все данные
+        : phoneNumbers.filter(phone =>
+            phone.number.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+
+    const displayedNumbers = filteredNumbers.slice(0, displayedPhoneNumbersCount);
+
+    const hasData = filteredNumbers.length > 0;
 
     if (loading) {
         return (
@@ -144,16 +171,6 @@ const PhoneNumbersTable: React.FC<{
                 <Box display="flex" justifyContent="center" my={2}>
                     <CircularProgress size={24} />
                 </Box>
-            </Paper>
-        );
-    }
-
-    if (!hasData) {
-        return (
-            <Paper elevation={1} sx={{ m: 2, borderRadius: 2, overflow: 'hidden', border: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}` }}>
-                <Typography variant="body2" align="center" sx={{ py: 2, color: 'text.secondary' }}>
-                    No phone numbers found for {countryName}.
-                </Typography>
             </Paper>
         );
     }
@@ -173,6 +190,25 @@ const PhoneNumbersTable: React.FC<{
                 overflowY: 'auto',
             }}
         >
+            {/* Строка поиска */}
+            <Box sx={{ p: 2, borderBottom: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}` }}>
+                <TextField
+                    label="Search by Number"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleSearch}
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    InputProps={{
+                        endAdornment: isSearching && (
+                            <CircularProgress size={20} sx={{ ml: 1 }} />
+                        ),
+                    }}
+                />
+            </Box>
+
+            {/* Заголовок таблицы */}
             <Box sx={{ flexGrow: 0, flexShrink: 0 }}>
                 <Table size="small" sx={{ tableLayout: 'fixed' }}>
                     <TableHead sx={{ backgroundColor: alpha(calmTheme.palette.secondary.main, 0.1) }}>
@@ -190,12 +226,13 @@ const PhoneNumbersTable: React.FC<{
                 </Table>
             </Box>
 
+            {/* Тело таблицы с внутренним скроллом */}
             <Box
                 id={`scrollable-phone-numbers-${countryId}`}
                 sx={{
                     flexGrow: 1,
                     overflowY: 'auto',
-                    maxHeight: 'calc(100% - 40px)'
+                    maxHeight: 'calc(100% - 40px)' // Примерная высота заголовка
                 }}
             >
                 <InfiniteScroll
@@ -231,6 +268,7 @@ const PhoneNumbersTable: React.FC<{
         </Paper>
     );
 };
+
 
 const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
     const [expandedCountries, setExpandedCountries] = useState<{ [key: string]: boolean }>({});
