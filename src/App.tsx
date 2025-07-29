@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ProviderTable } from "./view/ProviderTable";
+import { ProviderOverview } from "./view/ProviderOverview";
 import fakeApi from "./mocks/fakeApi/fakeApi";
 import { CustomerTable } from "./view/CustomerTable";
 import Header, { Page } from "./view/components/Header";
@@ -23,7 +23,7 @@ function App() {
             case 'used_number_range_admin':
             case 'overview':
             case 'provider_overview':
-                return <ProviderTable />;
+                return <ProviderOverview />;
             case 'customer_overview':
                 return <CustomerTable />;
             case 'provider_statistic':
@@ -32,7 +32,7 @@ function App() {
             case 'info':
                 return <div>Page: {page}</div>;
             default:
-                return <ProviderTable />;
+                return <ProviderOverview />;
         }
     }
 
