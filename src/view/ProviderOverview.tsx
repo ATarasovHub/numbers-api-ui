@@ -136,24 +136,22 @@ const PhoneNumbersTable: React.FC<{
     };
 
     const hasMore = displayedPhoneNumbersCount < phoneNumbers.length;
-
-    // Функция для поиска номеров
     const handleSearch = async (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "Enter") {
-            const query = event.currentTarget.value.trim();
+            // Используйте event.target вместо event.currentTarget
+            // и добавьте проверку на null/undefined
+            const inputValue = event.target instanceof HTMLInputElement ? event.target.value : '';
+            const query = inputValue.trim();
             setSearchQuery(query);
             setIsSearching(true);
-
             // Здесь можно добавить логику для реального поиска на сервере
             // Например, отправить запрос на API с параметром searchQuery
-
             // Для демонстрации, просто фильтруем данные локально
             setTimeout(() => {
                 setIsSearching(false);
             }, 500); // Моделируем задержку серверного запроса
         }
     };
-
     // Фильтрация данных на основе поискового запроса
     const filteredNumbers = searchQuery.trim() === ''
         ? phoneNumbers // Если запрос пустой, отображаем все данные
