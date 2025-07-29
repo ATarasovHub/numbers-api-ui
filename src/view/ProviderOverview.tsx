@@ -100,6 +100,7 @@ const StatusBadge: React.FC<{ status?: string }> = ({ status = 'Unknown' }) => {
 };
 
 const PhoneNumbersTable: React.FC<{ phoneNumbers: any[], loading: boolean }> = ({ phoneNumbers, loading }) => {
+    console.log('Phone numbers data:', phoneNumbers);
     if (loading) {
         return (
             <Box
@@ -201,7 +202,7 @@ const PhoneNumbersTable: React.FC<{ phoneNumbers: any[], loading: boolean }> = (
                                 </TableCell>
                                 <TableCell>
                                     <Typography variant="body2" fontWeight="500">
-                                        {phone.monthlyCost || 'N/A'}
+                                        {phone.monthlyCost || '0.00'}
                                     </Typography>
                                 </TableCell>
                                 <TableCell>
@@ -233,7 +234,7 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
     const [loadingPhoneNumbers, setLoadingPhoneNumbers] = useState<{ [key: string]: boolean }>({});
 
     // Внутри CountryStatsTable, замените функцию toggleCountryExpansion на эту:
-    const toggleCountryExpansion = async (countryId: string, countryName: string) => { // Добавляем countryName как аргумент
+    const toggleCountryExpansion = async (countryId: string, countryName: string) => {
         const isCurrentlyExpanded = expandedCountries[countryId];
         setExpandedCountries(prev => ({
             ...prev,
@@ -244,24 +245,34 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
         if (!isCurrentlyExpanded && !phoneNumbersData[countryId]) {
             setLoadingPhoneNumbers(prev => ({ ...prev, [countryId]: true }));
             try {
-                // Используем countryName для формирования URL
-                // encodeURIComponent нужен на случай, если в названии страны есть пробелы или специальные символы
                 const response = await fetch(`http://localhost:8080/numbers/overview/country/${encodeURIComponent(countryName)}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                const data = await response.json();
-                // Предполагается, что API возвращает массив объектов с полями, соответствующими ожидаемым в PhoneNumbersTable
+                const rawData = await response.json();
+
+                // Адаптируем данные под ожидаемую структуру PhoneNumbersTable
+                const adaptedData = rawData.map((item: any) => ({
+                    number: item.number,
+                    status: item.status || (item.endDate && new Date(item.endDate) < new Date() ? 'Free' : 'Active'), // Пример определения статуса
+                    customer: item.customerName,
+                    techAccount: item.techAccountName,
+                    endDate: item.endDate,
+                    commentare: item.comment,
+                    free: item.status || (item.endDate && new Date(item.endDate) < new Date() ? 'Free' : 'Assigned'), // Пример определения free
+                    monthlyCost: item.monthlyCost,
+                    assignedDate: item.startDate
+                }));
+
                 setPhoneNumbersData(prev => ({
                     ...prev,
-                    [countryId]: data // По-прежнему используем countryId как ключ в состоянии, так как он уникален для строки
+                    [countryId]: adaptedData
                 }));
             } catch (error) {
                 console.error(`Failed to fetch phone numbers for country ${countryName} (ID: ${countryId}):`, error);
-                // Можно установить пустой массив или флаг ошибки
                 setPhoneNumbersData(prev => ({
                     ...prev,
-                    [countryId]: [] // или null/undefined, если хотите показать ошибку
+                    [countryId]: []
                 }));
             } finally {
                 setLoadingPhoneNumbers(prev => ({ ...prev, [countryId]: false }));
