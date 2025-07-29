@@ -250,6 +250,7 @@ export default function makeFakeApiServer() {
                 if (requestDate) filtered = filtered.filter(r => String(r.requestDate) === String(requestDate));
                 return filtered;
             });
+            this.passthrough('http://localhost:8080/**');
         }
     })
 }

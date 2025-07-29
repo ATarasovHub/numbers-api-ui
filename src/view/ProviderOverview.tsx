@@ -56,17 +56,19 @@ const calmTheme = createTheme({
     },
 });
 
-const StatusBadge: React.FC<{ status: string }> = ({status}) => {
-    const isActive = status.toLowerCase() === 'active';
-    const backgroundColor = isActive
+const StatusBadge: React.FC<{ status?: string }> = ({ status = 'Unknown' }) => {
+    // Safeguard against undefined/null status
+    const statusString = status ?? 'Unknown';
+    const isOccupied = statusString.toLowerCase() === 'active';
+    const displayText = isOccupied ? 'Occupied' : 'Free'; // Use English labels
+
+    const backgroundColor = isOccupied
         ? alpha(calmTheme.palette.success?.main || '#4caf50', 0.15)
         : alpha(calmTheme.palette.error?.main || '#f44336', 0.15);
-
-    const textColor = isActive
+    const textColor = isOccupied
         ? calmTheme.palette.success?.main || '#2e7d32'
         : calmTheme.palette.error?.main || '#c62828';
-
-    const borderColor = isActive
+    const borderColor = isOccupied
         ? alpha(calmTheme.palette.success?.main || '#4caf50', 0.3)
         : alpha(calmTheme.palette.error?.main || '#f44336', 0.3);
 
@@ -91,7 +93,7 @@ const StatusBadge: React.FC<{ status: string }> = ({status}) => {
                     fontSize: '0.85rem'
                 }}
             >
-                {status}
+                {displayText} {/* Display the new English text */}
             </Typography>
         </Box>
     );
@@ -135,102 +137,25 @@ const PhoneNumbersTable: React.FC<{ phoneNumbers: any[], loading: boolean }> = (
             }}
         >
             <Table size="small">
-                <TableHead sx={{
-                    backgroundColor: alpha(calmTheme.palette.secondary.main, 0.1)
-                }}>
+                <TableHead sx={{ backgroundColor: alpha(calmTheme.palette.secondary.main, 0.1) }}>
                     <TableRow>
-                        <TableCell sx={{
-                            fontWeight: '600',
-                            color: calmTheme.palette.secondary.dark,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.3px',
-                            fontSize: '0.75rem'
-                        }}>
-                            Phone Number
-                        </TableCell>
-                        <TableCell sx={{
-                            fontWeight: '600',
-                            color: calmTheme.palette.secondary.dark,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.3px',
-                            fontSize: '0.75rem'
-                        }}>
-                            Status
-                        </TableCell>
-                        <TableCell sx={{
-                            fontWeight: '600',
-                            color: calmTheme.palette.secondary.dark,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.3px',
-                            fontSize: '0.75rem'
-                        }}>
-                            Customer
-                        </TableCell>
-                        <TableCell sx={{
-                            fontWeight: '600',
-                            color: calmTheme.palette.secondary.dark,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.3px',
-                            fontSize: '0.75rem'
-                        }}>
-                            Tech Account
-                        </TableCell>
-                        <TableCell sx={{
-                            fontWeight: '600',
-                            color: calmTheme.palette.secondary.dark,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.3px',
-                            fontSize: '0.75rem'
-                        }}>
-                            End Date
-                        </TableCell>
-                        <TableCell sx={{
-                            fontWeight: '600',
-                            color: calmTheme.palette.secondary.dark,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.3px',
-                            fontSize: '0.75rem'
-                        }}>
-                            Commentare
-                        </TableCell>
-                        <TableCell sx={{
-                            fontWeight: '600',
-                            color: calmTheme.palette.secondary.dark,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.3px',
-                            fontSize: '0.75rem'
-                        }}>
-                            Free
-                        </TableCell>
-                        <TableCell sx={{
-                            fontWeight: '600',
-                            color: calmTheme.palette.secondary.dark,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.3px',
-                            fontSize: '0.75rem'
-                        }}>
-                            Monthly Cost
-                        </TableCell>
-                        <TableCell sx={{
-                            fontWeight: '600',
-                            color: calmTheme.palette.secondary.dark,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.3px',
-                            fontSize: '0.75rem'
-                        }}>
-                            Assigned Date
-                        </TableCell>
+                        <TableCell>Phone Number</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Customer</TableCell>
+                        <TableCell>Tech Account</TableCell>
+                        <TableCell>End Date</TableCell>
+                        <TableCell>Commentare</TableCell>
+                        <TableCell>Monthly Cost</TableCell>
+                        <TableCell>Assigned Date</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {phoneNumbers && phoneNumbers.length > 0 ? (
                         phoneNumbers.map((phone, idx) => (
                             <TableRow
-                                key={idx}
+                                key={idx} // Use a unique key, preferably phone.id if available
                                 sx={{
-                                    backgroundColor: idx % 2 === 0 ?
-                                        alpha(calmTheme.palette.grey[50], 0.3) :
-                                        'transparent',
+                                    backgroundColor: idx % 2 === 0 ? alpha(calmTheme.palette.grey[50], 0.3) : 'transparent',
                                     '&:hover': {
                                         backgroundColor: alpha(calmTheme.palette.secondary.light, 0.15),
                                     }
@@ -238,11 +163,11 @@ const PhoneNumbersTable: React.FC<{ phoneNumbers: any[], loading: boolean }> = (
                             >
                                 <TableCell>
                                     <Typography variant="body2" fontWeight="500">
-                                        {phone.number}
+                                        {phone.number || 'N/A'}
                                     </Typography>
                                 </TableCell>
                                 <TableCell>
-                                    <StatusBadge status={phone.status} />
+                                    <StatusBadge status={phone.status || 'Unknown'} />
                                 </TableCell>
                                 <TableCell>
                                     <Typography variant="body2" fontWeight="500">
@@ -275,53 +200,22 @@ const PhoneNumbersTable: React.FC<{ phoneNumbers: any[], loading: boolean }> = (
                                     </Typography>
                                 </TableCell>
                                 <TableCell>
-                                    <Box
-                                        sx={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            px: 1.5,
-                                            py: 0.5,
-                                            borderRadius: '16px',
-                                            backgroundColor: phone.free === 'Assigned'
-                                                ? alpha('#ff9800', 0.15)
-                                                : alpha('#4caf50', 0.15),
-                                            color: phone.free === 'Assigned'
-                                                ? '#e65100'
-                                                : '#2e7d32',
-                                            border: phone.free === 'Assigned'
-                                                ? `1px solid ${alpha('#ff9800', 0.3)}`
-                                                : `1px solid ${alpha('#4caf50', 0.3)}`,
-                                        }}
-                                    >
-                                        <Typography
-                                            variant="body2"
-                                            sx={{
-                                                fontWeight: 600,
-                                                fontSize: '0.85rem'
-                                            }}
-                                        >
-                                            {phone.free}
-                                        </Typography>
-                                    </Box>
-                                </TableCell>
-                                <TableCell>
                                     <Typography variant="body2" fontWeight="500">
-                                        {phone.monthlyCost}
+                                        {phone.monthlyCost || 'N/A'}
                                     </Typography>
                                 </TableCell>
                                 <TableCell>
                                     <Typography variant="body2" fontWeight="500">
-                                        {phone.assignedDate}
+                                        {phone.assignedDate || 'N/A'}
                                     </Typography>
                                 </TableCell>
                             </TableRow>
                         ))
                     ) : (
                         <TableRow>
-                            <TableCell colSpan={9} align="center" sx={{ py: 3 }}>
+                            <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
                                 <Typography variant="body2" color="textSecondary">
-                                    Нет доступных номеров
+                                    No phone numbers available
                                 </Typography>
                             </TableCell>
                         </TableRow>
@@ -338,51 +232,40 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
     const [phoneNumbersData, setPhoneNumbersData] = useState<{ [key: string]: any[] }>({});
     const [loadingPhoneNumbers, setLoadingPhoneNumbers] = useState<{ [key: string]: boolean }>({});
 
-    const toggleCountryExpansion = async (countryId: string) => {
+    // Внутри CountryStatsTable, замените функцию toggleCountryExpansion на эту:
+    const toggleCountryExpansion = async (countryId: string, countryName: string) => { // Добавляем countryName как аргумент
         const isCurrentlyExpanded = expandedCountries[countryId];
-
         setExpandedCountries(prev => ({
             ...prev,
             [countryId]: !isCurrentlyExpanded
         }));
 
+        // Если страна раскрывается и данные для неё ещё не загружены
         if (!isCurrentlyExpanded && !phoneNumbersData[countryId]) {
-            setLoadingPhoneNumbers(prev => ({...prev, [countryId]: true}));
-
-            setTimeout(() => {
-                const mockPhoneNumbers = [
-                    {
-                        number: "+1234567890",
-                        status: "Active",
-                        monthlyCost: "$5.00",
-                        assignedDate: "2024-01-15"
-                    },
-                    {
-                        number: "+1234567891",
-                        status: "Active",
-                        monthlyCost: "$5.00",
-                        assignedDate: "2024-01-16"
-                    },
-                    {
-                        number: "Test 1",
-                        status: "Active",
-                        monthlyCost: "$3.50",
-                        assignedDate: "2024-01-17"
-                    },
-                    {
-                        number: "Test 2",
-                        status: "Deleted",
-                        monthlyCost: "$3.50",
-                        assignedDate: "2024-01-18"
-                    }
-                ];
-
+            setLoadingPhoneNumbers(prev => ({ ...prev, [countryId]: true }));
+            try {
+                // Используем countryName для формирования URL
+                // encodeURIComponent нужен на случай, если в названии страны есть пробелы или специальные символы
+                const response = await fetch(`http://localhost:8080/numbers/overview/country/${encodeURIComponent(countryName)}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                // Предполагается, что API возвращает массив объектов с полями, соответствующими ожидаемым в PhoneNumbersTable
                 setPhoneNumbersData(prev => ({
                     ...prev,
-                    [countryId]: mockPhoneNumbers
+                    [countryId]: data // По-прежнему используем countryId как ключ в состоянии, так как он уникален для строки
                 }));
-                setLoadingPhoneNumbers(prev => ({...prev, [countryId]: false}));
-            }, 1500);
+            } catch (error) {
+                console.error(`Failed to fetch phone numbers for country ${countryName} (ID: ${countryId}):`, error);
+                // Можно установить пустой массив или флаг ошибки
+                setPhoneNumbersData(prev => ({
+                    ...prev,
+                    [countryId]: [] // или null/undefined, если хотите показать ошибку
+                }));
+            } finally {
+                setLoadingPhoneNumbers(prev => ({ ...prev, [countryId]: false }));
+            }
         }
     };
 
@@ -478,7 +361,7 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
                                         <IconButton
                                             aria-label="expand row"
                                             size="small"
-                                            onClick={() => toggleCountryExpansion(stat.countryId.toString())}
+                                            onClick={() => toggleCountryExpansion(stat.countryId.toString(), stat.countryName)}
                                             sx={{
                                                 color: calmTheme.palette.primary.main,
                                                 backgroundColor: alpha(calmTheme.palette.primary.main, 0.1),
@@ -775,7 +658,7 @@ export const ProviderOverview: React.FC = () => {
         let filtered = allProviders.filter(provider => {
             const status = provider.deletedAt && provider.deletedAt !== '' ? 'deleted' : 'active';
             let pass = true;
-            if (filters.providerName && !provider.providerName.toLowerCase().includes(filters.providerName.toLowerCase())) pass = false;
+            if (filters.providerName && !provider.providerName.toLowerCase().includes(filters.providerName)) pass = false;
             if (filters.totalNumbers) {
                 const val = Number(filters.totalNumbers);
                 if (filters.totalNumbersOp === '>=') pass = pass && (provider.totalNumbers >= val);
