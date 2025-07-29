@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     TableBody,
     TableCell,
@@ -20,9 +20,10 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import {CountryStats, NumberProvider} from "../utils/domain";
-import {isDefined} from "../utils/util";
-import {CircularProgress} from "@mui/material";
+import { CountryStats, NumberProvider } from "../utils/domain";
+import { isDefined } from "../utils/util";
+import { CircularProgress } from "@mui/material";
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 export interface ProviderRowProps {
     provider: NumberProvider,
@@ -57,11 +58,9 @@ const calmTheme = createTheme({
 });
 
 const StatusBadge: React.FC<{ status?: string }> = ({ status = 'Unknown' }) => {
-    // Safeguard against undefined/null status
     const statusString = status ?? 'Unknown';
     const isOccupied = statusString.toLowerCase() === 'active';
-    const displayText = isOccupied ? 'Occupied' : 'Free'; // Use English labels
-
+    const displayText = isOccupied ? 'Occupied' : 'Free';
     const backgroundColor = isOccupied
         ? alpha(calmTheme.palette.success?.main || '#4caf50', 0.15)
         : alpha(calmTheme.palette.error?.main || '#f44336', 0.15);
@@ -71,7 +70,6 @@ const StatusBadge: React.FC<{ status?: string }> = ({ status = 'Unknown' }) => {
     const borderColor = isOccupied
         ? alpha(calmTheme.palette.success?.main || '#4caf50', 0.3)
         : alpha(calmTheme.palette.error?.main || '#f44336', 0.3);
-
     return (
         <Box
             sx={{
@@ -93,37 +91,70 @@ const StatusBadge: React.FC<{ status?: string }> = ({ status = 'Unknown' }) => {
                     fontSize: '0.85rem'
                 }}
             >
-                {displayText} {/* Display the new English text */}
+                {displayText}
             </Typography>
         </Box>
     );
 };
 
-const PhoneNumbersTable: React.FC<{ phoneNumbers: any[], loading: boolean }> = ({ phoneNumbers, loading }) => {
-    console.log('Phone numbers data:', phoneNumbers);
+interface PhoneNumberData {
+    number: string;
+    status: string;
+    customer: string | null;
+    techAccount: string | null;
+    endDate: string | null;
+    commentare: string | null;
+    monthlyCost: number | null;
+    assignedDate: string | null;
+}
+
+const PhoneNumbersTable: React.FC<{
+    countryId: string;
+    countryName: string;
+    phoneNumbers: PhoneNumberData[];
+    loading: boolean;
+}> = ({ countryId, countryName, phoneNumbers, loading }) => {
+    const [displayedPhoneNumbersCount, setDisplayedPhoneNumbersCount] = useState<number>(0);
+    const ITEMS_PER_LOAD = 20;
+
+    useEffect(() => {
+        if (phoneNumbers.length > 0) {
+            setDisplayedPhoneNumbersCount(Math.min(ITEMS_PER_LOAD, phoneNumbers.length));
+        } else {
+            setDisplayedPhoneNumbersCount(0);
+        }
+    }, [phoneNumbers]);
+
+    const loadMorePhoneNumbers = () => {
+        setDisplayedPhoneNumbersCount(prev => {
+            const newCount = Math.min(prev + ITEMS_PER_LOAD, phoneNumbers.length);
+            return newCount;
+        });
+    };
+
+    const hasMore = displayedPhoneNumbersCount < phoneNumbers.length;
+
+    const displayedNumbers = phoneNumbers.slice(0, displayedPhoneNumbersCount);
+
+    const hasData = phoneNumbers.length > 0;
+
     if (loading) {
         return (
-            <Box
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                p={4}
-                sx={{
-                    backgroundColor: alpha(calmTheme.palette.grey[50], 0.3),
-                    borderRadius: 2
-                }}
-            >
-                <CircularProgress
-                    size={24}
-                    sx={{
-                        color: calmTheme.palette.primary.main,
-                        mr: 2
-                    }}
-                />
-                <Typography variant="body2" color="text.secondary">
-                    Loading numbers...
+            <Paper elevation={1} sx={{ m: 2, borderRadius: 2, overflow: 'hidden', border: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}` }}>
+                <Box display="flex" justifyContent="center" my={2}>
+                    <CircularProgress size={24} />
+                </Box>
+            </Paper>
+        );
+    }
+
+    if (!hasData) {
+        return (
+            <Paper elevation={1} sx={{ m: 2, borderRadius: 2, overflow: 'hidden', border: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}` }}>
+                <Typography variant="body2" align="center" sx={{ py: 2, color: 'text.secondary' }}>
+                    No phone numbers found for {countryName}.
                 </Typography>
-            </Box>
+            </Paper>
         );
     }
 
@@ -131,109 +162,83 @@ const PhoneNumbersTable: React.FC<{ phoneNumbers: any[], loading: boolean }> = (
         <Paper
             elevation={1}
             sx={{
-                mb: 2,
+                m: 2,
                 borderRadius: 2,
                 overflow: 'hidden',
-                border: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}`
+                border: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}`,
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '200px',
+                maxHeight: '400px',
+                overflowY: 'auto',
             }}
         >
-            <Table size="small">
-                <TableHead sx={{ backgroundColor: alpha(calmTheme.palette.secondary.main, 0.1) }}>
-                    <TableRow>
-                        <TableCell>Phone Number</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Customer</TableCell>
-                        <TableCell>Tech Account</TableCell>
-                        <TableCell>End Date</TableCell>
-                        <TableCell>Commentare</TableCell>
-                        <TableCell>Monthly Cost</TableCell>
-                        <TableCell>Assigned Date</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {phoneNumbers && phoneNumbers.length > 0 ? (
-                        phoneNumbers.map((phone, idx) => (
-                            <TableRow
-                                key={idx} // Use a unique key, preferably phone.id if available
-                                sx={{
-                                    backgroundColor: idx % 2 === 0 ? alpha(calmTheme.palette.grey[50], 0.3) : 'transparent',
-                                    '&:hover': {
-                                        backgroundColor: alpha(calmTheme.palette.secondary.light, 0.15),
-                                    }
-                                }}
-                            >
-                                <TableCell>
-                                    <Typography variant="body2" fontWeight="500">
-                                        {phone.number || 'N/A'}
-                                    </Typography>
-                                </TableCell>
-                                <TableCell>
-                                    <StatusBadge status={phone.status || 'Unknown'} />
-                                </TableCell>
-                                <TableCell>
-                                    <Typography variant="body2" fontWeight="500">
-                                        {phone.customer || 'N/A'}
-                                    </Typography>
-                                </TableCell>
-                                <TableCell>
-                                    <Typography variant="body2" fontWeight="500">
-                                        {phone.techAccount || 'N/A'}
-                                    </Typography>
-                                </TableCell>
-                                <TableCell>
-                                    <Typography variant="body2" fontWeight="500">
-                                        {phone.endDate || 'N/A'}
-                                    </Typography>
-                                </TableCell>
-                                <TableCell>
-                                    <Typography
-                                        variant="body2"
-                                        fontWeight="500"
-                                        sx={{
-                                            maxWidth: '150px',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: 'nowrap'
-                                        }}
-                                        title={phone.commentare || 'N/A'}
-                                    >
-                                        {phone.commentare || 'N/A'}
-                                    </Typography>
-                                </TableCell>
-                                <TableCell>
-                                    <Typography variant="body2" fontWeight="500">
-                                        {phone.monthlyCost || '0.00'}
-                                    </Typography>
-                                </TableCell>
-                                <TableCell>
-                                    <Typography variant="body2" fontWeight="500">
-                                        {phone.assignedDate || 'N/A'}
-                                    </Typography>
-                                </TableCell>
-                            </TableRow>
-                        ))
-                    ) : (
+            <Box sx={{ flexGrow: 0, flexShrink: 0 }}>
+                <Table size="small" sx={{ tableLayout: 'fixed' }}>
+                    <TableHead sx={{ backgroundColor: alpha(calmTheme.palette.secondary.main, 0.1) }}>
                         <TableRow>
-                            <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
-                                <Typography variant="body2" color="textSecondary">
-                                    No phone numbers available
-                                </Typography>
-                            </TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '15%' }}>Number</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '10%' }}>Status</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '20%' }}>Customer</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '20%' }}>Tech Account</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '10%' }}>End Date</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '15%' }}>Comment</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '10%' }}>Monthly Cost</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '10%' }}>Assigned Date</TableCell>
                         </TableRow>
-                    )}
-                </TableBody>
-            </Table>
+                    </TableHead>
+                </Table>
+            </Box>
+
+            <Box
+                id={`scrollable-phone-numbers-${countryId}`}
+                sx={{
+                    flexGrow: 1,
+                    overflowY: 'auto',
+                    maxHeight: 'calc(100% - 40px)'
+                }}
+            >
+                <InfiniteScroll
+                    dataLength={displayedNumbers.length}
+                    next={loadMorePhoneNumbers}
+                    hasMore={hasMore}
+                    loader={
+                        <Box display="flex" justifyContent="center" my={1}>
+                            <CircularProgress size={20} />
+                        </Box>
+                    }
+                    scrollableTarget={`scrollable-phone-numbers-${countryId}`}
+                    style={{ overflow: 'hidden' }}
+                >
+                    <Table size="small" sx={{ tableLayout: 'fixed' }}>
+                        <TableBody>
+                            {displayedNumbers.map((phone: PhoneNumberData, idx: number) => (
+                                <TableRow key={idx} hover>
+                                    <TableCell sx={{ fontSize: '0.8rem', width: '15%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{phone.number}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.8rem', width: '10%' }}><StatusBadge status={phone.status} /></TableCell>
+                                    <TableCell sx={{ fontSize: '0.8rem', width: '20%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{phone.customer}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.8rem', width: '20%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{phone.techAccount}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.8rem', width: '10%' }}>{phone.endDate ? new Date(phone.endDate).toLocaleDateString() : '-'}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.8rem', width: '15%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{phone.commentare}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.8rem', width: '10%' }}>{phone.monthlyCost?.toFixed(2) ?? '-'}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.8rem', width: '10%' }}>{phone.assignedDate ? new Date(phone.assignedDate).toLocaleDateString() : '-'}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </InfiniteScroll>
+            </Box>
         </Paper>
     );
 };
 
-
-const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
+const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
     const [expandedCountries, setExpandedCountries] = useState<{ [key: string]: boolean }>({});
     const [phoneNumbersData, setPhoneNumbersData] = useState<{ [key: string]: any[] }>({});
     const [loadingPhoneNumbers, setLoadingPhoneNumbers] = useState<{ [key: string]: boolean }>({});
+    const [displayedPhoneNumbersCount, setDisplayedPhoneNumbersCount] = useState<{ [key: string]: number }>({});
+    const ITEMS_PER_LOAD = 20;
 
-    // Внутри CountryStatsTable, замените функцию toggleCountryExpansion на эту:
     const toggleCountryExpansion = async (countryId: string, countryName: string) => {
         const isCurrentlyExpanded = expandedCountries[countryId];
         setExpandedCountries(prev => ({
@@ -241,7 +246,6 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
             [countryId]: !isCurrentlyExpanded
         }));
 
-        // Если страна раскрывается и данные для неё ещё не загружены
         if (!isCurrentlyExpanded && !phoneNumbersData[countryId]) {
             setLoadingPhoneNumbers(prev => ({ ...prev, [countryId]: true }));
             try {
@@ -250,16 +254,13 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const rawData = await response.json();
-
-                // Адаптируем данные под ожидаемую структуру PhoneNumbersTable
                 const adaptedData = rawData.map((item: any) => ({
                     number: item.number,
-                    status: item.status || (item.endDate && new Date(item.endDate) < new Date() ? 'Free' : 'Active'), // Пример определения статуса
+                    status: item.status || (item.endDate && new Date(item.endDate) < new Date() ? 'Free' : 'Active'),
                     customer: item.customerName,
                     techAccount: item.techAccountName,
                     endDate: item.endDate,
                     commentare: item.comment,
-                    free: item.status || (item.endDate && new Date(item.endDate) < new Date() ? 'Free' : 'Assigned'), // Пример определения free
                     monthlyCost: item.monthlyCost,
                     assignedDate: item.startDate
                 }));
@@ -268,17 +269,32 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
                     ...prev,
                     [countryId]: adaptedData
                 }));
+
+                setDisplayedPhoneNumbersCount(prev => ({
+                    ...prev,
+                    [countryId]: Math.min(ITEMS_PER_LOAD, adaptedData.length)
+                }));
             } catch (error) {
                 console.error(`Failed to fetch phone numbers for country ${countryName} (ID: ${countryId}):`, error);
                 setPhoneNumbersData(prev => ({
                     ...prev,
                     [countryId]: []
                 }));
+                setDisplayedPhoneNumbersCount(prev => ({
+                    ...prev,
+                    [countryId]: 0
+                }));
             } finally {
                 setLoadingPhoneNumbers(prev => ({ ...prev, [countryId]: false }));
             }
+        } else if (!isCurrentlyExpanded && phoneNumbersData[countryId]) {
+            setDisplayedPhoneNumbersCount(prev => ({
+                ...prev,
+                [countryId]: Math.min(ITEMS_PER_LOAD, phoneNumbersData[countryId].length)
+            }));
         }
     };
+
 
     return (
         <Paper
@@ -295,7 +311,7 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
                     backgroundColor: alpha(calmTheme.palette.primary.main, 0.12)
                 }}>
                     <TableRow>
-                        <TableCell sx={{width: '5%'}}>
+                        <TableCell sx={{ width: '5%' }}>
                             <Typography variant="subtitle2" fontWeight="600"></Typography>
                         </TableCell>
                         <TableCell sx={{
@@ -382,8 +398,8 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
                                                 transition: 'all 0.2s'
                                             }}
                                         >
-                                            {expandedCountries[stat.countryId] ? <KeyboardArrowUpIcon/> :
-                                                <KeyboardArrowDownIcon/>}
+                                            {expandedCountries[stat.countryId] ? <KeyboardArrowUpIcon /> :
+                                                <KeyboardArrowDownIcon />}
                                         </IconButton>
                                     </TableCell>
                                     <TableCell>
@@ -431,7 +447,7 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
                                             timeout="auto"
                                             unmountOnExit
                                         >
-                                            <Box sx={{margin: 2}}>
+                                            <Box sx={{ margin: 2 }}>
                                                 <Box
                                                     sx={{
                                                         display: 'flex',
@@ -464,6 +480,8 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
                                                     </Typography>
                                                 </Box>
                                                 <PhoneNumbersTable
+                                                    countryId={stat.countryId.toString()}
+                                                    countryName={stat.countryName}
                                                     phoneNumbers={phoneNumbersData[stat.countryId] || []}
                                                     loading={loadingPhoneNumbers[stat.countryId] || false}
                                                 />
@@ -475,7 +493,7 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
                         ))
                     ) : (
                         <TableRow>
-                            <TableCell colSpan={7} align="center" sx={{py: 3}}>
+                            <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
                                 <Typography variant="body2" color="textSecondary">
                                     No country statistics available
                                 </Typography>
@@ -488,8 +506,7 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
     );
 };
 
-
-const ProviderRow: React.FC<ProviderRowProps> = ({provider, onProviderUpdated}) => {
+const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }) => {
     const [open, setOpen] = useState(false);
 
     function checkStatus(deletedAt: string) {
@@ -523,7 +540,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({provider, onProviderUpdated}) 
                     borderBottom: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}`
                 }}
             >
-                <TableCell sx={{width: '5%'}}>
+                <TableCell sx={{ width: '5%' }}>
                     <IconButton
                         aria-label="expand row"
                         size="small"
@@ -537,7 +554,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({provider, onProviderUpdated}) 
                             transition: 'all 0.2s'
                         }}
                     >
-                        {open ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
+                        {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
                 </TableCell>
                 <TableCell>
@@ -546,7 +563,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({provider, onProviderUpdated}) 
                     </Typography>
                 </TableCell>
                 <TableCell>
-                    <StatusBadge status={status}/>
+                    <StatusBadge status={status} />
                 </TableCell>
                 <TableCell>
                     <Typography variant="body2" fontWeight="500" color="text.primary">
@@ -583,7 +600,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({provider, onProviderUpdated}) 
                         timeout="auto"
                         unmountOnExit
                     >
-                        <Box sx={{margin: 3}}>
+                        <Box sx={{ margin: 3 }}>
                             <Box
                                 sx={{
                                     display: 'flex',
@@ -615,7 +632,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({provider, onProviderUpdated}) 
                                     {provider.providerName}
                                 </Typography>
                             </Box>
-                            <CountryStatsTable stats={provider.countryStats || []}/>
+                            <CountryStatsTable stats={provider.countryStats || []} />
                         </Box>
                     </Collapse>
                 </TableCell>
@@ -661,38 +678,48 @@ export const ProviderOverview: React.FC = () => {
             !filters.totalNumbers &&
             !filters.totalAssignedNumbers &&
             !filters.totalMonthlyCost;
+
         if (isAllFiltersEmpty) {
             setFilteredProviders([]);
             setDisplayedProviders(allProviders.slice(0, 10));
             return;
         }
+
         let filtered = allProviders.filter(provider => {
-            const status = provider.deletedAt && provider.deletedAt !== '' ? 'deleted' : 'active';
             let pass = true;
+
             if (filters.providerName && !provider.providerName.toLowerCase().includes(filters.providerName)) pass = false;
+
             if (filters.totalNumbers) {
                 const val = Number(filters.totalNumbers);
-                if (filters.totalNumbersOp === '>=') pass = pass && (provider.totalNumbers >= val);
-                if (filters.totalNumbersOp === '<=') pass = pass && (provider.totalNumbers <= val);
+                if (isNaN(val)) pass = false;
+                else if (filters.totalNumbersOp === '>=') pass = pass && (provider.totalNumbers >= val);
+                else if (filters.totalNumbersOp === '<=') pass = pass && (provider.totalNumbers <= val);
             }
+
             if (filters.totalAssignedNumbers) {
                 const val = Number(filters.totalAssignedNumbers);
-                if (filters.totalAssignedNumbersOp === '>=') pass = pass && (provider.totalAssignedNumbers >= val);
-                if (filters.totalAssignedNumbersOp === '<=') pass = pass && (provider.totalAssignedNumbers <= val);
+                if (isNaN(val)) pass = false;
+                else if (filters.totalAssignedNumbersOp === '>=') pass = pass && (provider.totalAssignedNumbers >= val);
+                else if (filters.totalAssignedNumbersOp === '<=') pass = pass && (provider.totalAssignedNumbers <= val);
             }
+
             if (filters.totalMonthlyCost) {
                 const val = Number(filters.totalMonthlyCost);
-                if (filters.totalMonthlyCostOp === '>=') pass = pass && (provider.totalMonthlyCost >= val);
-                if (filters.totalMonthlyCostOp === '<=') pass = pass && (provider.totalMonthlyCost <= val);
+                if (isNaN(val)) pass = false;
+                else if (filters.totalMonthlyCostOp === '>=') pass = pass && (provider.totalMonthlyCost >= val);
+                else if (filters.totalMonthlyCostOp === '<=') pass = pass && (provider.totalMonthlyCost <= val);
             }
+
             return pass;
         });
+
         setFilteredProviders(filtered);
         setDisplayedProviders(filtered);
     }, [allProviders, filters]);
 
     const handleFilterChange = (field: string, value: string) => {
-        setFilters(prev => ({...prev, [field]: value}));
+        setFilters(prev => ({ ...prev, [field]: value }));
     };
 
     const handleProviderUpdate = (updatedProvider: NumberProvider) => {
@@ -707,7 +734,7 @@ export const ProviderOverview: React.FC = () => {
             <Card
                 elevation={6}
                 sx={{
-                    p: {xs: 2, sm: 3},
+                    p: { xs: 2, sm: 3 },
                     borderRadius: 3,
                     maxWidth: '100vw',
                     background: `linear-gradient(135deg, ${alpha(calmTheme.palette.primary.main, 0.05)} 0%, ${alpha(calmTheme.palette.secondary.main, 0.05)} 100%)`,
@@ -740,6 +767,7 @@ export const ProviderOverview: React.FC = () => {
                         Provider Overview
                     </Typography>
                 </Box>
+
                 <Paper
                     elevation={3}
                     sx={{
@@ -752,8 +780,9 @@ export const ProviderOverview: React.FC = () => {
                     }}
                 >
                     <Box display="flex" flexWrap="wrap" gap={2} alignItems="center">
-                        <Typography variant="subtitle2" sx={{minWidth: '100px', fontWeight: 600}}>Filter
+                        <Typography variant="subtitle2" sx={{ minWidth: '100px', fontWeight: 600 }}>Filter
                             by:</Typography>
+
                         <TextField
                             label="Provider Name"
                             value={filters.providerName}
@@ -775,6 +804,7 @@ export const ProviderOverview: React.FC = () => {
                                 },
                             }}
                         />
+
                         <Box display="flex" alignItems="center" gap={1}>
                             <Select
                                 value={filters.totalNumbersOp}
@@ -820,6 +850,7 @@ export const ProviderOverview: React.FC = () => {
                                 type="number"
                             />
                         </Box>
+
                         <Box display="flex" alignItems="center" gap={1}>
                             <Select
                                 value={filters.totalAssignedNumbersOp}
@@ -865,6 +896,7 @@ export const ProviderOverview: React.FC = () => {
                                 type="number"
                             />
                         </Box>
+
                         <Box display="flex" alignItems="center" gap={1}>
                             <Select
                                 value={filters.totalMonthlyCostOp}
@@ -912,6 +944,7 @@ export const ProviderOverview: React.FC = () => {
                         </Box>
                     </Box>
                 </Paper>
+
                 <Paper
                     elevation={4}
                     sx={{
@@ -921,7 +954,7 @@ export const ProviderOverview: React.FC = () => {
                         boxShadow: `0 4px 20px ${alpha(calmTheme.palette.common.black, 0.06)}`
                     }}
                 >
-                    <Table sx={{minWidth: 750}} aria-label="providers table">
+                    <Table sx={{ minWidth: 750 }} aria-label="providers table">
                         <TableHead>
                             <TableRow>
                                 <TableCell sx={{
@@ -931,7 +964,7 @@ export const ProviderOverview: React.FC = () => {
                                     textTransform: 'uppercase',
                                     letterSpacing: '0.5px',
                                     width: '5%'
-                                }}/>
+                                }} />
                                 <TableCell sx={{
                                     fontWeight: '700',
                                     color: calmTheme.palette.common.white,
@@ -980,11 +1013,11 @@ export const ProviderOverview: React.FC = () => {
                             {displayedProviders.length > 0 ? (
                                 displayedProviders.map(provider => (
                                     <ProviderRow key={provider.providerId} provider={provider}
-                                                 onProviderUpdated={handleProviderUpdate}/>
+                                                 onProviderUpdated={handleProviderUpdate} />
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} align="center" sx={{py: 6}}>
+                                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
                                         <Typography
                                             variant="h6"
                                             sx={{
