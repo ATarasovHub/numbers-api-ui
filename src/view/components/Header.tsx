@@ -17,6 +17,7 @@ export type Page =
     | 'customers'
     | 'customer_request_overview'
     | 'number_assignment'
+    | 'range_assignment'
     | 'number_reservation'
     | 'number_range_admin'
     | 'used_number_range_admin'
@@ -33,7 +34,6 @@ interface HeaderProps {
     setPage: (page: Page) => void;
 }
 
-// Define Calm and Classy color scheme as MUI theme (same as table)
 const calmTheme = createTheme({
     palette: {
         primary: {
@@ -83,6 +83,7 @@ const Header: React.FC<HeaderProps> = ({ page, setPage }) => {
     const overviewPages: { label: string; page: Page }[] = [
         { label: 'Provider Overview', page: 'provider_overview' },
         { label: 'Customer Overview', page: 'customer_overview' },
+        { label: 'Range Assignment', page: 'range_assignment' },
     ];
 
     const handleOpen = (setter: React.Dispatch<React.SetStateAction<HTMLElement | null>>) =>

@@ -5,6 +5,7 @@ import { CustomerTable } from "./view/CustomerTable";
 import Header, { Page } from "./view/components/Header";
 import ProviderAdminPage from "./view/ProviderAdminPage";
 import CustomerRequestOverview from "./view/CustomerRequestOverview";
+import { RangeAssignment } from "./view/RangeAssignment";
 
 function App() {
     const [page, setPage] = useState<Page>('providers');
@@ -17,6 +18,8 @@ function App() {
                 return <CustomerRequestOverview />;
             case 'customer_request_overview':
                 return <CustomerRequestOverview />;
+            case 'range_assignment':
+                return <RangeAssignment />;
             case 'number_assignment':
             case 'number_reservation':
             case 'number_range_admin':

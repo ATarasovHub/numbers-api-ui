@@ -70,6 +70,7 @@ const StatusBadge: React.FC<{ status?: string }> = ({ status = 'Unknown' }) => {
     const borderColor = isOccupied
         ? alpha(calmTheme.palette.success?.main || '#4caf50', 0.3)
         : alpha(calmTheme.palette.error?.main || '#f44336', 0.3);
+
     return (
         <Box
             sx={{
@@ -115,11 +116,10 @@ const PhoneNumbersTable: React.FC<{
     loading: boolean;
 }> = ({ countryId, countryName, phoneNumbers, loading }) => {
     const [displayedPhoneNumbersCount, setDisplayedPhoneNumbersCount] = useState<number>(0);
-    const [searchQuery, setSearchQuery] = useState<string>(""); // Новое состояние для поиска
-    const [isSearching, setIsSearching] = useState<boolean>(false); // Состояние для индикатора загрузки
+    const [searchQuery, setSearchQuery] = useState<string>("");
+    const [isSearching, setIsSearching] = useState<boolean>(false);
     const ITEMS_PER_LOAD = 20;
 
-    // Инициализация и сброс отображаемого количества при изменении данных
     useEffect(() => {
         if (phoneNumbers.length > 0) {
             setDisplayedPhoneNumbersCount(Math.min(ITEMS_PER_LOAD, phoneNumbers.length));
@@ -136,31 +136,26 @@ const PhoneNumbersTable: React.FC<{
     };
 
     const hasMore = displayedPhoneNumbersCount < phoneNumbers.length;
+
     const handleSearch = async (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "Enter") {
-            // Используйте event.target вместо event.currentTarget
-            // и добавьте проверку на null/undefined
             const inputValue = event.target instanceof HTMLInputElement ? event.target.value : '';
             const query = inputValue.trim();
             setSearchQuery(query);
             setIsSearching(true);
-            // Здесь можно добавить логику для реального поиска на сервере
-            // Например, отправить запрос на API с параметром searchQuery
-            // Для демонстрации, просто фильтруем данные локально
             setTimeout(() => {
                 setIsSearching(false);
-            }, 500); // Моделируем задержку серверного запроса
+            }, 500);
         }
     };
-    // Фильтрация данных на основе поискового запроса
+
     const filteredNumbers = searchQuery.trim() === ''
-        ? phoneNumbers // Если запрос пустой, отображаем все данные
+        ? phoneNumbers
         : phoneNumbers.filter(phone =>
             phone.number.toLowerCase().includes(searchQuery.toLowerCase())
         );
 
     const displayedNumbers = filteredNumbers.slice(0, displayedPhoneNumbersCount);
-
     const hasData = filteredNumbers.length > 0;
 
     if (loading) {
@@ -188,7 +183,6 @@ const PhoneNumbersTable: React.FC<{
                 overflowY: 'auto',
             }}
         >
-            {/* Строка поиска */}
             <Box sx={{ p: 2, borderBottom: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}` }}>
                 <TextField
                     label="Search by Number"
@@ -205,8 +199,6 @@ const PhoneNumbersTable: React.FC<{
                     }}
                 />
             </Box>
-
-            {/* Заголовок таблицы */}
             <Box sx={{ flexGrow: 0, flexShrink: 0 }}>
                 <Table size="small" sx={{ tableLayout: 'fixed' }}>
                     <TableHead sx={{ backgroundColor: alpha(calmTheme.palette.secondary.main, 0.1) }}>
@@ -223,14 +215,12 @@ const PhoneNumbersTable: React.FC<{
                     </TableHead>
                 </Table>
             </Box>
-
-            {/* Тело таблицы с внутренним скроллом */}
             <Box
                 id={`scrollable-phone-numbers-${countryId}`}
                 sx={{
                     flexGrow: 1,
                     overflowY: 'auto',
-                    maxHeight: 'calc(100% - 40px)' // Примерная высота заголовка
+                    maxHeight: 'calc(100% - 40px)'
                 }}
             >
                 <InfiniteScroll
@@ -267,7 +257,6 @@ const PhoneNumbersTable: React.FC<{
     );
 };
 
-
 const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
     const [expandedCountries, setExpandedCountries] = useState<{ [key: string]: boolean }>({});
     const [phoneNumbersData, setPhoneNumbersData] = useState<{ [key: string]: any[] }>({});
@@ -290,22 +279,31 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const rawData = await response.json();
-                const adaptedData = rawData.map((item: any) => ({
-                    number: item.number,
-                    status: item.status || (item.endDate && new Date(item.endDate) < new Date() ? 'Free' : 'Active'),
-                    customer: item.customerName,
-                    techAccount: item.techAccountName,
-                    endDate: item.endDate,
-                    commentare: item.comment,
-                    monthlyCost: item.monthlyCost,
-                    assignedDate: item.startDate
-                }));
+                const adaptedData = rawData.map((item: any) => {
+                    let statusToUse: string;
+                    if (item.status) {
+                        statusToUse = item.status;
+                    } else if (!item.customerName && !item.techAccountName) {
+                        statusToUse = 'Free';
+                    } else {
+                        statusToUse = 'Active';
+                    }
 
+                    return {
+                        number: item.number,
+                        status: statusToUse,
+                        customer: item.customerName,
+                        techAccount: item.techAccountName,
+                        endDate: item.endDate,
+                        commentare: item.comment,
+                        monthlyCost: item.monthlyCost,
+                        assignedDate: item.startDate
+                    };
+                });
                 setPhoneNumbersData(prev => ({
                     ...prev,
                     [countryId]: adaptedData
                 }));
-
                 setDisplayedPhoneNumbersCount(prev => ({
                     ...prev,
                     [countryId]: Math.min(ITEMS_PER_LOAD, adaptedData.length)
@@ -330,7 +328,6 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
             }));
         }
     };
-
 
     return (
         <Paper
@@ -723,30 +720,25 @@ export const ProviderOverview: React.FC = () => {
 
         let filtered = allProviders.filter(provider => {
             let pass = true;
-
             if (filters.providerName && !provider.providerName.toLowerCase().includes(filters.providerName)) pass = false;
-
             if (filters.totalNumbers) {
                 const val = Number(filters.totalNumbers);
                 if (isNaN(val)) pass = false;
                 else if (filters.totalNumbersOp === '>=') pass = pass && (provider.totalNumbers >= val);
                 else if (filters.totalNumbersOp === '<=') pass = pass && (provider.totalNumbers <= val);
             }
-
             if (filters.totalAssignedNumbers) {
                 const val = Number(filters.totalAssignedNumbers);
                 if (isNaN(val)) pass = false;
                 else if (filters.totalAssignedNumbersOp === '>=') pass = pass && (provider.totalAssignedNumbers >= val);
                 else if (filters.totalAssignedNumbersOp === '<=') pass = pass && (provider.totalAssignedNumbers <= val);
             }
-
             if (filters.totalMonthlyCost) {
                 const val = Number(filters.totalMonthlyCost);
                 if (isNaN(val)) pass = false;
                 else if (filters.totalMonthlyCostOp === '>=') pass = pass && (provider.totalMonthlyCost >= val);
                 else if (filters.totalMonthlyCostOp === '<=') pass = pass && (provider.totalMonthlyCost <= val);
             }
-
             return pass;
         });
 
@@ -803,7 +795,6 @@ export const ProviderOverview: React.FC = () => {
                         Provider Overview
                     </Typography>
                 </Box>
-
                 <Paper
                     elevation={3}
                     sx={{
@@ -818,7 +809,6 @@ export const ProviderOverview: React.FC = () => {
                     <Box display="flex" flexWrap="wrap" gap={2} alignItems="center">
                         <Typography variant="subtitle2" sx={{ minWidth: '100px', fontWeight: 600 }}>Filter
                             by:</Typography>
-
                         <TextField
                             label="Provider Name"
                             value={filters.providerName}
@@ -840,7 +830,6 @@ export const ProviderOverview: React.FC = () => {
                                 },
                             }}
                         />
-
                         <Box display="flex" alignItems="center" gap={1}>
                             <Select
                                 value={filters.totalNumbersOp}
@@ -886,7 +875,6 @@ export const ProviderOverview: React.FC = () => {
                                 type="number"
                             />
                         </Box>
-
                         <Box display="flex" alignItems="center" gap={1}>
                             <Select
                                 value={filters.totalAssignedNumbersOp}
@@ -932,7 +920,6 @@ export const ProviderOverview: React.FC = () => {
                                 type="number"
                             />
                         </Box>
-
                         <Box display="flex" alignItems="center" gap={1}>
                             <Select
                                 value={filters.totalMonthlyCostOp}
@@ -980,7 +967,6 @@ export const ProviderOverview: React.FC = () => {
                         </Box>
                     </Box>
                 </Paper>
-
                 <Paper
                     elevation={4}
                     sx={{
