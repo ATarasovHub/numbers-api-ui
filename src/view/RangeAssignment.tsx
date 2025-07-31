@@ -4,19 +4,18 @@ import {
     TextField, Select, MenuItem, Button
 } from '@mui/material';
 
-// Добавляем все операторы для каждого поля
 const filterFields = [
-    { label: "Comment", type: 'text', select: ['equals', 'contains', 'greater', 'lower'] },
+    { label: "Comment", type: 'text', select: ['contains', 'equals', 'start with', 'end with'] },
     { label: "Start Date", type: 'date', select: ['equals', 'greater', 'lower'] },
     { label: "End Date", type: 'date', select: ['equals', 'greater', 'lower'] },
     { label: "Number Range From", type: 'number', select: ['equals', 'greater', 'lower'] },
     { label: "Number Range To", type: 'number', select: ['equals', 'greater', 'lower'] },
-    { label: "BP", type: 'text', select: ['equals', 'contains', 'greater', 'lower'] },
-    { label: "BP Status", type: 'text', select: ['equals', 'contains', 'greater', 'lower'] },
-    { label: "Account", type: 'text', select: ['equals', 'contains', 'greater', 'lower'] },
-    { label: "Account Status", type: 'text', select: ['equals', 'contains', 'greater', 'lower'] },
-    { label: "Provider", type: 'text', select: ['equals', 'contains', 'greater', 'lower'] },
-    { label: "MSISDN Service", type: 'text', select: ['equals', 'contains', 'greater', 'lower'] },
+    { label: "BP", type: 'text', select: ['equals'] },
+    { label: "BP Status", type: 'text', select: ['equals'] },
+    { label: "Account", type: 'text', select: ['equals'] },
+    { label: "Account Status", type: 'text', select: ['equals'] },
+    { label: "Provider", type: 'text', select: ['equals'] },
+    { label: "MSISDN Service", type: 'text', select: ['equals'] },
 ];
 
 export function RangeAssignment() {
@@ -27,7 +26,7 @@ export function RangeAssignment() {
     };
 
     return (
-        <Paper sx={{ p: 3, maxWidth: 1100, m: '40px auto', borderRadius: 2 }}>
+        <Paper sx={{ p: 3, maxWidth: 1200, m: '40px auto', borderRadius: 2 }}> {/* Increased maxWidth to 1200 */}
             <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>Range Assignment</Typography>
             <Box sx={{ mb: 3 }}>
                 <Typography sx={{ fontWeight: 600 }}>search</Typography>
@@ -38,7 +37,7 @@ export function RangeAssignment() {
                                 size="small"
                                 value={filter[field.label + '_op'] ?? field.select[0]}
                                 onChange={e => handleChange(field.label + '_op', e.target.value)}
-                                sx={{ minWidth: 120 }}
+                                sx={{ minWidth: 95 }}
                             >
                                 {field.select.map(v =>
                                     <MenuItem value={v} key={v}>{v}</MenuItem>
@@ -61,29 +60,30 @@ export function RangeAssignment() {
                     <Button>Print the result</Button>
                 </Box>
             </Box>
-            <Paper sx={{ p: 2, mt: 3 }}>
+            <Paper sx={{ p: 2, mt: 3, width: '100%' }}>
                 <Typography sx={{ fontWeight: 600, mb: 1 }}>Range Table</Typography>
-                <Table size="small">
-                    <TableHead>
+                <Table size="small" sx={{ width: '100%' }}>
+                    <TableHead sx={{ backgroundColor: '#e6f7ff' }}> {/* Light blue background for header */}
                         <TableRow>
-                            <TableCell>From Number</TableCell>
-                            <TableCell>To Number</TableCell>
-                            <TableCell>Entries</TableCell>
-                            <TableCell>Start Date</TableCell>
-                            <TableCell>End Date</TableCell>
-                            <TableCell>Comment</TableCell>
-                            <TableCell>BP</TableCell>
-                            <TableCell>BP Status</TableCell>
-                            <TableCell>Account</TableCell>
-                            <TableCell>Account Status</TableCell>
-                            <TableCell>Provider</TableCell>
-                            <TableCell>Service Detail</TableCell>
-                            <TableCell>MSISDN Service</TableCell>
-                            <TableCell>Status</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '15%' }}>From Number</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '15%' }}>To Number</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '10%' }}>Entries</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '10%' }}>Start Date</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '10%' }}>End Date</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '10%' }}>Comment</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '5%' }}>BP</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '5%' }}>BP Status</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '5%' }}>Account</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '5%' }}>Account Status</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '5%' }}>Provider</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '5%' }}>Service Detail</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '5%' }}>MSISDN Service</TableCell>
+                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '5%' }}>Status</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        <TableRow>
+                        {/* Example row */}
+                        <TableRow sx={{ '&:nth-of-type(odd)': { backgroundColor: '#f9f9f9' } }}>
                             <TableCell>88001001</TableCell>
                             <TableCell>88002000</TableCell>
                             <TableCell>1000</TableCell>
