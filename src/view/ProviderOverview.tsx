@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     TableBody,
     TableCell,
@@ -20,9 +20,9 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { CountryStats, NumberProvider } from "../utils/domain";
-import { isDefined } from "../utils/util";
-import { CircularProgress } from "@mui/material";
+import {CountryStats, NumberProvider} from "../utils/domain";
+import {isDefined} from "../utils/util";
+import {CircularProgress} from "@mui/material";
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 export interface ProviderRowProps {
@@ -57,7 +57,7 @@ const calmTheme = createTheme({
     },
 });
 
-const StatusBadge: React.FC<{ status?: string }> = ({ status = 'Unknown' }) => {
+const StatusBadge: React.FC<{ status?: string }> = ({status = 'Unknown'}) => {
     const statusString = status ?? 'Unknown';
     const isOccupied = statusString.toLowerCase() === 'active';
     const displayText = isOccupied ? 'Occupied' : 'Free';
@@ -114,7 +114,7 @@ const PhoneNumbersTable: React.FC<{
     countryName: string;
     phoneNumbers: PhoneNumberData[];
     loading: boolean;
-}> = ({ countryId, countryName, phoneNumbers, loading }) => {
+}> = ({countryId, countryName, phoneNumbers, loading}) => {
     const [displayedPhoneNumbersCount, setDisplayedPhoneNumbersCount] = useState<number>(0);
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [isSearching, setIsSearching] = useState<boolean>(false);
@@ -160,9 +160,14 @@ const PhoneNumbersTable: React.FC<{
 
     if (loading) {
         return (
-            <Paper elevation={1} sx={{ m: 2, borderRadius: 2, overflow: 'hidden', border: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}` }}>
+            <Paper elevation={1} sx={{
+                m: 2,
+                borderRadius: 2,
+                overflow: 'hidden',
+                border: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}`
+            }}>
                 <Box display="flex" justifyContent="center" my={2}>
-                    <CircularProgress size={24} />
+                    <CircularProgress size={24}/>
                 </Box>
             </Paper>
         );
@@ -183,7 +188,7 @@ const PhoneNumbersTable: React.FC<{
                 overflowY: 'auto',
             }}
         >
-            <Box sx={{ p: 2, borderBottom: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}` }}>
+            <Box sx={{p: 2, borderBottom: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}`}}>
                 <TextField
                     label="Search by Number"
                     value={searchQuery}
@@ -194,23 +199,26 @@ const PhoneNumbersTable: React.FC<{
                     fullWidth
                     InputProps={{
                         endAdornment: isSearching && (
-                            <CircularProgress size={20} sx={{ ml: 1 }} />
+                            <CircularProgress size={20} sx={{ml: 1}}/>
                         ),
                     }}
                 />
             </Box>
-            <Box sx={{ flexGrow: 0, flexShrink: 0 }}>
-                <Table size="small" sx={{ tableLayout: 'fixed' }}>
-                    <TableHead sx={{ backgroundColor: alpha(calmTheme.palette.secondary.main, 0.1) }}>
+            <Box sx={{flexGrow: 0, flexShrink: 0}}>
+                <Table size="small" sx={{tableLayout: 'fixed'}}>
+                    <TableHead sx={{backgroundColor: alpha(calmTheme.palette.secondary.main, 0.1)}}>
                         <TableRow>
-                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '15%' }}>Number</TableCell>
-                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '10%' }}>Status</TableCell>
-                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '20%' }}>Customer</TableCell>
-                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '20%' }}>Tech Account</TableCell>
-                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '10%' }}>End Date</TableCell>
-                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '15%' }}>Comment</TableCell>
-                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '10%' }}>Monthly Cost</TableCell>
-                            <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '10%' }}>Assigned Date</TableCell>
+                            <TableCell sx={{fontWeight: '600', fontSize: '0.8rem', width: '15%'}}>Number</TableCell>
+                            <TableCell sx={{fontWeight: '600', fontSize: '0.8rem', width: '10%'}}>Status</TableCell>
+                            <TableCell sx={{fontWeight: '600', fontSize: '0.8rem', width: '20%'}}>Customer</TableCell>
+                            <TableCell sx={{fontWeight: '600', fontSize: '0.8rem', width: '20%'}}>Tech
+                                Account</TableCell>
+                            <TableCell sx={{fontWeight: '600', fontSize: '0.8rem', width: '10%'}}>End Date</TableCell>
+                            <TableCell sx={{fontWeight: '600', fontSize: '0.8rem', width: '15%'}}>Comment</TableCell>
+                            <TableCell sx={{fontWeight: '600', fontSize: '0.8rem', width: '10%'}}>Monthly
+                                Cost</TableCell>
+                            <TableCell sx={{fontWeight: '600', fontSize: '0.8rem', width: '10%'}}>Assigned
+                                Date</TableCell>
                         </TableRow>
                     </TableHead>
                 </Table>
@@ -229,24 +237,58 @@ const PhoneNumbersTable: React.FC<{
                     hasMore={hasMore}
                     loader={
                         <Box display="flex" justifyContent="center" my={1}>
-                            <CircularProgress size={20} />
+                            <CircularProgress size={20}/>
                         </Box>
                     }
                     scrollableTarget={`scrollable-phone-numbers-${countryId}`}
-                    style={{ overflow: 'hidden' }}
+                    style={{overflow: 'hidden'}}
                 >
-                    <Table size="small" sx={{ tableLayout: 'fixed' }}>
+                    <Table size="small" sx={{tableLayout: 'fixed'}}>
                         <TableBody>
                             {displayedNumbers.map((phone: PhoneNumberData, idx: number) => (
                                 <TableRow key={idx} hover>
-                                    <TableCell sx={{ fontSize: '0.8rem', width: '15%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{phone.number}</TableCell>
-                                    <TableCell sx={{ fontSize: '0.8rem', width: '10%' }}><StatusBadge status={phone.status} /></TableCell>
-                                    <TableCell sx={{ fontSize: '0.8rem', width: '20%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{phone.customer}</TableCell>
-                                    <TableCell sx={{ fontSize: '0.8rem', width: '20%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{phone.techAccount}</TableCell>
-                                    <TableCell sx={{ fontSize: '0.8rem', width: '10%' }}>{phone.endDate ? new Date(phone.endDate).toLocaleDateString() : '-'}</TableCell>
-                                    <TableCell sx={{ fontSize: '0.8rem', width: '15%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{phone.commentare}</TableCell>
-                                    <TableCell sx={{ fontSize: '0.8rem', width: '10%' }}>{phone.monthlyCost?.toFixed(2) ?? '-'}</TableCell>
-                                    <TableCell sx={{ fontSize: '0.8rem', width: '10%' }}>{phone.assignedDate ? new Date(phone.assignedDate).toLocaleDateString() : '-'}</TableCell>
+                                    <TableCell sx={{
+                                        fontSize: '0.8rem',
+                                        width: '15%',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}>{phone.number}</TableCell>
+                                    <TableCell sx={{fontSize: '0.8rem', width: '10%'}}><StatusBadge
+                                        status={phone.status}/></TableCell>
+                                    <TableCell sx={{
+                                        fontSize: '0.8rem',
+                                        width: '20%',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}>{phone.customer}</TableCell>
+                                    <TableCell sx={{
+                                        fontSize: '0.8rem',
+                                        width: '20%',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}>{phone.techAccount}</TableCell>
+                                    <TableCell sx={{
+                                        fontSize: '0.8rem',
+                                        width: '10%'
+                                    }}>{phone.endDate ? new Date(phone.endDate).toLocaleDateString() : '-'}</TableCell>
+                                    <TableCell sx={{
+                                        fontSize: '0.8rem',
+                                        width: '15%',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}>{phone.commentare}</TableCell>
+                                    <TableCell sx={{
+                                        fontSize: '0.8rem',
+                                        width: '10%'
+                                    }}>{phone.monthlyCost?.toFixed(2) ?? '-'}</TableCell>
+                                    <TableCell sx={{
+                                        fontSize: '0.8rem',
+                                        width: '10%'
+                                    }}>{phone.assignedDate ? new Date(phone.assignedDate).toLocaleDateString() : '-'}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -257,7 +299,7 @@ const PhoneNumbersTable: React.FC<{
     );
 };
 
-const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
+const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
     const [expandedCountries, setExpandedCountries] = useState<{ [key: string]: boolean }>({});
     const [phoneNumbersData, setPhoneNumbersData] = useState<{ [key: string]: any[] }>({});
     const [loadingPhoneNumbers, setLoadingPhoneNumbers] = useState<{ [key: string]: boolean }>({});
@@ -272,7 +314,7 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
         }));
 
         if (!isCurrentlyExpanded && !phoneNumbersData[countryId]) {
-            setLoadingPhoneNumbers(prev => ({ ...prev, [countryId]: true }));
+            setLoadingPhoneNumbers(prev => ({...prev, [countryId]: true}));
             try {
                 const response = await fetch(`http://localhost:8080/numbers/overview/country/${encodeURIComponent(countryName)}`);
                 if (!response.ok) {
@@ -319,7 +361,7 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
                     [countryId]: 0
                 }));
             } finally {
-                setLoadingPhoneNumbers(prev => ({ ...prev, [countryId]: false }));
+                setLoadingPhoneNumbers(prev => ({...prev, [countryId]: false}));
             }
         } else if (!isCurrentlyExpanded && phoneNumbersData[countryId]) {
             setDisplayedPhoneNumbersCount(prev => ({
@@ -344,7 +386,7 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
                     backgroundColor: alpha(calmTheme.palette.primary.main, 0.12)
                 }}>
                     <TableRow>
-                        <TableCell sx={{ width: '5%' }}>
+                        <TableCell sx={{width: '5%'}}>
                             <Typography variant="subtitle2" fontWeight="600"></Typography>
                         </TableCell>
                         <TableCell sx={{
@@ -431,8 +473,8 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
                                                 transition: 'all 0.2s'
                                             }}
                                         >
-                                            {expandedCountries[stat.countryId] ? <KeyboardArrowUpIcon /> :
-                                                <KeyboardArrowDownIcon />}
+                                            {expandedCountries[stat.countryId] ? <KeyboardArrowUpIcon/> :
+                                                <KeyboardArrowDownIcon/>}
                                         </IconButton>
                                     </TableCell>
                                     <TableCell>
@@ -480,7 +522,7 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
                                             timeout="auto"
                                             unmountOnExit
                                         >
-                                            <Box sx={{ margin: 2 }}>
+                                            <Box sx={{margin: 2}}>
                                                 <Box
                                                     sx={{
                                                         display: 'flex',
@@ -526,7 +568,7 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
                         ))
                     ) : (
                         <TableRow>
-                            <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                            <TableCell colSpan={7} align="center" sx={{py: 3}}>
                                 <Typography variant="body2" color="textSecondary">
                                     No country statistics available
                                 </Typography>
@@ -539,7 +581,7 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
     );
 };
 
-const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }) => {
+const ProviderRow: React.FC<ProviderRowProps> = ({provider, onProviderUpdated}) => {
     const [open, setOpen] = useState(false);
 
     function checkStatus(deletedAt: string) {
@@ -573,7 +615,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
                     borderBottom: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}`
                 }}
             >
-                <TableCell sx={{ width: '5%' }}>
+                <TableCell sx={{width: '5%'}}>
                     <IconButton
                         aria-label="expand row"
                         size="small"
@@ -587,7 +629,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
                             transition: 'all 0.2s'
                         }}
                     >
-                        {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                        {open ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
                     </IconButton>
                 </TableCell>
                 <TableCell>
@@ -596,7 +638,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
                     </Typography>
                 </TableCell>
                 <TableCell>
-                    <StatusBadge status={status} />
+                    <StatusBadge status={status}/>
                 </TableCell>
                 <TableCell>
                     <Typography variant="body2" fontWeight="500" color="text.primary">
@@ -633,7 +675,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
                         timeout="auto"
                         unmountOnExit
                     >
-                        <Box sx={{ margin: 3 }}>
+                        <Box sx={{margin: 3}}>
                             <Box
                                 sx={{
                                     display: 'flex',
@@ -665,7 +707,7 @@ const ProviderRow: React.FC<ProviderRowProps> = ({ provider, onProviderUpdated }
                                     {provider.providerName}
                                 </Typography>
                             </Box>
-                            <CountryStatsTable stats={provider.countryStats || []} />
+                            <CountryStatsTable stats={provider.countryStats || []}/>
                         </Box>
                     </Collapse>
                 </TableCell>
@@ -747,7 +789,7 @@ export const ProviderOverview: React.FC = () => {
     }, [allProviders, filters]);
 
     const handleFilterChange = (field: string, value: string) => {
-        setFilters(prev => ({ ...prev, [field]: value }));
+        setFilters(prev => ({...prev, [field]: value}));
     };
 
     const handleProviderUpdate = (updatedProvider: NumberProvider) => {
@@ -762,7 +804,7 @@ export const ProviderOverview: React.FC = () => {
             <Card
                 elevation={6}
                 sx={{
-                    p: { xs: 2, sm: 3 },
+                    p: {xs: 2, sm: 3},
                     borderRadius: 3,
                     maxWidth: '100vw',
                     background: `linear-gradient(135deg, ${alpha(calmTheme.palette.primary.main, 0.05)} 0%, ${alpha(calmTheme.palette.secondary.main, 0.05)} 100%)`,
@@ -807,7 +849,7 @@ export const ProviderOverview: React.FC = () => {
                     }}
                 >
                     <Box display="flex" flexWrap="wrap" gap={2} alignItems="center">
-                        <Typography variant="subtitle2" sx={{ minWidth: '100px', fontWeight: 600 }}>Filter
+                        <Typography variant="subtitle2" sx={{minWidth: '100px', fontWeight: 600}}>Filter
                             by:</Typography>
                         <TextField
                             label="Provider Name"
@@ -976,7 +1018,7 @@ export const ProviderOverview: React.FC = () => {
                         boxShadow: `0 4px 20px ${alpha(calmTheme.palette.common.black, 0.06)}`
                     }}
                 >
-                    <Table sx={{ minWidth: 750 }} aria-label="providers table">
+                    <Table sx={{minWidth: 750}} aria-label="providers table">
                         <TableHead>
                             <TableRow>
                                 <TableCell sx={{
@@ -986,7 +1028,7 @@ export const ProviderOverview: React.FC = () => {
                                     textTransform: 'uppercase',
                                     letterSpacing: '0.5px',
                                     width: '5%'
-                                }} />
+                                }}/>
                                 <TableCell sx={{
                                     fontWeight: '700',
                                     color: calmTheme.palette.common.white,
@@ -1035,11 +1077,11 @@ export const ProviderOverview: React.FC = () => {
                             {displayedProviders.length > 0 ? (
                                 displayedProviders.map(provider => (
                                     <ProviderRow key={provider.providerId} provider={provider}
-                                                 onProviderUpdated={handleProviderUpdate} />
+                                                 onProviderUpdated={handleProviderUpdate}/>
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                                    <TableCell colSpan={7} align="center" sx={{py: 6}}>
                                         <Typography
                                             variant="h6"
                                             sx={{
