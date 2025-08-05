@@ -1,8 +1,11 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     Box, Typography, Paper, Table, TableHead, TableBody, TableRow, TableCell,
-    TextField, Select, MenuItem, Button, CircularProgress
+    TextField, Select, MenuItem, Button, CircularProgress, Dialog, DialogTitle,
+    DialogContent, DialogActions, LinearProgress, Alert
 } from '@mui/material';
+import jsPDF from 'jspdf';
+import { autoTable } from 'jspdf-autotable';
 
 const filterFields = [
     { label: "Number Range From", type: 'text', select: ['equals', 'greater', 'lower'] },
@@ -139,6 +142,10 @@ export function RangeAssignment() {
     const [page, setPage] = useState(0);
     const [country, setCountry] = useState('United States');
     const [isInitialSearch, setIsInitialSearch] = useState(true);
+    const [printDialogOpen, setPrintDialogOpen] = useState(false);
+    const [printLoading, setPrintLoading] = useState(false);
+    const [printProgress, setPrintProgress] = useState(0);
+    const [printData, setPrintData] = useState<NumberOverview[]>([]);
 
     const handleChange = (key: string, value: any) => {
         setFilter((f: any) => ({ ...f, [key]: value }));
@@ -149,33 +156,74 @@ export function RangeAssignment() {
         return dateString.split('T')[0];
     };
 
-    const searchNumbers = async (reset = false) => {
-        if (!country.trim()) return;
+    const buildFilterPayload = useCallback(() => {
+        const filterPayload: any = {
+            countryName: country || undefined
+        };
+        if (filter["Number Range From"]) {
+            filterPayload.numberRangeFrom = filter["Number Range From"];
+            filterPayload.numberRangeFromOp = filter["Number Range From_op"] || "equals";
+        }
+        if (filter["Number Range To"]) {
+            filterPayload.numberRangeTo = filter["Number Range To"];
+            filterPayload.numberRangeToOp = filter["Number Range To_op"] || "equals";
+        }
+        if (filter["Start Date"]) {
+            filterPayload.startDate = filter["Start Date"] + "T00:00:00";
+            filterPayload.startDateOp = filter["Start Date_op"] || "equals";
+        }
+        if (filter["End Date"]) {
+            filterPayload.endDate = filter["End Date"] + "T23:59:59";
+            filterPayload.endDateOp = filter["End Date_op"] || "equals";
+        }
+        if (filter["Customer Name"]) {
+            filterPayload.customerName = filter["Customer Name"];
+            filterPayload.customerNameOp = filter["Customer Name_op"] || "contains";
+        }
+        if (filter["Tech Account Name"]) {
+            filterPayload.techAccountName = filter["Tech Account Name"];
+            filterPayload.techAccountNameOp = filter["Tech Account Name_op"] || "contains";
+        }
+        if (filter["Customer Status"]) {
+            filterPayload.customerStatus = filter["Customer Status"];
+            filterPayload.customerStatusOp = filter["Customer Status_op"] || "equals";
+        }
+        if (filter["Tech Account Status"]) {
+            filterPayload.techAccountStatus = filter["Tech Account Status"];
+            filterPayload.techAccountStatusOp = filter["Tech Account Status_op"] || "equals";
+        }
+        if (filter["Service Detail"]) {
+            filterPayload.serviceDetail = filter["Service Detail"];
+            filterPayload.serviceDetailOp = filter["Service Detail_op"] || "contains";
+        }
+        if (filter["Comment"]) {
+            filterPayload.comment = filter["Comment"];
+            filterPayload.commentOp = filter["Comment_op"] || "contains";
+        }
+        return filterPayload;
+    }, [country, filter]);
 
+    const searchNumbers = useCallback(async (reset = false) => {
         const currentPage = reset ? 0 : page;
         setLoading(true);
-
         try {
-            // Добавляем таймаут для защиты от слишком долгих запросов
+            const filterPayload = buildFilterPayload();
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 секунд таймаут
-
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
             const response = await fetch(
-                `http://localhost:8080/numbers/overview/country/${encodeURIComponent(country)}?page=${currentPage}&size=20`,
-                { signal: controller.signal }
+                `http://localhost:8080/numbers/overview/search?page=${currentPage}&size=20`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(filterPayload),
+                    signal: controller.signal
+                }
             );
-
             clearTimeout(timeoutId);
-
             if (response.ok) {
                 const data: NumberOverview[] = await response.json();
-
-                // Защита от слишком большого ответа
-                if (data.length > 100) {
-                    console.error('Response too large, limiting to first 20 items');
-                    data.splice(20);
-                }
-
                 if (reset) {
                     setTableData(data);
                     setIsInitialSearch(false);
@@ -184,7 +232,6 @@ export function RangeAssignment() {
                     setTableData(prev => [...prev, ...data]);
                     setPage(prev => prev + 1);
                 }
-
                 setHasMore(data.length === 20);
             } else {
                 console.error('Failed to fetch data');
@@ -207,148 +254,16 @@ export function RangeAssignment() {
         } finally {
             setLoading(false);
         }
-    };
-
-    const loadMore = useCallback(() => {
-        if (!loading && hasMore && !isInitialSearch) {
-            searchNumbers(false);
-        }
-    }, [loading, hasMore, isInitialSearch, page, country]);
+    }, [buildFilterPayload, country, filter, page]);
 
     const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
         const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
         if (scrollHeight - scrollTop <= clientHeight + 100) {
-            loadMore();
-        }
-    }, [loadMore]);
-
-    const compareString = (value: string, filterValue: string, operator: string): boolean => {
-        if (!value) return false;
-
-        switch (operator) {
-            case 'equals':
-                return value.toLowerCase() === filterValue.toLowerCase();
-            case 'contains':
-                return value.toLowerCase().includes(filterValue.toLowerCase());
-            case 'start with':
-                return value.toLowerCase().startsWith(filterValue.toLowerCase());
-            case 'end with':
-                return value.toLowerCase().endsWith(filterValue.toLowerCase());
-            default:
-                return true;
-        }
-    };
-
-    const compareDate = (value: string | null, filterValue: string, operator: string): boolean => {
-        if (!value || !filterValue) return true;
-
-        try {
-            const itemDate = new Date(value);
-            const filterDate = new Date(filterValue);
-
-            if (isNaN(itemDate.getTime()) || isNaN(filterDate.getTime())) return true;
-
-            switch (operator) {
-                case 'equals':
-                    return itemDate.toDateString() === filterDate.toDateString();
-                case 'greater':
-                    return itemDate >= filterDate;
-                case 'lower':
-                    return itemDate <= filterDate;
-                default:
-                    return true;
+            if (!loading && hasMore && !isInitialSearch) {
+                searchNumbers(false);
             }
-        } catch {
-            return true;
         }
-    };
-
-    const compareNumberRangeFrom = (number: string, filterValue: string, operator: string): boolean => {
-        const num = parseInt(number, 10);
-        const filterNum = parseInt(filterValue, 10);
-
-        if (isNaN(num) || isNaN(filterNum)) return true;
-
-        switch (operator) {
-            case 'equals':
-                return num === filterNum;
-            case 'greater':
-                return num >= filterNum;
-            case 'lower':
-                return num <= filterNum;
-            default:
-                return true;
-        }
-    };
-
-    const compareNumberRangeTo = (number: string, filterValue: string, operator: string): boolean => {
-        const num = parseInt(number, 10);
-        const filterNum = parseInt(filterValue, 10);
-
-        if (isNaN(num) || isNaN(filterNum)) return true;
-
-        switch (operator) {
-            case 'equals':
-                return num === filterNum;
-            case 'greater':
-                return num >= filterNum;
-            case 'lower':
-                return num <= filterNum;
-            default:
-                return true;
-        }
-    };
-
-    const applyFilters = useCallback((data: NumberOverview[]): NumberOverview[] => {
-        return data.filter(item => {
-            for (const field of filterFields) {
-                const fieldName = field.label;
-                const fieldValue = filter[fieldName];
-                const operator = filter[fieldName + '_op'] || field.select[0];
-
-                if (fieldValue === undefined || fieldValue === '') continue;
-
-                switch (fieldName) {
-                    case "Number Range From":
-                        if (!compareNumberRangeFrom(item.number, fieldValue, operator)) return false;
-                        break;
-                    case "Number Range To":
-                        if (!compareNumberRangeTo(item.number, fieldValue, operator)) return false;
-                        break;
-                    case "Customer Name":
-                        if (!compareString(item.customerName, fieldValue, operator)) return false;
-                        break;
-                    case "Tech Account Name":
-                        if (!compareString(item.techAccountName, fieldValue, operator)) return false;
-                        break;
-                    case "Customer Status":
-                        if (!compareString(item.customerStatus, fieldValue, operator)) return false;
-                        break;
-                    case "Tech Account Status":
-                        if (!compareString(item.techAccountStatus, fieldValue, operator)) return false;
-                        break;
-                    case "Service Detail":
-                        if (!compareString(item.serviceDetail, fieldValue, operator)) return false;
-                        break;
-                    case "Comment":
-                        const comment = item.comment || '';
-                        if (!compareString(comment, fieldValue, operator)) return false;
-                        break;
-                    case "Start Date":
-                        if (!compareDate(item.startDate, fieldValue, operator)) return false;
-                        break;
-                    case "End Date":
-                        if (!compareDate(item.endDate, fieldValue, operator)) return false;
-                        break;
-                }
-            }
-            return true;
-        });
-    }, [filter]);
-
-    const filteredData = useMemo(() => {
-        return applyFilters(tableData);
-    }, [tableData, applyFilters]);
+    }, [loading, hasMore, isInitialSearch, searchNumbers]);
 
     const handleSearch = () => {
         setPage(0);
@@ -357,13 +272,217 @@ export function RangeAssignment() {
         searchNumbers(true);
     };
 
+    const loadAllDataForPrint = async () => {
+        setPrintLoading(true);
+        setPrintProgress(0);
+        const allData: NumberOverview[] = [];
+        let currentPage = 0;
+        let hasMoreData = true;
+        let totalRecords = 0;
+
+        try {
+            const filterPayload = buildFilterPayload();
+
+            // Сначала получим общее количество записей
+            try {
+                const countResponse = await fetch(
+                    `http://localhost:8080/numbers/overview/count`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(filterPayload),
+                    }
+                );
+
+                if (countResponse.ok) {
+                    totalRecords = await countResponse.json();
+                    console.log(`Total records to print: ${totalRecords}`);
+                }
+            } catch (countError) {
+                console.warn('Could not get record count, proceeding without it:', countError);
+            }
+
+            // Загружаем данные постранично
+            while (hasMoreData) {
+                console.log(`Loading page ${currentPage} for print...`);
+
+                const response = await fetch(
+                    `http://localhost:8080/numbers/overview/search?page=${currentPage}&size=100`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(filterPayload),
+                    }
+                );
+
+                if (response.ok) {
+                    const data: NumberOverview[] = await response.json();
+                    console.log(`Loaded ${data.length} records from page ${currentPage}`);
+
+                    if (data.length === 0) {
+                        hasMoreData = false;
+                        break;
+                    }
+
+                    allData.push(...data);
+
+                    // Обновляем прогресс
+                    const progress = totalRecords > 0
+                        ? Math.min((allData.length / totalRecords) * 100, 90)
+                        : Math.min(currentPage * 10, 90);
+                    setPrintProgress(progress);
+
+                    // Если получили меньше 100 записей, это последняя страница
+                    if (data.length < 100) {
+                        hasMoreData = false;
+                    } else {
+                        currentPage++;
+                    }
+
+                    // Небольшая задержка чтобы не перегружать сервер
+                    await new Promise(resolve => setTimeout(resolve, 100));
+
+                } else {
+                    console.error(`Failed to load page ${currentPage}:`, response.status, response.statusText);
+                    hasMoreData = false;
+                }
+            }
+
+            console.log(`Total loaded records for print: ${allData.length}`);
+
+            if (allData.length === 0) {
+                console.warn('No data loaded for print');
+                return false;
+            }
+
+            setPrintData(allData);
+            setPrintProgress(100);
+            return true;
+
+        } catch (error) {
+            console.error('Error loading all data for print:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            alert('Failed to load all data for printing: ' + errorMessage);
+            return false;
+        } finally {
+            setPrintLoading(false);
+        }
+    };
+
+    const generatePDF = () => {
+        try {
+            console.log('Generating PDF with', printData.length, 'records');
+
+            if (printData.length === 0) {
+                console.warn('No data to generate PDF');
+                alert('No data available to generate PDF');
+                return;
+            }
+
+            const doc = new jsPDF('landscape');
+            doc.setFontSize(16);
+            doc.text('Range Assignment Report', 14, 15);
+            doc.setFontSize(10);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 22);
+            doc.text(`Total Records: ${printData.length}`, 14, 28);
+
+            const tableData = printData.map(row => [
+                row.number,
+                formatDate(row.startDate),
+                formatDate(row.endDate),
+                row.customerName,
+                row.techAccountName,
+                row.customerStatus,
+                row.techAccountStatus,
+                row.serviceDetail,
+                row.comment || ''
+            ]);
+
+            console.log('Table data prepared:', tableData.length, 'rows');
+
+            autoTable(doc, {
+                head: [['Number', 'Start Date', 'End Date', 'Customer', 'Tech Account',
+                    'Cust Status', 'Acct Status', 'Service Detail', 'Comment']],
+                body: tableData,
+                startY: 35,
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [230, 247, 255] },
+                alternateRowStyles: { fillColor: [249, 249, 249] },
+                margin: { top: 35, right: 10, bottom: 10, left: 10 },
+                theme: 'grid',
+                tableWidth: 'auto',
+                columnStyles: {
+                    0: { cellWidth: 25 },
+                    1: { cellWidth: 25 },
+                    2: { cellWidth: 25 },
+                    3: { cellWidth: 30 },
+                    4: { cellWidth: 30 },
+                    5: { cellWidth: 20 },
+                    6: { cellWidth: 20 },
+                    7: { cellWidth: 25 },
+                    8: { cellWidth: 30 },
+                }
+            });
+
+            const filename = `range_assignment_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(filename);
+            console.log('PDF saved as:', filename);
+
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            alert('Failed to generate PDF: ' + errorMessage);
+        }
+    };
+
+    const handlePrint = async () => {
+        console.log('Starting print process...');
+        setPrintDialogOpen(true);
+
+        try {
+            const success = await loadAllDataForPrint();
+
+            if (success) {
+                console.log('Data loaded successfully, generating PDF...');
+                setTimeout(() => {
+                    generatePDF();
+                    setPrintDialogOpen(false);
+                    setPrintData([]);
+                    setPrintProgress(0);
+                }, 500);
+            } else {
+                console.error('Failed to load data for print');
+                alert('Failed to load data for printing. Please check your search criteria.');
+                setPrintDialogOpen(false);
+                setPrintData([]);
+                setPrintProgress(0);
+            }
+        } catch (error) {
+            console.error('Error in print process:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            alert('Error during print process: ' + errorMessage);
+            setPrintDialogOpen(false);
+            setPrintData([]);
+            setPrintProgress(0);
+        }
+    };
+
+    const handleDebugPrint = () => {
+        console.log('Current table data:', tableData);
+        console.log('Current filter:', filter);
+        console.log('Current country:', country);
+        alert(`Current data: ${tableData.length} records. Check console for details.`);
+    };
+
     return (
         <Paper sx={styles.mainContainer}>
             <Typography variant="h5" sx={styles.title}>Range Assignment</Typography>
-
             <Box sx={{ mb: 3 }}>
                 <Typography sx={styles.sectionTitle}>Search</Typography>
-
                 <Box sx={{ mb: 2 }}>
                     <TextField
                         size="small"
@@ -371,9 +490,9 @@ export function RangeAssignment() {
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
                         sx={{ width: 300 }}
+                        placeholder="Leave empty to search all countries"
                     />
                 </Box>
-
                 <Box sx={styles.filterContainer}>
                     {filterFields.map((field) => (
                         <Box key={field.label} sx={styles.filterRow}>
@@ -405,14 +524,24 @@ export function RangeAssignment() {
                     <Button
                         variant="contained"
                         onClick={handleSearch}
-                        disabled={loading || !country.trim()}
+                        disabled={loading}
                     >
                         {loading && isInitialSearch ? <CircularProgress size={24} /> : 'Search'}
                     </Button>
-                    <Button>Print the result</Button>
+                    <Button
+                        onClick={handlePrint}
+                        disabled={tableData.length === 0}
+                    >
+                        Print the result
+                    </Button>
+                    <Button
+                        onClick={handleDebugPrint}
+                        color="secondary"
+                    >
+                        Debug Print Data
+                    </Button>
                 </Box>
             </Box>
-
             <Paper sx={styles.tableContainer}>
                 <Typography sx={styles.sectionTitle}>Range Table</Typography>
                 {loading && isInitialSearch ? (
@@ -439,7 +568,7 @@ export function RangeAssignment() {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {filteredData.map((row) => (
+                                {tableData.map((row) => (
                                     <TableRow key={row.numberId} sx={styles.tableRow}>
                                         <TableCell>{row.number}</TableCell>
                                         <TableCell>{formatDate(row.startDate)}</TableCell>
@@ -467,6 +596,37 @@ export function RangeAssignment() {
                     </Box>
                 )}
             </Paper>
+            <Dialog open={printDialogOpen} maxWidth="sm" fullWidth>
+                <DialogTitle>Preparing PDF Export</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ width: '100%', mt: 2 }}>
+                        <Typography variant="body2" sx={{ mb: 2 }}>
+                            Loading all data for export...
+                        </Typography>
+                        <LinearProgress variant="determinate" value={printProgress} />
+                        <Typography variant="body2" sx={{ mt: 1, textAlign: 'center' }}>
+                            {printProgress}%
+                        </Typography>
+                        {printProgress === 100 && (
+                            <Alert severity="success" sx={{ mt: 2 }}>
+                                Data loaded successfully! Generating PDF...
+                            </Alert>
+                        )}
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => {
+                            setPrintDialogOpen(false);
+                            setPrintData([]);
+                            setPrintProgress(0);
+                        }}
+                        disabled={printLoading}
+                    >
+                        Cancel
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Paper>
     );
 }
