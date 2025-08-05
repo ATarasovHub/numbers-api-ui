@@ -272,6 +272,73 @@ export function RangeAssignment() {
         searchNumbers(true);
     };
 
+    // ИЗМЕНЕНО: generatePDF теперь принимает данные как параметр
+    const generatePDF = useCallback((dataToPrint: NumberOverview[]) => {
+        try {
+            console.log('Generating PDF with', dataToPrint.length, 'records');
+
+            if (dataToPrint.length === 0) {
+                console.warn('No data to generate PDF');
+                alert('No data available to generate PDF');
+                return;
+            }
+
+            const doc = new jsPDF('landscape');
+            doc.setFontSize(16);
+            doc.text('Range Assignment Report', 14, 15);
+            doc.setFontSize(10);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 22);
+            doc.text(`Total Records: ${dataToPrint.length}`, 14, 28);
+
+            const tableData = dataToPrint.map(row => [
+                row.number,
+                formatDate(row.startDate),
+                formatDate(row.endDate),
+                row.customerName,
+                row.techAccountName,
+                row.customerStatus,
+                row.techAccountStatus,
+                row.serviceDetail,
+                row.comment || ''
+            ]);
+
+            console.log('Table data prepared:', tableData.length, 'rows');
+
+            autoTable(doc, {
+                head: [['Number', 'Start Date', 'End Date', 'Customer', 'Tech Account',
+                    'Cust Status', 'Acct Status', 'Service Detail', 'Comment']],
+                body: tableData,
+                startY: 35,
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [230, 247, 255] },
+                alternateRowStyles: { fillColor: [249, 249, 249] },
+                margin: { top: 35, right: 10, bottom: 10, left: 10 },
+                theme: 'grid',
+                tableWidth: 'auto',
+                columnStyles: {
+                    0: { cellWidth: 25 },
+                    1: { cellWidth: 25 },
+                    2: { cellWidth: 25 },
+                    3: { cellWidth: 30 },
+                    4: { cellWidth: 30 },
+                    5: { cellWidth: 20 },
+                    6: { cellWidth: 20 },
+                    7: { cellWidth: 25 },
+                    8: { cellWidth: 30 },
+                }
+            });
+
+            const filename = `range_assignment_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(filename);
+            console.log('PDF saved as:', filename);
+
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            alert('Failed to generate PDF: ' + errorMessage);
+        }
+    }, []);
+
     const loadAllDataForPrint = async () => {
         setPrintLoading(true);
         setPrintProgress(0);
@@ -356,86 +423,20 @@ export function RangeAssignment() {
 
             if (allData.length === 0) {
                 console.warn('No data loaded for print');
-                return false;
+                return { success: false, data: [] };
             }
 
             setPrintData(allData);
             setPrintProgress(100);
-            return true;
+            return { success: true, data: allData };
 
         } catch (error) {
             console.error('Error loading all data for print:', error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
             alert('Failed to load all data for printing: ' + errorMessage);
-            return false;
+            return { success: false, data: [] };
         } finally {
             setPrintLoading(false);
-        }
-    };
-
-    const generatePDF = () => {
-        try {
-            console.log('Generating PDF with', printData.length, 'records');
-
-            if (printData.length === 0) {
-                console.warn('No data to generate PDF');
-                alert('No data available to generate PDF');
-                return;
-            }
-
-            const doc = new jsPDF('landscape');
-            doc.setFontSize(16);
-            doc.text('Range Assignment Report', 14, 15);
-            doc.setFontSize(10);
-            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 22);
-            doc.text(`Total Records: ${printData.length}`, 14, 28);
-
-            const tableData = printData.map(row => [
-                row.number,
-                formatDate(row.startDate),
-                formatDate(row.endDate),
-                row.customerName,
-                row.techAccountName,
-                row.customerStatus,
-                row.techAccountStatus,
-                row.serviceDetail,
-                row.comment || ''
-            ]);
-
-            console.log('Table data prepared:', tableData.length, 'rows');
-
-            autoTable(doc, {
-                head: [['Number', 'Start Date', 'End Date', 'Customer', 'Tech Account',
-                    'Cust Status', 'Acct Status', 'Service Detail', 'Comment']],
-                body: tableData,
-                startY: 35,
-                styles: { fontSize: 8, cellPadding: 2 },
-                headStyles: { fillColor: [230, 247, 255] },
-                alternateRowStyles: { fillColor: [249, 249, 249] },
-                margin: { top: 35, right: 10, bottom: 10, left: 10 },
-                theme: 'grid',
-                tableWidth: 'auto',
-                columnStyles: {
-                    0: { cellWidth: 25 },
-                    1: { cellWidth: 25 },
-                    2: { cellWidth: 25 },
-                    3: { cellWidth: 30 },
-                    4: { cellWidth: 30 },
-                    5: { cellWidth: 20 },
-                    6: { cellWidth: 20 },
-                    7: { cellWidth: 25 },
-                    8: { cellWidth: 30 },
-                }
-            });
-
-            const filename = `range_assignment_${new Date().toISOString().split('T')[0]}.pdf`;
-            doc.save(filename);
-            console.log('PDF saved as:', filename);
-
-        } catch (error) {
-            console.error('Error generating PDF:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-            alert('Failed to generate PDF: ' + errorMessage);
         }
     };
 
@@ -444,12 +445,15 @@ export function RangeAssignment() {
         setPrintDialogOpen(true);
 
         try {
-            const success = await loadAllDataForPrint();
+            const result = await loadAllDataForPrint();
 
-            if (success) {
+            if (result.success && result.data.length > 0) {
                 console.log('Data loaded successfully, generating PDF...');
+                console.log('Data to print:', result.data.length, 'records');
+
+                // ИЗМЕНЕНО: Передаем данные напрямую в generatePDF
                 setTimeout(() => {
-                    generatePDF();
+                    generatePDF(result.data);
                     setPrintDialogOpen(false);
                     setPrintData([]);
                     setPrintProgress(0);
@@ -475,7 +479,8 @@ export function RangeAssignment() {
         console.log('Current table data:', tableData);
         console.log('Current filter:', filter);
         console.log('Current country:', country);
-        alert(`Current data: ${tableData.length} records. Check console for details.`);
+        console.log('Current print data:', printData);
+        alert(`Current data: ${tableData.length} records. Print data: ${printData.length} records. Check console for details.`);
     };
 
     return (
