@@ -272,7 +272,6 @@ export function RangeAssignment() {
         searchNumbers(true);
     };
 
-    // ИЗМЕНЕНО: generatePDF теперь принимает данные как параметр
     const generatePDF = useCallback((dataToPrint: NumberOverview[]) => {
         try {
             console.log('Generating PDF with', dataToPrint.length, 'records');
@@ -339,96 +338,57 @@ export function RangeAssignment() {
         }
     }, []);
 
+    // ИЗМЕНЕНО: Упрощенная функция загрузки данных для печати
     const loadAllDataForPrint = async () => {
         setPrintLoading(true);
         setPrintProgress(0);
-        const allData: NumberOverview[] = [];
-        let currentPage = 0;
-        let hasMoreData = true;
-        let totalRecords = 0;
 
         try {
             const filterPayload = buildFilterPayload();
 
-            // Сначала получим общее количество записей
-            try {
-                const countResponse = await fetch(
-                    `http://localhost:8080/numbers/overview/count`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(filterPayload),
-                    }
-                );
+            console.log('Loading all data for print from /numbers/overview/searchP...');
 
-                if (countResponse.ok) {
-                    totalRecords = await countResponse.json();
-                    console.log(`Total records to print: ${totalRecords}`);
+            // Имитация прогресса загрузки
+            const progressInterval = setInterval(() => {
+                setPrintProgress(prev => {
+                    if (prev >= 90) {
+                        clearInterval(progressInterval);
+                        return 90;
+                    }
+                    return prev + 10;
+                });
+            }, 200);
+
+            const response = await fetch(
+                `http://localhost:8080/numbers/overview/searchP`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(filterPayload),
                 }
-            } catch (countError) {
-                console.warn('Could not get record count, proceeding without it:', countError);
-            }
+            );
 
-            // Загружаем данные постранично
-            while (hasMoreData) {
-                console.log(`Loading page ${currentPage} for print...`);
+            clearInterval(progressInterval);
 
-                const response = await fetch(
-                    `http://localhost:8080/numbers/overview/search?page=${currentPage}&size=100`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(filterPayload),
-                    }
-                );
+            if (response.ok) {
+                const data: NumberOverview[] = await response.json();
+                console.log(`Loaded ${data.length} records for print`);
 
-                if (response.ok) {
-                    const data: NumberOverview[] = await response.json();
-                    console.log(`Loaded ${data.length} records from page ${currentPage}`);
-
-                    if (data.length === 0) {
-                        hasMoreData = false;
-                        break;
-                    }
-
-                    allData.push(...data);
-
-                    // Обновляем прогресс
-                    const progress = totalRecords > 0
-                        ? Math.min((allData.length / totalRecords) * 100, 90)
-                        : Math.min(currentPage * 10, 90);
-                    setPrintProgress(progress);
-
-                    // Если получили меньше 100 записей, это последняя страница
-                    if (data.length < 100) {
-                        hasMoreData = false;
-                    } else {
-                        currentPage++;
-                    }
-
-                    // Небольшая задержка чтобы не перегружать сервер
-                    await new Promise(resolve => setTimeout(resolve, 100));
-
-                } else {
-                    console.error(`Failed to load page ${currentPage}:`, response.status, response.statusText);
-                    hasMoreData = false;
+                if (data.length === 0) {
+                    console.warn('No data loaded for print');
+                    return { success: false, data: [] };
                 }
-            }
 
-            console.log(`Total loaded records for print: ${allData.length}`);
+                setPrintData(data);
+                setPrintProgress(100);
+                return { success: true, data: data };
 
-            if (allData.length === 0) {
-                console.warn('No data loaded for print');
+            } else {
+                console.error('Failed to load data for print:', response.status, response.statusText);
                 return { success: false, data: [] };
             }
-
-            setPrintData(allData);
-            setPrintProgress(100);
-            return { success: true, data: allData };
 
         } catch (error) {
             console.error('Error loading all data for print:', error);
@@ -451,7 +411,6 @@ export function RangeAssignment() {
                 console.log('Data loaded successfully, generating PDF...');
                 console.log('Data to print:', result.data.length, 'records');
 
-                // ИЗМЕНЕНО: Передаем данные напрямую в generatePDF
                 setTimeout(() => {
                     generatePDF(result.data);
                     setPrintDialogOpen(false);
