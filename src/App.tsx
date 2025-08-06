@@ -5,7 +5,9 @@ import { CustomerTable } from "./view/CustomerTable";
 import Header, { Page } from "./view/components/Header";
 import ProviderAdminPage from "./view/ProviderAdminPage";
 import CustomerRequestOverview from "./view/CustomerRequestOverview";
-import { RangeAssignment } from "./view/RangeAssignment";
+import {RangeAssignment} from "./view/RangeAssignment";
+
+
 
 function App() {
     const [page, setPage] = useState<Page>('providers');
