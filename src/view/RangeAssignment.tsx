@@ -4,21 +4,20 @@ import {
     TextField, Select, MenuItem, Button, CircularProgress, Dialog, DialogTitle,
     DialogContent, DialogActions, LinearProgress, Alert, Autocomplete, InputAdornment, AutocompleteRenderInputParams
 } from '@mui/material';
-import jsPDF from 'jspdf';
-import { autoTable } from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import SearchIcon from '@mui/icons-material/Search';
 
 const filterFields = [
-    { label: "Number Range From", type: 'text', select: ['equals', 'greater', 'lower'] },
-    { label: "Number Range To", type: 'text', select: ['equals', 'greater', 'lower'] },
-    { label: "Start Date", type: 'date', select: ['equals', 'greater', 'lower'] },
-    { label: "End Date", type: 'date', select: ['equals', 'greater', 'lower'] },
-    { label: "Customer Name", type: 'autocomplete', select: ['contains', 'equals', 'start with', 'end with'] },
-    { label: "Tech Account Name", type: 'autocomplete', select: ['contains', 'equals', 'start with', 'end with'] },
-    { label: "Tech Account Status", type: 'text', select: ['equals'] },
-    { label: "Service Detail", type: 'text', select: ['contains', 'equals'] },
-    { label: "Comment", type: 'text', select: ['contains', 'equals', 'start with', 'end with'] },
-    { label: "Assignment Status", type: 'text', select: ['equals', 'contains'] },
+    { label: "Number Range From", type: 'text' },
+    { label: "Number Range To", type: 'text' },
+    { label: "Start Date", type: 'date' },
+    { label: "End Date", type: 'date' },
+    { label: "Customer Name", type: 'autocomplete' },
+    { label: "Tech Account Name", type: 'autocomplete' },
+    { label: "Tech Account Status", type: 'select', options: ['Active', 'Deleted'] },
+    { label: "Service Detail", type: 'text' },
+    { label: "Comment", type: 'text' },
+    { label: "Assignment Status", type: 'select', options: ['Assigned', 'Unassigned'] },
 ];
 
 const styles = {
@@ -142,7 +141,6 @@ interface NumberOverview {
     assignmentStatus: string;
 }
 
-// Интерфейсы для данных API
 interface CustomerData {
     customerId: number;
     customerName: string;
@@ -161,7 +159,6 @@ interface ProAccount {
 interface TechAccountData {
     techAccountId: number;
     techAccountName: string;
-    // Другие поля, если они есть
 }
 
 export function RangeAssignment() {
@@ -177,80 +174,130 @@ export function RangeAssignment() {
     const [printProgress, setPrintProgress] = useState(0);
     const [printData, setPrintData] = useState<NumberOverview[]>([]);
 
-    // Состояния для автозаполнения
     const [customerOptions, setCustomerOptions] = useState<CustomerData[]>([]);
     const [techAccountOptions, setTechAccountOptions] = useState<TechAccountData[]>([]);
     const [customerLoading, setCustomerLoading] = useState(false);
     const [techAccountLoading, setTechAccountLoading] = useState(false);
+    const [customerPage, setCustomerPage] = useState(0);
+    const [techAccountPage, setTechAccountPage] = useState(0);
+    const [customerHasMore, setCustomerHasMore] = useState(true);
+    const [techAccountHasMore, setTechAccountHasMore] = useState(true);
+    const [currentCustomerSearch, setCurrentCustomerSearch] = useState('');
+    const [currentTechAccountSearch, setCurrentTechAccountSearch] = useState('');
 
-    // Функция для загрузки подсказок для клиентов
-    const fetchCustomerOptions = useCallback(async (searchText: string) => {
-        if (searchText.length < 1) {
-            setCustomerOptions([]);
-            return;
-        }
+    const fetchCustomerOptions = useCallback(async (searchText: string, page: number = 0, reset: boolean = true) => {
         setCustomerLoading(true);
         try {
-            const response = await fetch(
-                `http://localhost:8080/customer/overview/search?name=${encodeURIComponent(searchText)}`
-            );
+            console.log('Fetching customers with query:', searchText, 'page:', page);
+            const url = `http://localhost:8080/customer/overview/search?name=${encodeURIComponent(searchText)}&page=${page}&size=10`;
+            console.log('Request URL:', url);
+
+            const response = await fetch(url);
+            console.log('Response status:', response.status);
+
             if (response.ok) {
                 const data = await response.json();
-                // Проверяем, что данные являются массивом
-                if (Array.isArray(data)) {
-                    setCustomerOptions(data);
+                console.log('Received data:', data);
+
+                if (data && typeof data === 'object' && data.content && Array.isArray(data.content)) {
+                    console.log('Found customers (paginated):', data.content.length);
+                    if (reset) {
+                        setCustomerOptions(data.content);
+                    } else {
+                        setCustomerOptions(prev => [...prev, ...data.content]);
+                    }
+                    setCustomerHasMore(!data.last);
+                    setCustomerPage(page);
                 } else {
-                    console.error('Customer data is not an array:', data);
-                    setCustomerOptions([]);
+                    console.error('Customer data format is incorrect:', data);
+                    if (reset) {
+                        setCustomerOptions([]);
+                        setCustomerHasMore(false);
+                    }
                 }
             } else {
-                console.error('Failed to fetch customer options');
-                setCustomerOptions([]);
+                console.error('Failed to fetch customer options:', response.status, response.statusText);
+                if (reset) {
+                    setCustomerOptions([]);
+                    setCustomerHasMore(false);
+                }
             }
         } catch (error) {
             console.error('Error fetching customer options:', error);
-            setCustomerOptions([]);
+            if (reset) {
+                setCustomerOptions([]);
+                setCustomerHasMore(false);
+            }
         } finally {
             setCustomerLoading(false);
         }
     }, []);
 
-    // Функция для загрузки подсказок для технических аккаунтов
-    const fetchTechAccountOptions = useCallback(async (searchText: string) => {
-        if (searchText.length < 1) {
-            setTechAccountOptions([]);
-            return;
-        }
+    const fetchTechAccountOptions = useCallback(async (searchText: string, page: number = 0, reset: boolean = true) => {
         setTechAccountLoading(true);
         try {
-            const response = await fetch(
-                `http://localhost:8080/accounts/search?query=${encodeURIComponent(searchText)}`
-            );
+            console.log('Fetching tech accounts with query:', searchText, 'page:', page);
+            const url = `http://localhost:8080/accounts/search?query=${encodeURIComponent(searchText)}&page=${page}&size=10`;
+            console.log('Request URL:', url);
+
+            const response = await fetch(url);
+            console.log('Response status:', response.status);
+
             if (response.ok) {
                 const data = await response.json();
-                // Проверяем, что данные являются массивом
-                if (Array.isArray(data)) {
-                    setTechAccountOptions(data);
+                console.log('Received data:', data);
+
+                if (data && typeof data === 'object' && data.content && Array.isArray(data.content)) {
+                    console.log('Found tech accounts (paginated):', data.content.length);
+                    if (reset) {
+                        setTechAccountOptions(data.content);
+                    } else {
+                        setTechAccountOptions(prev => [...prev, ...data.content]);
+                    }
+                    setTechAccountHasMore(!data.last);
+                    setTechAccountPage(page);
                 } else {
-                    console.error('Tech account data is not an array:', data);
-                    setTechAccountOptions([]);
+                    console.error('Tech account data format is incorrect:', data);
+                    if (reset) {
+                        setTechAccountOptions([]);
+                        setTechAccountHasMore(false);
+                    }
                 }
             } else {
-                console.error('Failed to fetch tech account options');
-                setTechAccountOptions([]);
+                console.error('Failed to fetch tech account options:', response.status, response.statusText);
+                if (reset) {
+                    setTechAccountOptions([]);
+                    setTechAccountHasMore(false);
+                }
             }
         } catch (error) {
             console.error('Error fetching tech account options:', error);
-            setTechAccountOptions([]);
+            if (reset) {
+                setTechAccountOptions([]);
+                setTechAccountHasMore(false);
+            }
         } finally {
             setTechAccountLoading(false);
         }
     }, []);
 
-    // Загрузка всех опций при первом рендере
+    const loadMoreCustomers = useCallback(() => {
+        if (customerHasMore && !customerLoading && currentCustomerSearch) {
+            fetchCustomerOptions(currentCustomerSearch, customerPage + 1, false);
+        }
+    }, [customerHasMore, customerLoading, currentCustomerSearch, customerPage, fetchCustomerOptions]);
+
+    const loadMoreTechAccounts = useCallback(() => {
+        if (techAccountHasMore && !techAccountLoading && currentTechAccountSearch) {
+            fetchTechAccountOptions(currentTechAccountSearch, techAccountPage + 1, false);
+        }
+    }, [techAccountHasMore, techAccountLoading, currentTechAccountSearch, techAccountPage, fetchTechAccountOptions]);
+
     useEffect(() => {
-        fetchCustomerOptions('');
-        fetchTechAccountOptions('');
+        setCurrentCustomerSearch('');
+        setCurrentTechAccountSearch('');
+        fetchCustomerOptions('', 0, true);
+        fetchTechAccountOptions('', 0, true);
     }, [fetchCustomerOptions, fetchTechAccountOptions]);
 
     const handleChange = (key: string, value: any) => {
@@ -268,43 +315,33 @@ export function RangeAssignment() {
         };
         if (filter["Number Range From"]) {
             filterPayload.numberRangeFrom = filter["Number Range From"];
-            filterPayload.numberRangeFromOp = filter["Number Range From_op"] || "equals";
         }
         if (filter["Number Range To"]) {
             filterPayload.numberRangeTo = filter["Number Range To"];
-            filterPayload.numberRangeToOp = filter["Number Range To_op"] || "equals";
         }
         if (filter["Start Date"]) {
             filterPayload.startDate = filter["Start Date"] + "T00:00:00";
-            filterPayload.startDateOp = filter["Start Date_op"] || "equals";
         }
         if (filter["End Date"]) {
             filterPayload.endDate = filter["End Date"] + "T23:59:59";
-            filterPayload.endDateOp = filter["End Date_op"] || "equals";
         }
         if (filter["Customer Name"]) {
             filterPayload.customerName = filter["Customer Name"];
-            filterPayload.customerNameOp = filter["Customer Name_op"] || "contains";
         }
         if (filter["Tech Account Name"]) {
             filterPayload.techAccountName = filter["Tech Account Name"];
-            filterPayload.techAccountNameOp = filter["Tech Account Name_op"] || "contains";
         }
         if (filter["Tech Account Status"]) {
             filterPayload.techAccountStatus = filter["Tech Account Status"];
-            filterPayload.techAccountStatusOp = filter["Tech Account Status_op"] || "equals";
         }
         if (filter["Service Detail"]) {
             filterPayload.serviceDetail = filter["Service Detail"];
-            filterPayload.serviceDetailOp = filter["Service Detail_op"] || "contains";
         }
         if (filter["Comment"]) {
             filterPayload.comment = filter["Comment"];
-            filterPayload.commentOp = filter["Comment_op"] || "contains";
         }
         if (filter["Assignment Status"]) {
             filterPayload.assignmentStatus = filter["Assignment Status"];
-            filterPayload.assignmentStatusOp = filter["Assignment Status_op"] || "equals";
         }
         return filterPayload;
     }, [country, filter]);
@@ -378,21 +415,24 @@ export function RangeAssignment() {
         searchNumbers(true);
     };
 
-    const generatePDF = useCallback((dataToPrint: NumberOverview[]) => {
+    const generateExcel = useCallback((dataToExport: NumberOverview[]) => {
         try {
-            console.log('Generating PDF with', dataToPrint.length, 'records');
-            if (dataToPrint.length === 0) {
-                console.warn('No data to generate PDF');
-                alert('No data available to generate PDF');
+            console.log('Generating Excel with', dataToExport.length, 'records');
+            if (dataToExport.length === 0) {
+                console.warn('No data to generate Excel');
+                alert('No data available to generate Excel');
                 return;
             }
-            const doc = new jsPDF('landscape');
-            doc.setFontSize(16);
-            doc.text('Range Assignment Report', 14, 15);
-            doc.setFontSize(10);
-            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 22);
-            doc.text(`Total Records: ${dataToPrint.length}`, 14, 28);
-            const tableData = dataToPrint.map(row => [
+
+            const workbook = XLSX.utils.book_new();
+
+            const headers = [
+                'Number', 'Start Date', 'End Date', 'Customer Name',
+                'Tech Account', 'Account Status', 'Service Detail',
+                'Comment', 'Assignment Status'
+            ];
+
+            const data = dataToExport.map(row => [
                 row.number,
                 formatDate(row.startDate),
                 formatDate(row.endDate),
@@ -403,58 +443,96 @@ export function RangeAssignment() {
                 row.comment || '',
                 row.assignmentStatus || ''
             ]);
-            console.log('Table data prepared:', tableData.length, 'rows');
-            autoTable(doc, {
-                head: [['Number', 'Start Date', 'End Date', 'Customer', 'Tech Account',
-                    'Acct Status', 'Service Detail', 'Comment', 'Assignment Status']],
-                body: tableData,
-                startY: 35,
-                styles: {
-                    fontSize: 8,
-                    cellPadding: 2,
-                    textColor: [50, 50, 50]
-                },
-                headStyles: {
-                    fillColor: [41, 128, 185],
-                    textColor: [255, 255, 255],
-                    fontStyle: 'bold',
-                    fontSize: 9
-                },
-                alternateRowStyles: {
-                    fillColor: [249, 249, 249]
-                },
-                margin: { top: 35, right: 10, bottom: 10, left: 10 },
-                theme: 'grid',
-                tableWidth: 'auto',
-                columnStyles: {
-                    0: { cellWidth: 25 },
-                    1: { cellWidth: 25 },
-                    2: { cellWidth: 25 },
-                    3: { cellWidth: 30 },
-                    4: { cellWidth: 30 },
-                    5: { cellWidth: 20 },
-                    6: { cellWidth: 25 },
-                    7: { cellWidth: 30 },
-                    8: { cellWidth: 25 },
+
+            const worksheetData = [headers, ...data];
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+            const headerRange = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+            const columnWidths = [
+                { wch: 15 },
+                { wch: 12 },
+                { wch: 12 },
+                { wch: 20 },
+                { wch: 20 },
+                { wch: 15 },
+                { wch: 18 },
+                { wch: 25 },
+                { wch: 18 }
+            ];
+            worksheet['!cols'] = columnWidths;
+
+            for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+                const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+                if (!worksheet[cellAddress]) continue;
+
+                worksheet[cellAddress].s = {
+                    font: { bold: true, color: { rgb: "FFFFFF" } },
+                    fill: { fgColor: { rgb: "2980B9" } },
+                    alignment: { horizontal: "center", vertical: "center" },
+                    border: {
+                        top: { style: "thin", color: { rgb: "000000" } },
+                        bottom: { style: "thin", color: { rgb: "000000" } },
+                        left: { style: "thin", color: { rgb: "000000" } },
+                        right: { style: "thin", color: { rgb: "000000" } }
+                    }
+                };
+            }
+
+            for (let row = 1; row <= dataToExport.length; row++) {
+                for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                    if (!worksheet[cellAddress]) continue;
+
+                    worksheet[cellAddress].s = {
+                        fill: { fgColor: { rgb: row % 2 === 0 ? "F9F9F9" : "FFFFFF" } },
+                        alignment: { horizontal: "left", vertical: "center" },
+                        border: {
+                            top: { style: "thin", color: { rgb: "CCCCCC" } },
+                            bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+                            left: { style: "thin", color: { rgb: "CCCCCC" } },
+                            right: { style: "thin", color: { rgb: "CCCCCC" } }
+                        }
+                    };
                 }
-            });
-            const filename = `range_assignment_${new Date().toISOString().split('T')[0]}.pdf`;
-            doc.save(filename);
-            console.log('PDF saved as:', filename);
+            }
+
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Range Assignment');
+
+            const summaryData = [
+                ['Range Assignment Report'],
+                ['Generated:', new Date().toLocaleString()],
+                ['Total Records:', dataToExport.length.toString()],
+                ['Country:', country || 'All Countries'],
+                []
+            ];
+
+            const summaryWorksheet = XLSX.utils.aoa_to_sheet(summaryData);
+            summaryWorksheet['!cols'] = [{ wch: 20 }, { wch: 30 }];
+
+            summaryWorksheet['A1'].s = {
+                font: { bold: true, sz: 16 },
+                alignment: { horizontal: "center" }
+            };
+
+            XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
+
+            const filename = `range_assignment_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, filename);
+            console.log('Excel file saved as:', filename);
         } catch (error) {
-            console.error('Error generating PDF:', error);
+            console.error('Error generating Excel:', error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-            alert('Failed to generate PDF: ' + errorMessage);
+            alert('Failed to generate Excel: ' + errorMessage);
         }
-    }, []);
+    }, [country]);
 
     const loadAllDataForPrint = async () => {
         setPrintLoading(true);
         setPrintProgress(0);
         try {
             const filterPayload = buildFilterPayload();
-            console.log('Loading all data for print from /numbers/overview/searchP...');
-            // Имитация прогресса загрузки
+            console.log('Loading all data for export from /numbers/overview/searchP...');
+
             const progressInterval = setInterval(() => {
                 setPrintProgress(prev => {
                     if (prev >= 90) {
@@ -464,6 +542,7 @@ export function RangeAssignment() {
                     return prev + 10;
                 });
             }, 200);
+
             const response = await fetch(
                 `http://localhost:8080/numbers/overview/searchP`,
                 {
@@ -474,56 +553,58 @@ export function RangeAssignment() {
                     body: JSON.stringify(filterPayload),
                 }
             );
+
             clearInterval(progressInterval);
+
             if (response.ok) {
                 const data: NumberOverview[] = await response.json();
-                console.log(`Loaded ${data.length} records for print`);
+                console.log(`Loaded ${data.length} records for export`);
                 if (data.length === 0) {
-                    console.warn('No data loaded for print');
+                    console.warn('No data loaded for export');
                     return { success: false, data: [] };
                 }
                 setPrintData(data);
                 setPrintProgress(100);
                 return { success: true, data: data };
             } else {
-                console.error('Failed to load data for print:', response.status, response.statusText);
+                console.error('Failed to load data for export:', response.status, response.statusText);
                 return { success: false, data: [] };
             }
         } catch (error) {
-            console.error('Error loading all data for print:', error);
+            console.error('Error loading all data for export:', error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-            alert('Failed to load all data for printing: ' + errorMessage);
+            alert('Failed to load all data for export: ' + errorMessage);
             return { success: false, data: [] };
         } finally {
             setPrintLoading(false);
         }
     };
 
-    const handlePrint = async () => {
-        console.log('Starting print process...');
+    const handleExport = async () => {
+        console.log('Starting export process...');
         setPrintDialogOpen(true);
         try {
             const result = await loadAllDataForPrint();
             if (result.success && result.data.length > 0) {
-                console.log('Data loaded successfully, generating PDF...');
-                console.log('Data to print:', result.data.length, 'records');
+                console.log('Data loaded successfully, generating Excel...');
+                console.log('Data to export:', result.data.length, 'records');
                 setTimeout(() => {
-                    generatePDF(result.data);
+                    generateExcel(result.data);
                     setPrintDialogOpen(false);
                     setPrintData([]);
                     setPrintProgress(0);
                 }, 500);
             } else {
-                console.error('Failed to load data for print');
-                alert('Failed to load data for printing. Please check your search criteria.');
+                console.error('Failed to load data for export');
+                alert('Failed to load data for export. Please check your search criteria.');
                 setPrintDialogOpen(false);
                 setPrintData([]);
                 setPrintProgress(0);
             }
         } catch (error) {
-            console.error('Error in print process:', error);
+            console.error('Error in export process:', error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-            alert('Error during print process: ' + errorMessage);
+            alert('Error during export process: ' + errorMessage);
             setPrintDialogOpen(false);
             setPrintData([]);
             setPrintProgress(0);
@@ -535,7 +616,7 @@ export function RangeAssignment() {
         console.log('Current filter:', filter);
         console.log('Current country:', country);
         console.log('Current print data:', printData);
-        alert(`Current data: ${tableData.length} records. Print data: ${printData.length} records. Check console for details.`);
+        alert(`Current data: ${tableData.length} records. Export data: ${printData.length} records. Check console for details.`);
     };
 
     return (
@@ -568,9 +649,13 @@ export function RangeAssignment() {
                                         onInputChange={(event, value) => {
                                             handleChange(field.label, value);
                                             if (field.label === "Customer Name") {
-                                                fetchCustomerOptions(value);
+                                                setCurrentCustomerSearch(value);
+                                                setCustomerPage(0);
+                                                fetchCustomerOptions(value, 0, true);
                                             } else {
-                                                fetchTechAccountOptions(value);
+                                                setCurrentTechAccountSearch(value);
+                                                setTechAccountPage(0);
+                                                fetchTechAccountOptions(value, 0, true);
                                             }
                                         }}
                                         value={filter[field.label] || null}
@@ -613,8 +698,39 @@ export function RangeAssignment() {
                                                 }}
                                             />
                                         )}
+                                        ListboxProps={{
+                                            onScroll: (event: React.SyntheticEvent) => {
+                                                const listboxNode = event.currentTarget as HTMLElement;
+                                                const { scrollTop, scrollHeight, clientHeight } = listboxNode;
+
+                                                if (scrollHeight - scrollTop <= clientHeight + 5) {
+                                                    if (field.label === "Customer Name") {
+                                                        loadMoreCustomers();
+                                                    } else {
+                                                        loadMoreTechAccounts();
+                                                    }
+                                                }
+                                            },
+                                        }}
                                     />
                                 </Box>
+                            ) : field.type === 'select' ? (
+                                <Select
+                                    size="small"
+                                    value={filter[field.label] || ''}
+                                    onChange={(e) => handleChange(field.label, e.target.value)}
+                                    displayEmpty
+                                    sx={{ flexGrow: 1 }}
+                                >
+                                    <MenuItem value="">
+                                        <em>Select {field.label}</em>
+                                    </MenuItem>
+                                    {field.options?.map((option) => (
+                                        <MenuItem key={option} value={option}>
+                                            {option}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
                             ) : (
                                 <TextField
                                     size="small"
@@ -641,16 +757,16 @@ export function RangeAssignment() {
                         {loading && isInitialSearch ? 'Searching...' : 'Search'}
                     </Button>
                     <Button
-                        onClick={handlePrint}
+                        onClick={handleExport}
                         disabled={tableData.length === 0}
                     >
-                        Print the result
+                        Export to Excel
                     </Button>
                     <Button
                         onClick={handleDebugPrint}
                         color="secondary"
                     >
-                        Debug Print Data
+                        Debug Export Data
                     </Button>
                 </Box>
             </Box>
@@ -709,7 +825,7 @@ export function RangeAssignment() {
                 )}
             </Paper>
             <Dialog open={printDialogOpen} maxWidth="sm" fullWidth>
-                <DialogTitle>Preparing PDF Export</DialogTitle>
+                <DialogTitle>Preparing Excel Export</DialogTitle>
                 <DialogContent>
                     <Box sx={{ width: '100%', mt: 2 }}>
                         <Typography variant="body2" sx={{ mb: 2 }}>
@@ -721,7 +837,7 @@ export function RangeAssignment() {
                         </Typography>
                         {printProgress === 100 && (
                             <Alert severity="success" sx={{ mt: 2 }}>
-                                Data loaded successfully! Generating PDF...
+                                Data loaded successfully! Generating Excel file...
                             </Alert>
                         )}
                     </Box>
