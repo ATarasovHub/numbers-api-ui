@@ -1,3 +1,4 @@
+// File: CustomerTable.tsx (based on Pasted_Text_1755087452117.txt with sticky header)
 import React, { useEffect, useState } from 'react';
 import {
     TableBody,
@@ -129,12 +130,10 @@ export const CustomerTable: React.FC = () => {
         setOpenRows(prev => ({ ...prev, [customerId]: !prev[customerId] }));
     };
 
-    // Функция для определения, является ли продукт "Voice In"
     const isVoiceInProduct = (productType: string) => {
         return productType.toLowerCase().includes('voice in');
     };
 
-    // Компонент для отображения Product Type с выделением Voice In
     const ProductTypeCell: React.FC<{ productType: string }> = ({ productType }) => {
         if (isVoiceInProduct(productType)) {
             return (
@@ -298,385 +297,373 @@ export const CustomerTable: React.FC = () => {
                         boxShadow: `0 4px 20px ${alpha(calmTheme.palette.common.black, 0.06)}`
                     }}
                 >
-                    <Table sx={{ minWidth: 750 }} aria-label="customers table">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell sx={{
-                                    fontWeight: '700',
-                                    color: calmTheme.palette.common.white,
-                                    background: calmTheme.palette.primary.dark,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px',
-                                    width: '5%'
-                                }} />
-                                <TableCell sx={{
-                                    fontWeight: '700',
-                                    color: calmTheme.palette.common.white,
-                                    background: calmTheme.palette.primary.dark,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
-                                }}>Customer Name</TableCell>
-                                <TableCell sx={{
-                                    fontWeight: '700',
-                                    color: calmTheme.palette.common.white,
-                                    background: calmTheme.palette.primary.dark,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
-                                }}>Product Type</TableCell>
-                                <TableCell sx={{
-                                    fontWeight: '700',
-                                    color: calmTheme.palette.common.white,
-                                    background: calmTheme.palette.primary.dark,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
-                                }}>Total Numbers</TableCell>
-                                <TableCell sx={{
-                                    fontWeight: '700',
-                                    color: calmTheme.palette.common.white,
-                                    background: calmTheme.palette.primary.dark,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
-                                }}>Accounts</TableCell>
-                                <TableCell sx={{
-                                    fontWeight: '700',
-                                    color: calmTheme.palette.common.white,
-                                    background: calmTheme.palette.primary.dark,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
-                                }}>Countries</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {displayedCustomers.length > 0 ? (
-                                displayedCustomers.map((customer, index) => (
-                                    <React.Fragment key={customer.customerId}>
-                                        <TableRow
-                                            sx={{
-                                                backgroundColor: index % 2 === 0 ?
-                                                    alpha(calmTheme.palette.grey[50], 0.7) :
-                                                    alpha(calmTheme.palette.background.paper, 0.7),
-                                                transition: 'all 0.2s ease',
-                                                '&:hover': {
-                                                    backgroundColor: alpha(calmTheme.palette.primary.light, 0.1),
-                                                    transform: 'scale(1.005)',
-                                                    boxShadow: `inset 0 0 0 1px ${alpha(calmTheme.palette.primary.main, 0.2)}`,
-                                                },
-                                                borderBottom: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}`
-                                            }}
-                                        >
-                                            <TableCell sx={{ width: '5%' }}>
-                                                <IconButton
-                                                    aria-label="expand row"
-                                                    size="small"
-                                                    onClick={() => handleRowToggle(customer.customerId)}
-                                                    sx={{
-                                                        color: calmTheme.palette.primary.main,
-                                                        backgroundColor: alpha(calmTheme.palette.primary.main, 0.1),
-                                                        '&:hover': {
-                                                            backgroundColor: alpha(calmTheme.palette.primary.main, 0.2),
-                                                        },
-                                                        transition: 'all 0.2s'
-                                                    }}
-                                                >
-                                                    {openRows[customer.customerId] ?
-                                                        <KeyboardArrowUpIcon /> :
-                                                        <KeyboardArrowDownIcon />
-                                                    }
-                                                </IconButton>
+                    <Box
+                        sx={{
+                            maxHeight: '70vh',
+                            overflowY: 'auto',
+                            position: 'relative',
+                            scrollbarWidth: 'none',
+                            '&::-webkit-scrollbar': {
+                                display: 'none'
+                            }
+                        }}
+                    >
+                        <Table sx={{ minWidth: 750 }} aria-label="customers table">
+                            <TableHead>
+                                <TableRow>
+                                    {['', 'Customer Name', 'Product Type', 'Total Numbers', 'Accounts', 'Countries']
+                                        .map((title, idx) => (
+                                            <TableCell
+                                                key={idx}
+                                                sx={{
+                                                    position: 'sticky',
+                                                    top: 0,
+                                                    zIndex: 2,
+                                                    fontWeight: '700',
+                                                    color: calmTheme.palette.common.white,
+                                                    background: calmTheme.palette.primary.dark,
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px',
+                                                    ...(idx === 0 && { width: '5%' })
+                                                }}
+                                            >
+                                                {title}
                                             </TableCell>
-                                            <TableCell>
+                                        ))}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {displayedCustomers.length > 0 ? (
+                                    displayedCustomers.map((customer, index) => (
+                                        <React.Fragment key={customer.customerId}>
+                                            <TableRow
+                                                sx={{
+                                                    backgroundColor: index % 2 === 0 ?
+                                                        alpha(calmTheme.palette.grey[50], 0.7) :
+                                                        alpha(calmTheme.palette.background.paper, 0.7),
+                                                    transition: 'all 0.2s ease',
+                                                    '&:hover': {
+                                                        backgroundColor: alpha(calmTheme.palette.primary.light, 0.1),
+                                                        transform: 'scale(1.005)',
+                                                        boxShadow: `inset 0 0 0 1px ${alpha(calmTheme.palette.primary.main, 0.2)}`,
+                                                    },
+                                                    borderBottom: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}`
+                                                }}
+                                            >
+                                                <TableCell sx={{ width: '5%' }}>
+                                                    <IconButton
+                                                        aria-label="expand row"
+                                                        size="small"
+                                                        onClick={() => handleRowToggle(customer.customerId)}
+                                                        sx={{
+                                                            color: calmTheme.palette.primary.main,
+                                                            backgroundColor: alpha(calmTheme.palette.primary.main, 0.1),
+                                                            '&:hover': {
+                                                                backgroundColor: alpha(calmTheme.palette.primary.main, 0.2),
+                                                            },
+                                                            transition: 'all 0.2s'
+                                                        }}
+                                                    >
+                                                        {openRows[customer.customerId] ?
+                                                            <KeyboardArrowUpIcon /> :
+                                                            <KeyboardArrowDownIcon />
+                                                        }
+                                                    </IconButton>
+                                                </TableCell>
+                                                <TableCell>
                                                     <Typography variant="body2" fontWeight="600" color="text.primary">
                                                         {customer.customerName}
                                                     </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <ProductTypeCell productType={customer.productType} />
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography variant="body2" fontWeight="500" color="text.primary">
-                                                    {new Intl.NumberFormat().format(customer.totalNumbers)}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography variant="body2" fontWeight="500" color="text.primary">
-                                                    {customer.proAccounts.length}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography variant="body2" fontWeight="500" color="text.primary">
-                                                    {customer.proCountry.length}
-                                                </Typography>
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell
-                                                style={{
-                                                    paddingBottom: 0,
-                                                    paddingTop: 0,
-                                                    backgroundColor: alpha(calmTheme.palette.grey[50], 0.5)
-                                                }}
-                                                colSpan={6}
-                                            >
-                                                <Collapse
-                                                    in={openRows[customer.customerId]}
-                                                    timeout="auto"
-                                                    unmountOnExit
+                                                </TableCell>
+                                                <TableCell>
+                                                    <ProductTypeCell productType={customer.productType} />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography variant="body2" fontWeight="500" color="text.primary">
+                                                        {new Intl.NumberFormat().format(customer.totalNumbers)}
+                                                    </Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography variant="body2" fontWeight="500" color="text.primary">
+                                                        {customer.proAccounts.length}
+                                                    </Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography variant="body2" fontWeight="500" color="text.primary">
+                                                        {customer.proCountry.length}
+                                                    </Typography>
+                                                </TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell
+                                                    style={{
+                                                        paddingBottom: 0,
+                                                        paddingTop: 0,
+                                                        backgroundColor: alpha(calmTheme.palette.grey[50], 0.5)
+                                                    }}
+                                                    colSpan={6}
                                                 >
-                                                    <Box sx={{ margin: 3 }}>
-                                                        <Box
-                                                            sx={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                mb: 2,
-                                                                pb: 1,
-                                                                borderBottom: `1px dashed ${alpha(calmTheme.palette.primary.main, 0.3)}`
-                                                            }}
-                                                        >
-                                                            <Typography
-                                                                variant="h6"
-                                                                gutterBottom
+                                                    <Collapse
+                                                        in={openRows[customer.customerId]}
+                                                        timeout="auto"
+                                                        unmountOnExit
+                                                    >
+                                                        <Box sx={{ margin: 3 }}>
+                                                            <Box
                                                                 sx={{
-                                                                    color: calmTheme.palette.primary.dark,
-                                                                    fontWeight: 700,
-                                                                    mr: 1
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    mb: 2,
+                                                                    pb: 1,
+                                                                    borderBottom: `1px dashed ${alpha(calmTheme.palette.primary.main, 0.3)}`
                                                                 }}
                                                             >
-                                                                Details for
-                                                            </Typography>
+                                                                <Typography
+                                                                    variant="h6"
+                                                                    gutterBottom
+                                                                    sx={{
+                                                                        color: calmTheme.palette.primary.dark,
+                                                                        fontWeight: 700,
+                                                                        mr: 1
+                                                                    }}
+                                                                >
+                                                                    Details for
+                                                                </Typography>
+                                                                <Typography
+                                                                    variant="h6"
+                                                                    gutterBottom
+                                                                    sx={{
+                                                                        color: calmTheme.palette.secondary.main,
+                                                                        fontWeight: 700
+                                                                    }}
+                                                                >
+                                                                    {customer.customerName}
+                                                                </Typography>
+                                                            </Box>
                                                             <Typography
-                                                                variant="h6"
+                                                                variant="subtitle1"
                                                                 gutterBottom
                                                                 sx={{
+                                                                    fontWeight: '700',
                                                                     color: calmTheme.palette.secondary.main,
-                                                                    fontWeight: 700
+                                                                    mb: 1.5,
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    '&::before': {
+                                                                        content: '" "',
+                                                                        display: 'block',
+                                                                        width: 12,
+                                                                        height: 12,
+                                                                        borderRadius: '50%',
+                                                                        backgroundColor: calmTheme.palette.secondary.main,
+                                                                        marginRight: 1
+                                                                    }
                                                                 }}
                                                             >
-                                                                {customer.customerName}
+                                                                Accounts
                                                             </Typography>
+                                                            <Paper
+                                                                elevation={2}
+                                                                sx={{
+                                                                    mb: 3,
+                                                                    borderRadius: 2,
+                                                                    overflow: 'hidden',
+                                                                    border: `1px solid ${alpha(calmTheme.palette.divider, 0.5)}`
+                                                                }}
+                                                            >
+                                                                <Table size="small">
+                                                                    <TableHead sx={{
+                                                                        backgroundColor: alpha(calmTheme.palette.secondary.light, 0.2)
+                                                                    }}>
+                                                                        <TableRow>
+                                                                            <TableCell>
+                                                                                <Typography variant="subtitle2" fontWeight="500">ID</Typography>
+                                                                            </TableCell>
+                                                                            <TableCell>
+                                                                                <Typography variant="subtitle2" fontWeight="500">Name</Typography>
+                                                                            </TableCell>
+                                                                            <TableCell>
+                                                                                <Typography variant="subtitle2" fontWeight="500">Total Accounts</Typography>
+                                                                            </TableCell>
+                                                                            <TableCell>
+                                                                                <Typography variant="subtitle2" fontWeight="500">Total Numbers</Typography>
+                                                                            </TableCell>
+                                                                        </TableRow>
+                                                                    </TableHead>
+                                                                    <TableBody>
+                                                                        {customer.proAccounts.length > 0 ? (
+                                                                            customer.proAccounts.map((acc, idx) => (
+                                                                                <TableRow
+                                                                                    key={acc.techAccountId}
+                                                                                    hover
+                                                                                    sx={{
+                                                                                        backgroundColor: idx % 2 === 0 ?
+                                                                                            alpha(calmTheme.palette.grey[100], 0.3) :
+                                                                                            'transparent',
+                                                                                        '&:hover': {
+                                                                                            backgroundColor: alpha(calmTheme.palette.secondary.light, 0.2),
+                                                                                        }
+                                                                                    }}
+                                                                                >
+                                                                                    <TableCell>
+                                                                                        <Typography variant="body2" fontWeight="500">
+                                                                                            {acc.techAccountId}
+                                                                                        </Typography>
+                                                                                    </TableCell>
+                                                                                    <TableCell>
+                                                                                        <Typography variant="body2" fontWeight="500">
+                                                                                            {acc.techAccountName}
+                                                                                        </Typography>
+                                                                                    </TableCell>
+                                                                                    <TableCell>
+                                                                                        <Typography variant="body2" fontWeight="500">
+                                                                                            {acc.totalAccounts}
+                                                                                        </Typography>
+                                                                                    </TableCell>
+                                                                                    <TableCell>
+                                                                                        <Typography variant="body2" fontWeight="500">
+                                                                                            {new Intl.NumberFormat().format(acc.totalNumbers)}
+                                                                                        </Typography>
+                                                                                    </TableCell>
+                                                                                </TableRow>
+                                                                            ))
+                                                                        ) : (
+                                                                            <TableRow>
+                                                                                <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
+                                                                                    <Typography variant="body2" color="textSecondary">
+                                                                                        No accounts found
+                                                                                    </Typography>
+                                                                                </TableCell>
+                                                                            </TableRow>
+                                                                        )}
+                                                                    </TableBody>
+                                                                </Table>
+                                                            </Paper>
+                                                            <Typography
+                                                                variant="subtitle1"
+                                                                gutterBottom
+                                                                sx={{
+                                                                    fontWeight: '700',
+                                                                    color: calmTheme.palette.secondary.main,
+                                                                    mb: 1.5,
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    '&::before': {
+                                                                        content: '" "',
+                                                                        display: 'block',
+                                                                        width: 12,
+                                                                        height: 12,
+                                                                        borderRadius: '50%',
+                                                                        backgroundColor: calmTheme.palette.secondary.main,
+                                                                        marginRight: 1
+                                                                    }
+                                                                }}
+                                                            >
+                                                                Countries
+                                                            </Typography>
+                                                            <Paper
+                                                                elevation={2}
+                                                                sx={{
+                                                                    borderRadius: 2,
+                                                                    overflow: 'hidden',
+                                                                    border: `1px solid ${alpha(calmTheme.palette.divider, 0.5)}`
+                                                                }}
+                                                            >
+                                                                <Table size="small">
+                                                                    <TableHead sx={{
+                                                                        backgroundColor: alpha(calmTheme.palette.secondary.light, 0.2)
+                                                                    }}>
+                                                                        <TableRow>
+                                                                            <TableCell>
+                                                                                <Typography variant="subtitle2" fontWeight="500">ID</Typography>
+                                                                            </TableCell>
+                                                                            <TableCell>
+                                                                                <Typography variant="subtitle2" fontWeight="500">Name</Typography>
+                                                                            </TableCell>
+                                                                            <TableCell>
+                                                                                <Typography variant="subtitle2" fontWeight="500">Total Accounts</Typography>
+                                                                            </TableCell>
+                                                                            <TableCell>
+                                                                                <Typography variant="subtitle2" fontWeight="500">Total Numbers</Typography>
+                                                                            </TableCell>
+                                                                        </TableRow>
+                                                                    </TableHead>
+                                                                    <TableBody>
+                                                                        {customer.proCountry.length > 0 ? (
+                                                                            customer.proCountry.map((country, idx) => (
+                                                                                <TableRow
+                                                                                    key={country.countryId}
+                                                                                    hover
+                                                                                    sx={{
+                                                                                        backgroundColor: idx % 2 === 0 ?
+                                                                                            alpha(calmTheme.palette.grey[100], 0.3) :
+                                                                                            'transparent',
+                                                                                        '&:hover': {
+                                                                                            backgroundColor: alpha(calmTheme.palette.secondary.light, 0.2),
+                                                                                        }
+                                                                                    }}
+                                                                                >
+                                                                                    <TableCell>
+                                                                                        <Typography variant="body2" fontWeight="500">
+                                                                                            {country.countryId}
+                                                                                        </Typography>
+                                                                                    </TableCell>
+                                                                                    <TableCell>
+                                                                                        <Typography variant="body2" fontWeight="500">
+                                                                                            {country.countryName}
+                                                                                        </Typography>
+                                                                                    </TableCell>
+                                                                                    <TableCell>
+                                                                                        <Typography variant="body2" fontWeight="500">
+                                                                                            {country.totalAccounts}
+                                                                                        </Typography>
+                                                                                    </TableCell>
+                                                                                    <TableCell>
+                                                                                        <Typography variant="body2" fontWeight="500">
+                                                                                            {new Intl.NumberFormat().format(country.totalNumbers)}
+                                                                                        </Typography>
+                                                                                    </TableCell>
+                                                                                </TableRow>
+                                                                            ))
+                                                                        ) : (
+                                                                            <TableRow>
+                                                                                <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
+                                                                                    <Typography variant="body2" color="textSecondary">
+                                                                                        No countries found
+                                                                                    </Typography>
+                                                                                </TableCell>
+                                                                            </TableRow>
+                                                                        )}
+                                                                    </TableBody>
+                                                                </Table>
+                                                            </Paper>
                                                         </Box>
-                                                        <Typography
-                                                            variant="subtitle1"
-                                                            gutterBottom
-                                                            sx={{
-                                                                fontWeight: '700',
-                                                                color: calmTheme.palette.secondary.main,
-                                                                mb: 1.5,
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                '&::before': {
-                                                                    content: '" "',
-                                                                    display: 'block',
-                                                                    width: 12,
-                                                                    height: 12,
-                                                                    borderRadius: '50%',
-                                                                    backgroundColor: calmTheme.palette.secondary.main,
-                                                                    marginRight: 1
-                                                                }
-                                                            }}
-                                                        >
-                                                            Accounts
-                                                        </Typography>
-                                                        <Paper
-                                                            elevation={2}
-                                                            sx={{
-                                                                mb: 3,
-                                                                borderRadius: 2,
-                                                                overflow: 'hidden',
-                                                                border: `1px solid ${alpha(calmTheme.palette.divider, 0.5)}`
-                                                            }}
-                                                        >
-                                                            <Table size="small">
-                                                                <TableHead sx={{
-                                                                    backgroundColor: alpha(calmTheme.palette.secondary.light, 0.2)
-                                                                }}>
-                                                                    <TableRow>
-                                                                        <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="500">ID</Typography>
-                                                                        </TableCell>
-                                                                        <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="500">Name</Typography>
-                                                                        </TableCell>
-                                                                        <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="500">Total Accounts</Typography>
-                                                                        </TableCell>
-                                                                        <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="500">Total Numbers</Typography>
-                                                                        </TableCell>
-                                                                    </TableRow>
-                                                                </TableHead>
-                                                                <TableBody>
-                                                                    {customer.proAccounts.length > 0 ? (
-                                                                        customer.proAccounts.map((acc, idx) => (
-                                                                            <TableRow
-                                                                                key={acc.techAccountId}
-                                                                                hover
-                                                                                sx={{
-                                                                                    backgroundColor: idx % 2 === 0 ?
-                                                                                        alpha(calmTheme.palette.grey[100], 0.3) :
-                                                                                        'transparent',
-                                                                                    '&:hover': {
-                                                                                        backgroundColor: alpha(calmTheme.palette.secondary.light, 0.2),
-                                                                                    }
-                                                                                }}
-                                                                            >
-                                                                                <TableCell>
-                                                                                    <Typography variant="body2" fontWeight="500">
-                                                                                        {acc.techAccountId}
-                                                                                    </Typography>
-                                                                                </TableCell>
-                                                                                <TableCell>
-                                                                                    <Typography variant="body2" fontWeight="500">
-                                                                                        {acc.techAccountName}
-                                                                                    </Typography>
-                                                                                </TableCell>
-                                                                                <TableCell>
-                                                                                    <Typography variant="body2" fontWeight="500">
-                                                                                        {acc.totalAccounts}
-                                                                                    </Typography>
-                                                                                </TableCell>
-                                                                                <TableCell>
-                                                                                    <Typography variant="body2" fontWeight="500">
-                                                                                        {new Intl.NumberFormat().format(acc.totalNumbers)}
-                                                                                    </Typography>
-                                                                                </TableCell>
-                                                                            </TableRow>
-                                                                        ))
-                                                                    ) : (
-                                                                        <TableRow>
-                                                                            <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
-                                                                                <Typography variant="body2" color="textSecondary">
-                                                                                    No accounts found
-                                                                                </Typography>
-                                                                            </TableCell>
-                                                                        </TableRow>
-                                                                    )}
-                                                                </TableBody>
-                                                            </Table>
-                                                        </Paper>
-                                                        <Typography
-                                                            variant="subtitle1"
-                                                            gutterBottom
-                                                            sx={{
-                                                                fontWeight: '700',
-                                                                color: calmTheme.palette.secondary.main,
-                                                                mb: 1.5,
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                '&::before': {
-                                                                    content: '" "',
-                                                                    display: 'block',
-                                                                    width: 12,
-                                                                    height: 12,
-                                                                    borderRadius: '50%',
-                                                                    backgroundColor: calmTheme.palette.secondary.main,
-                                                                    marginRight: 1
-                                                                }
-                                                            }}
-                                                        >
-                                                            Countries
-                                                        </Typography>
-                                                        <Paper
-                                                            elevation={2}
-                                                            sx={{
-                                                                borderRadius: 2,
-                                                                overflow: 'hidden',
-                                                                border: `1px solid ${alpha(calmTheme.palette.divider, 0.5)}`
-                                                            }}
-                                                        >
-                                                            <Table size="small">
-                                                                <TableHead sx={{
-                                                                    backgroundColor: alpha(calmTheme.palette.secondary.light, 0.2)
-                                                                }}>
-                                                                    <TableRow>
-                                                                        <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="500">ID</Typography>
-                                                                        </TableCell>
-                                                                        <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="500">Name</Typography>
-                                                                        </TableCell>
-                                                                        <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="500">Total Accounts</Typography>
-                                                                        </TableCell>
-                                                                        <TableCell>
-                                                                            <Typography variant="subtitle2" fontWeight="500">Total Numbers</Typography>
-                                                                        </TableCell>
-                                                                    </TableRow>
-                                                                </TableHead>
-                                                                <TableBody>
-                                                                    {customer.proCountry.length > 0 ? (
-                                                                        customer.proCountry.map((country, idx) => (
-                                                                            <TableRow
-                                                                                key={country.countryId}
-                                                                                hover
-                                                                                sx={{
-                                                                                    backgroundColor: idx % 2 === 0 ?
-                                                                                        alpha(calmTheme.palette.grey[100], 0.3) :
-                                                                                        'transparent',
-                                                                                    '&:hover': {
-                                                                                        backgroundColor: alpha(calmTheme.palette.secondary.light, 0.2),
-                                                                                    }
-                                                                                }}
-                                                                            >
-                                                                                <TableCell>
-                                                                                    <Typography variant="body2" fontWeight="500">
-                                                                                        {country.countryId}
-                                                                                    </Typography>
-                                                                                </TableCell>
-                                                                                <TableCell>
-                                                                                    <Typography variant="body2" fontWeight="500">
-                                                                                        {country.countryName}
-                                                                                    </Typography>
-                                                                                </TableCell>
-                                                                                <TableCell>
-                                                                                    <Typography variant="body2" fontWeight="500">
-                                                                                        {country.totalAccounts}
-                                                                                    </Typography>
-                                                                                </TableCell>
-                                                                                <TableCell>
-                                                                                    <Typography variant="body2" fontWeight="500">
-                                                                                        {new Intl.NumberFormat().format(country.totalNumbers)}
-                                                                                    </Typography>
-                                                                                </TableCell>
-                                                                            </TableRow>
-                                                                        ))
-                                                                    ) : (
-                                                                        <TableRow>
-                                                                            <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
-                                                                                <Typography variant="body2" color="textSecondary">
-                                                                                    No countries found
-                                                                                </Typography>
-                                                                            </TableCell>
-                                                                        </TableRow>
-                                                                    )}
-                                                                </TableBody>
-                                                            </Table>
-                                                        </Paper>
-                                                    </Box>
-                                                </Collapse>
-                                            </TableCell>
-                                        </TableRow>
-                                    </React.Fragment>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                                        <Typography
-                                            variant="h6"
-                                            sx={{
-                                                color: calmTheme.palette.text.secondary,
-                                                fontWeight: 500
-                                            }}
-                                        >
-                                            {allCustomers.length === 0 ?
-                                                "Loading customer data..." :
-                                                "No customers match the current filters"
-                                            }
-                                        </Typography>
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                                                    </Collapse>
+                                                </TableCell>
+                                            </TableRow>
+                                        </React.Fragment>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                                            <Typography
+                                                variant="h6"
+                                                sx={{
+                                                    color: calmTheme.palette.text.secondary,
+                                                    fontWeight: 500
+                                                }}
+                                            >
+                                                {allCustomers.length === 0 ?
+                                                    "Loading customer data..." :
+                                                    "No customers match the current filters"
+                                                }
+                                            </Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </Box>
                 </Paper>
             </Card>
         </ThemeProvider>
