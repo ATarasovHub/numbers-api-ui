@@ -7,17 +7,20 @@ import {
 import * as XLSX from 'xlsx';
 import SearchIcon from '@mui/icons-material/Search';
 
-const filterFields = [
+const basicFilterFields = [
+    { label: "Customer Name", type: 'autocomplete' },
+    { label: "Assignment Status", type: 'select', options: ['Assigned', 'Unassigned'] },
+    { label: "Tech Account Name", type: 'autocomplete' }
+];
+
+const advancedFilterFields = [
     { label: "Number Range From", type: 'text' },
     { label: "Number Range To", type: 'text' },
     { label: "Start Date", type: 'date' },
     { label: "End Date", type: 'date' },
-    { label: "Customer Name", type: 'autocomplete' },
-    { label: "Tech Account Name", type: 'autocomplete' },
     { label: "Tech Account Status", type: 'select', options: ['Active', 'Deleted'] },
     { label: "Service Detail", type: 'text' },
-    { label: "Comment", type: 'text' },
-    { label: "Assignment Status", type: 'select', options: ['Assigned', 'Unassigned'] },
+    { label: "Comment", type: 'text' }
 ];
 
 const styles = {
@@ -184,6 +187,7 @@ export function RangeAssignment() {
     const [techAccountHasMore, setTechAccountHasMore] = useState(true);
     const [currentCustomerSearch, setCurrentCustomerSearch] = useState('');
     const [currentTechAccountSearch, setCurrentTechAccountSearch] = useState('');
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
     const fetchCustomerOptions = useCallback(async (searchText: string, page: number = 0, reset: boolean = true) => {
         setCustomerLoading(true);
@@ -619,6 +623,14 @@ export function RangeAssignment() {
         alert(`Current data: ${tableData.length} records. Export data: ${printData.length} records. Check console for details.`);
     };
 
+    const toggleAdvancedFilters = () => {
+        setShowAdvancedFilters(!showAdvancedFilters);
+    };
+
+    const filterFields = showAdvancedFilters
+        ? [...basicFilterFields, ...advancedFilterFields]
+        : basicFilterFields;
+
     return (
         <Paper sx={styles.mainContainer}>
             <Typography variant="h5" sx={styles.title}>Range Assignment</Typography>
@@ -748,6 +760,12 @@ export function RangeAssignment() {
                     ))}
                 </Box>
                 <Box sx={styles.buttonContainer}>
+                    <Button
+                        variant="outlined"
+                        onClick={toggleAdvancedFilters}
+                    >
+                        {showAdvancedFilters ? 'Hide Advanced Filters' : 'Show Advanced Filters'}
+                    </Button>
                     <Button
                         variant="contained"
                         onClick={handleSearch}
