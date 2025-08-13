@@ -971,80 +971,70 @@ export const ProviderOverview: React.FC = () => {
                         boxShadow: `0 4px 20px ${alpha(calmTheme.palette.common.black, 0.06)}`
                     }}
                 >
-                    <Table sx={{minWidth: 750}} aria-label="providers table">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell sx={{
-                                    fontWeight: '700',
-                                    color: calmTheme.palette.common.white,
-                                    background: calmTheme.palette.primary.dark,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px',
-                                    width: '5%'
-                                }}/>
-                                <TableCell sx={{
-                                    fontWeight: '700',
-                                    color: calmTheme.palette.common.white,
-                                    background: calmTheme.palette.primary.dark,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
-                                }}>Provider Name</TableCell>
-                                <TableCell sx={{
-                                    fontWeight: '700',
-                                    color: calmTheme.palette.common.white,
-                                    background: calmTheme.palette.primary.dark,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
-                                }}>Total Numbers</TableCell>
-                                <TableCell sx={{
-                                    fontWeight: '700',
-                                    color: calmTheme.palette.common.white,
-                                    background: calmTheme.palette.primary.dark,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
-                                }}>Assigned Numbers</TableCell>
-                                <TableCell sx={{
-                                    fontWeight: '700',
-                                    color: calmTheme.palette.common.white,
-                                    background: calmTheme.palette.primary.dark,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
-                                }}>Not Assigned Numbers</TableCell>
-                                <TableCell sx={{
-                                    fontWeight: '700',
-                                    color: calmTheme.palette.common.white,
-                                    background: calmTheme.palette.primary.dark,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
-                                }}>Total Monthly Cost</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {displayedProviders.length > 0 ? (
-                                displayedProviders.map(provider => (
-                                    <ProviderRow key={provider.providerId} provider={provider}
-                                                 onProviderUpdated={handleProviderUpdate}/>
-                                ))
-                            ) : (
+                    <Box
+                        sx={{
+                            maxHeight: '70vh',
+                            overflowY: 'auto',
+                            position: 'relative',
+                            scrollbarWidth: 'none',
+                            '&::-webkit-scrollbar': {
+                                display: 'none'
+                            }
+                        }}
+                    >
+                        <Table sx={{ minWidth: 750 }} aria-label="providers table">
+                            <TableHead>
                                 <TableRow>
-                                    <TableCell colSpan={7} align="center" sx={{py: 6}}>
-                                        <Typography
-                                            variant="h6"
-                                            sx={{
-                                                color: calmTheme.palette.text.secondary,
-                                                fontWeight: 500
-                                            }}
-                                        >
-                                            {allProviders.length === 0 ?
-                                                "Loading provider data..." :
-                                                "No providers match the current filters"
-                                            }
-                                        </Typography>
-                                    </TableCell>
+                                    {['', 'Provider Name', 'Total Numbers', 'Assigned Numbers', 'Not Assigned Numbers', 'Total Monthly Cost']
+                                        .map((title, idx) => (
+                                            <TableCell
+                                                key={idx}
+                                                sx={{
+                                                    position: 'sticky',
+                                                    top: 0,
+                                                    zIndex: 2,
+                                                    fontWeight: '700',
+                                                    color: calmTheme.palette.common.white,
+                                                    background: calmTheme.palette.primary.dark,
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px',
+                                                    ...(idx === 0 && { width: '5%' })
+                                                }}
+                                            >
+                                                {title}
+                                            </TableCell>
+                                        ))}
                                 </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                            </TableHead>
+                            <TableBody>
+                                {displayedProviders.length > 0 ? (
+                                    displayedProviders.map(provider => (
+                                        <ProviderRow
+                                            key={provider.providerId}
+                                            provider={provider}
+                                            onProviderUpdated={handleProviderUpdate}
+                                        />
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                                            <Typography
+                                                variant="h6"
+                                                sx={{
+                                                    color: calmTheme.palette.text.secondary,
+                                                    fontWeight: 500
+                                                }}
+                                            >
+                                                {allProviders.length === 0
+                                                    ? 'Loading provider data...'
+                                                    : 'No providers match the current filters'}
+                                            </Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </Box>
                 </Paper>
             </Card>
         </ThemeProvider>
