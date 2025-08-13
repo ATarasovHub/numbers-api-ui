@@ -57,47 +57,6 @@ const calmTheme = createTheme({
     },
 });
 
-const StatusBadge: React.FC<{ status?: string }> = ({status = 'Unknown'}) => {
-    const statusString = status ?? 'Unknown';
-    const isOccupied = statusString.toLowerCase() === 'active';
-    const displayText = isOccupied ? 'Occupied' : 'Free';
-    const backgroundColor = isOccupied
-        ? alpha(calmTheme.palette.success?.main || '#4caf50', 0.15)
-        : alpha(calmTheme.palette.error?.main || '#f44336', 0.15);
-    const textColor = isOccupied
-        ? calmTheme.palette.success?.main || '#2e7d32'
-        : calmTheme.palette.error?.main || '#c62828';
-    const borderColor = isOccupied
-        ? alpha(calmTheme.palette.success?.main || '#4caf50', 0.3)
-        : alpha(calmTheme.palette.error?.main || '#f44336', 0.3);
-
-    return (
-        <Box
-            sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                px: 1.5,
-                py: 0.5,
-                borderRadius: '16px',
-                backgroundColor,
-                color: textColor,
-                border: `1px solid ${borderColor}`,
-            }}
-        >
-            <Typography
-                variant="body2"
-                sx={{
-                    fontWeight: 600,
-                    fontSize: '0.85rem'
-                }}
-            >
-                {displayText}
-            </Typography>
-        </Box>
-    );
-};
-
 interface PhoneNumberData {
     number: string;
     status: string;
@@ -209,7 +168,6 @@ const PhoneNumbersTable: React.FC<{
                     <TableHead sx={{backgroundColor: alpha(calmTheme.palette.secondary.main, 0.1)}}>
                         <TableRow>
                             <TableCell sx={{fontWeight: '600', fontSize: '0.8rem', width: '15%'}}>Number</TableCell>
-                            <TableCell sx={{fontWeight: '600', fontSize: '0.8rem', width: '10%'}}>Status</TableCell>
                             <TableCell sx={{fontWeight: '600', fontSize: '0.8rem', width: '20%'}}>Customer</TableCell>
                             <TableCell sx={{fontWeight: '600', fontSize: '0.8rem', width: '20%'}}>Tech
                                 Account</TableCell>
@@ -254,8 +212,6 @@ const PhoneNumbersTable: React.FC<{
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap'
                                     }}>{phone.number}</TableCell>
-                                    <TableCell sx={{fontSize: '0.8rem', width: '10%'}}><StatusBadge
-                                        status={phone.status}/></TableCell>
                                     <TableCell sx={{
                                         fontSize: '0.8rem',
                                         width: '20%',
@@ -541,7 +497,7 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({stats}) => {
                                                             mr: 1
                                                         }}
                                                     >
-                                                        BlaBla Test
+                                                        Statistics for
                                                     </Typography>
                                                     <Typography
                                                         variant="h6"
@@ -636,9 +592,6 @@ const ProviderRow: React.FC<ProviderRowProps> = ({provider, onProviderUpdated}) 
                     <Typography variant="body2" fontWeight="600" color="text.primary">
                         {provider.providerName}
                     </Typography>
-                </TableCell>
-                <TableCell>
-                    <StatusBadge status={status}/>
                 </TableCell>
                 <TableCell>
                     <Typography variant="body2" fontWeight="500" color="text.primary">
@@ -1036,13 +989,6 @@ export const ProviderOverview: React.FC = () => {
                                     textTransform: 'uppercase',
                                     letterSpacing: '0.5px'
                                 }}>Provider Name</TableCell>
-                                <TableCell sx={{
-                                    fontWeight: '700',
-                                    color: calmTheme.palette.common.white,
-                                    background: calmTheme.palette.primary.dark,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
-                                }}>Status</TableCell>
                                 <TableCell sx={{
                                     fontWeight: '700',
                                     color: calmTheme.palette.common.white,
