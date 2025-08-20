@@ -1,4 +1,3 @@
-// File: CustomerTable.tsx (based on Pasted_Text_1755087452117.txt with sticky header)
 import React, { useEffect, useState } from 'react';
 import {
     TableBody,
@@ -73,7 +72,7 @@ const calmTheme = createTheme({
 
 export const CustomerTable: React.FC = () => {
     const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
-    const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
+    // const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
     const [displayedCustomers, setDisplayedCustomers] = useState<Customer[]>([]);
     const [filters, setFilters] = useState({
         customerName: '',
@@ -83,15 +82,21 @@ export const CustomerTable: React.FC = () => {
     const [openRows, setOpenRows] = useState<{ [key: number]: boolean }>({});
 
     useEffect(() => {
-        fetch('/customer/overview')
+        fetch('http://localhost:8080/customer/overview')
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json();
             })
             .then((data: Customer[]) => {
-                setAllCustomers(data);
-                setDisplayedCustomers(data.slice(0, 10));
+                const normalized = data.map(c => ({
+                    ...c,
+                    proAccounts: c.proAccounts ?? [],
+                    proCountry: c.proCountry ?? []
+                }));
+                setAllCustomers(normalized);
+                setDisplayedCustomers(normalized.slice(0, 10));
             })
+
             .catch((error) => {
                 console.error("Failed to fetch customers:", error);
                 setAllCustomers([]);
@@ -102,13 +107,13 @@ export const CustomerTable: React.FC = () => {
     useEffect(() => {
         const isAllFiltersEmpty = !filters.customerName && !filters.totalNumbers;
         if (isAllFiltersEmpty) {
-            setFilteredCustomers([]);
+            setDisplayedCustomers([]);
             setDisplayedCustomers(allCustomers.slice(0, 10));
             return;
         }
         let filtered = allCustomers.filter(customer => {
             let pass = true;
-            if (filters.customerName && !customer.customerName.toLowerCase().includes(filters.customerName.toLowerCase())) {
+            if (filters.customerName && !customer.customerName.toLowerCase().includes(filters.customerName)) {
                 pass = false;
             }
             if (filters.totalNumbers) {
@@ -118,7 +123,7 @@ export const CustomerTable: React.FC = () => {
             }
             return pass;
         });
-        setFilteredCustomers(filtered);
+        setDisplayedCustomers(filtered);
         setDisplayedCustomers(filtered);
     }, [allCustomers, filters]);
 
