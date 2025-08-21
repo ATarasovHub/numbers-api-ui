@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
     TableBody,
     TableCell,
@@ -16,7 +16,8 @@ import {
     Paper,
     alpha,
     createTheme,
-    ThemeProvider
+    ThemeProvider,
+    CircularProgress
 } from "@mui/material";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -70,9 +71,10 @@ const calmTheme = createTheme({
     },
 });
 
+const ITEMS_PER_PAGE = 20;
+
 export const CustomerTable: React.FC = () => {
     const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
-    // const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
     const [displayedCustomers, setDisplayedCustomers] = useState<Customer[]>([]);
     const [filters, setFilters] = useState({
         customerName: '',
@@ -80,56 +82,86 @@ export const CustomerTable: React.FC = () => {
         totalNumbersOp: '>=',
     });
     const [openRows, setOpenRows] = useState<{ [key: number]: boolean }>({});
+    const [loading, setLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const [page, setPage] = useState(0);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        fetch('http://localhost:8080/customer/overview')
+        fetchCustomers(0);
+    }, []);
+
+    const fetchCustomers = (pageNum: number, resetData: boolean = false) => {
+        if (loading) return;
+        
+        setLoading(true);
+
+        const params = new URLSearchParams({
+            page: pageNum.toString(),
+            size: ITEMS_PER_PAGE.toString()
+        });
+
+        if (filters.customerName.trim()) {
+            params.append('customerName', filters.customerName.trim());
+        }
+        if (filters.totalNumbers.trim()) {
+            params.append('totalNumbers', filters.totalNumbers.trim());
+            params.append('totalNumbersOp', filters.totalNumbersOp);
+        }
+        
+        fetch(`http://localhost:8080/customer/overview?${params.toString()}`)
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json();
             })
-            .then((data: Customer[]) => {
-                const normalized = data.map(c => ({
+            .then((data: any) => {
+                const normalized = data.content.map((c: any) => ({
                     ...c,
                     proAccounts: c.proAccounts ?? [],
                     proCountry: c.proCountry ?? []
                 }));
-                setAllCustomers(normalized);
-                setDisplayedCustomers(normalized.slice(0, 10));
+                
+                if (pageNum === 0 || resetData) {
+                    setAllCustomers(normalized);
+                    setDisplayedCustomers(normalized);
+                } else {
+                    setAllCustomers(prev => [...prev, ...normalized]);
+                    setDisplayedCustomers(prev => [...prev, ...normalized]);
+                }
+                
+                setHasMore(!data.last);
+                setPage(pageNum);
+                setLoading(false);
             })
-
             .catch((error) => {
                 console.error("Failed to fetch customers:", error);
-                setAllCustomers([]);
-                setDisplayedCustomers([]);
+                setLoading(false);
             });
-    }, []);
-
-    useEffect(() => {
-        const isAllFiltersEmpty = !filters.customerName && !filters.totalNumbers;
-        if (isAllFiltersEmpty) {
-            setDisplayedCustomers([]);
-            setDisplayedCustomers(allCustomers.slice(0, 10));
-            return;
-        }
-        let filtered = allCustomers.filter(customer => {
-            let pass = true;
-            if (filters.customerName && !customer.customerName.toLowerCase().includes(filters.customerName)) {
-                pass = false;
-            }
-            if (filters.totalNumbers) {
-                const val = Number(filters.totalNumbers);
-                if (filters.totalNumbersOp === '>=') pass = pass && (customer.totalNumbers >= val);
-                if (filters.totalNumbersOp === '<=') pass = pass && (customer.totalNumbers <= val);
-            }
-            return pass;
-        });
-        setDisplayedCustomers(filtered);
-        setDisplayedCustomers(filtered);
-    }, [allCustomers, filters]);
+    };
 
     const handleFilterChange = (field: string, value: string) => {
         setFilters(prev => ({ ...prev, [field]: value }));
+        setPage(0);
+        setHasMore(true);
+        fetchCustomers(0);
     };
+
+    const handleScroll = useCallback(() => {
+        if (!scrollContainerRef.current || loading || !hasMore) return;
+        
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+        if (scrollTop + clientHeight >= scrollHeight - 5) {
+            fetchCustomers(page + 1);
+        }
+    }, [loading, hasMore, page]);
+
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (container) {
+            container.addEventListener('scroll', handleScroll);
+            return () => container.removeEventListener('scroll', handleScroll);
+        }
+    }, [handleScroll]);
 
     const handleRowToggle = (customerId: number) => {
         setOpenRows(prev => ({ ...prev, [customerId]: !prev[customerId] }));
@@ -303,6 +335,7 @@ export const CustomerTable: React.FC = () => {
                     }}
                 >
                     <Box
+                        ref={scrollContainerRef}
                         sx={{
                             maxHeight: '70vh',
                             overflowY: 'auto',
@@ -499,7 +532,7 @@ export const CustomerTable: React.FC = () => {
                                                                         {customer.proAccounts.length > 0 ? (
                                                                             customer.proAccounts.map((acc, idx) => (
                                                                                 <TableRow
-                                                                                    key={acc.techAccountId}
+                                                                                    key={`${acc.techAccountId}-${idx}`}
                                                                                     hover
                                                                                     sx={{
                                                                                         backgroundColor: idx % 2 === 0 ?
@@ -597,7 +630,7 @@ export const CustomerTable: React.FC = () => {
                                                                         {customer.proCountry.length > 0 ? (
                                                                             customer.proCountry.map((country, idx) => (
                                                                                 <TableRow
-                                                                                    key={country.countryId}
+                                                                                    key={`${country.countryId}-${idx}`}
                                                                                     hover
                                                                                     sx={{
                                                                                         backgroundColor: idx % 2 === 0 ?
@@ -658,16 +691,18 @@ export const CustomerTable: React.FC = () => {
                                                     fontWeight: 500
                                                 }}
                                             >
-                                                {allCustomers.length === 0 ?
-                                                    "Loading customer data..." :
-                                                    "No customers match the current filters"
-                                                }
+                                                {loading ? "Loading customer data..." : "No customers found"}
                                             </Typography>
                                         </TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
                         </Table>
+                        {loading && (
+                            <Box display="flex" justifyContent="center" my={2}>
+                                <CircularProgress />
+                            </Box>
+                        )}
                     </Box>
                 </Paper>
             </Card>
