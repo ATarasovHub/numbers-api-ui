@@ -1,0 +1,51 @@
+[33mf5d7399[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m "feat: add toggle for advanced filters in Range Assignment"
+[33m6f9f0ef[m feat: implement sticky headers for main CustomerTable.tsx
+[33m184fc58[m feat: implement sticky headers for main providers table
+[33m8880549[m refactor: remove satus column from Provider overvew
+[33m885d7ab[m added autocomplete feature
+[33me5dc168[m added autocomplete feature
+[33m9ac999c[m added Print feature fix3
+[33m0c23881[m added Print feature fix2
+[33mb32e88e[m added Print feature fix1
+[33m740003f[m added infinity scroll to RangeAssignment.tsx
+[33m29165da[m added number assigned range fix3
+[33mb4d62da[m added number assigned range fix2
+[33m6137b6c[m added number assigned range1
+[33m3dbf60b[m searchbar fix1
+[33m3d7044b[m searchbar implemented
+[33m9cd8e7a[m provider overview infinity scroll fix4
+[33m3e10e69[m provider overview Test fix3
+[33m2c90714[m provider overview Test fix2
+[33m7063784[m provider overview added number detail info
+[33mb3ad4b6[m feat: restyle customer and provider tables
+[33m3636872[m feat: restyle customer and provider tables
+[33m5ec8d0d[m changed styles
+[33mb0ded75[m update Provider Overview
+[33mc630ab1[m update header
+[33me9b0742[m updated CustomerTable
+[33m5f13986[m fix overview
+[33m7b691c3[m Customer overview change
+[33m7244bb5[m Customer overview change
+[33mb4de954[m Ui design change
+[33m5e1bd99[m customer reqest overview
+[33me663341[m Merge remote-tracking branch 'origin/main'
+[33m2cef895[m customer reqest overview
+[33mf60c192[m customer reqest overview
+[33m51549ed[m fix custimer
+[33mc2b1f38[m added Header and customer overview
+[33me37573f[m added Header and customer overview
+[33mb34f930[m added Header and customer overview
+[33md962cf4[m refactor forms
+[33m820007c[m Implement provider and country stats editing
+[33m182b2ed[m Added createProviderForm2
+[33md9b9f28[m Added createProviderForm2
+[33m346be15[m Added createProviderForm
+[33me9dc19a[m Animation added
+[33m314353e[m Enhance ProviderTable with color animation
+[33m2a9adf5[m Added collapsible table with country info
+[33m17db28a[m Added collapsible table with country info
+[33m24ded49[m Initial commit
+[33m27b951e[m Added provider overview table
+[33m18f21c4[m Added provider overview table
+[33ma8b1f99[m Initiated react project
+[33mfd5fa4e[m Initial commit
