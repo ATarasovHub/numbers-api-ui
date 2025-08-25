@@ -47,7 +47,6 @@ export interface Customer {
     proCountries: CustomerOverviewProCountry[];
 }
 
-// ----- ИЗМЕНЕННЫЙ ТИП ДЛЯ СООТВЕТСТВИЯ БЭКЕНДУ -----
 export interface TechAccountDetails {
     startDate: string;
     endDate: string;
@@ -100,11 +99,10 @@ export const CustomerTable: React.FC = () => {
     const [page, setPage] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-    // --- Account details state ---
     const [expandedAccounts, setExpandedAccounts] = useState<{ [key: number]: boolean }>({});
-    // ИЗМЕНЕН ТИП СОСТОЯНИЯ
     const [accountDetails, setAccountDetails] = useState<{ [key: number]: TechAccountDetails[] }>({});
     const [loadingAccount, setLoadingAccount] = useState<{ [key: number]: boolean }>({});
+    const [searchQuery, setSearchQuery] = useState<{ [key: number]: string }>({});
 
     useEffect(() => {
         fetchCustomers(0);
@@ -205,7 +203,6 @@ export const CustomerTable: React.FC = () => {
         fetch(url)
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                // Теперь мы ожидаем массив объектов TechAccountDetails
                 return res.json() as Promise<TechAccountDetails[]>;
             })
             .then((data: TechAccountDetails[]) => {
@@ -214,7 +211,6 @@ export const CustomerTable: React.FC = () => {
             })
             .catch(err => {
                 console.error("Ошибка при получении деталей аккаунта:", err);
-                // В случае ошибки также закрываем, чтобы убрать индикатор загрузки
                 handleAccountToggle(techAccountId);
             })
             .finally(() =>
@@ -267,10 +263,22 @@ export const CustomerTable: React.FC = () => {
         return <Chip label={status} color={color as any} size="small" />;
     };
 
+    const filterNumbersBySearch = (techAccountId: number) => {
+        const numbers = accountDetails[techAccountId] || [];
+        const query = searchQuery[techAccountId]?.toLowerCase() || '';
+
+        if (!query) {
+            return numbers;
+        }
+
+        return numbers.filter(detail =>
+            detail.number.toLowerCase().includes(query)
+        );
+    };
+
     return (
         <ThemeProvider theme={calmTheme}>
             <Card elevation={6} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, maxWidth: '100vw' }}>
-                {/* Фильтры */}
                 <Paper elevation={3} sx={{ p: 2.5, mb: 3, borderRadius: 2.5 }}>
                     <Box display="flex" flexWrap="wrap" gap={2} alignItems="center">
                         <Typography variant="subtitle2" sx={{ minWidth: '100px', fontWeight: 600 }}>
@@ -308,7 +316,6 @@ export const CustomerTable: React.FC = () => {
                     </Box>
                 </Paper>
 
-                {/* Таблица */}
                 <Paper elevation={4} sx={{ borderRadius: 2.5, overflow: 'hidden' }}>
                     <Box ref={scrollContainerRef} sx={{ maxHeight: '70vh', overflowY: 'auto', position: 'relative' }}>
                         <Table sx={{ minWidth: 750 }} aria-label="customers table">
@@ -378,6 +385,20 @@ export const CustomerTable: React.FC = () => {
                                                                                         <TableCell colSpan={4} style={{ paddingBottom: 0, paddingTop: 0 }}>
                                                                                             <Collapse in={expandedAccounts[acc.techAccountId]} timeout="auto" unmountOnExit>
                                                                                                 <Box margin={1}>
+                                                                                                    <Box sx={{ mb: 2 }}>
+                                                                                                        <TextField
+                                                                                                            label="Search Number"
+                                                                                                            variant="outlined"
+                                                                                                            size="small"
+                                                                                                            value={searchQuery[acc.techAccountId] || ''}
+                                                                                                            onChange={(e) => setSearchQuery(prev => ({
+                                                                                                                ...prev,
+                                                                                                                [acc.techAccountId]: e.target.value
+                                                                                                            }))}
+                                                                                                            fullWidth
+                                                                                                        />
+                                                                                                    </Box>
+
                                                                                                     {loadingAccount[acc.techAccountId] && (
                                                                                                         <Typography variant="body2" color="textSecondary">Loading...</Typography>
                                                                                                     )}
@@ -395,8 +416,8 @@ export const CustomerTable: React.FC = () => {
                                                                                                                     </TableRow>
                                                                                                                 </TableHead>
                                                                                                                 <TableBody>
-                                                                                                                    {accountDetails[acc.techAccountId].length > 0 ? (
-                                                                                                                        accountDetails[acc.techAccountId].map((detail, idx) => (
+                                                                                                                    {filterNumbersBySearch(acc.techAccountId).length > 0 ? (
+                                                                                                                        filterNumbersBySearch(acc.techAccountId).map((detail, idx) => (
                                                                                                                             <TableRow key={idx} hover>
                                                                                                                                 <TableCell>{detail.startDate}</TableCell>
                                                                                                                                 <TableCell>{detail.endDate}</TableCell>
@@ -408,7 +429,7 @@ export const CustomerTable: React.FC = () => {
                                                                                                                         ))
                                                                                                                     ) : (
                                                                                                                         <TableRow>
-                                                                                                                            <TableCell colSpan={6} align="center">No details found</TableCell>
+                                                                                                                            <TableCell colSpan={6} align="center">No numbers match the search query</TableCell>
                                                                                                                         </TableRow>
                                                                                                                     )}
                                                                                                                 </TableBody>
