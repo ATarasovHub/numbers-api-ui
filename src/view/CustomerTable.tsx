@@ -23,7 +23,6 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
-// ----- DTO Types -----
 export interface CustomerOverviewProAccount {
     techAccountId: number;
     techAccountName: string;
@@ -41,22 +40,21 @@ export interface CustomerOverviewProCountry {
 export interface Customer {
     customerId: number;
     customerName: string;
-    productType: string;
+    productType?: string | null;
     totalNumbers: number;
     proAccounts: CustomerOverviewProAccount[];
     proCountries: CustomerOverviewProCountry[];
 }
 
 export interface TechAccountDetails {
-    startDate: string;
-    endDate: string;
+    startDate?: string | null;
+    endDate?: string | null;
     number: string;
-    comment: string | null;
+    comment?: string | null;
     numberProviderName: string;
     serviceDetail: string;
 }
 
-// ----- Theme -----
 const calmTheme = createTheme({
     palette: {
         primary: {
@@ -85,13 +83,21 @@ const calmTheme = createTheme({
 
 const ITEMS_PER_PAGE = 20;
 
+function debounce<T extends (...args: any) => void>(func: T, wait: number) {
+    let timeout: ReturnType<typeof setTimeout> | null;
+    return (...args: Parameters<T>) => {
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), wait);
+    };
+}
+
 export const CustomerTable: React.FC = () => {
     const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
     const [displayedCustomers, setDisplayedCustomers] = useState<Customer[]>([]);
     const [filters, setFilters] = useState({
         customerName: '',
         totalNumbers: '',
-        totalNumbersOp: '>=',
+        totalNumbersOp: '>='
     });
     const [openRows, setOpenRows] = useState<{ [key: number]: boolean }>({});
     const [loading, setLoading] = useState(false);
@@ -105,14 +111,13 @@ export const CustomerTable: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState<{ [key: number]: string }>({});
 
     useEffect(() => {
-        fetchCustomers(0);
+        fetchCustomers(0, true);
     }, []);
 
-    const fetchCustomers = (pageNum: number, resetData: boolean = false) => {
+    const fetchCustomers = useCallback((pageNum: number, resetData = false) => {
         if (loading) return;
 
         setLoading(true);
-
         const params = new URLSearchParams({
             page: pageNum.toString(),
             size: ITEMS_PER_PAGE.toString()
@@ -122,8 +127,10 @@ export const CustomerTable: React.FC = () => {
             params.append('customerName', filters.customerName.trim());
         }
         if (filters.totalNumbers.trim()) {
-            params.append('totalNumbers', filters.totalNumbers.trim());
-            params.append('totalNumbersOp', filters.totalNumbersOp);
+            if (!isNaN(Number(filters.totalNumbers))) {
+                params.append('totalNumbers', filters.totalNumbers.trim());
+                params.append('totalNumbersOp', filters.totalNumbersOp);
+            }
         }
 
         fetch(`http://localhost:8080/customer/overview?${params.toString()}`)
@@ -134,6 +141,7 @@ export const CustomerTable: React.FC = () => {
             .then((data: any) => {
                 const normalized: Customer[] = data.content.map((c: any) => ({
                     ...c,
+                    productType: c.productType ?? '-',
                     proAccounts: c.proAccounts ?? [],
                     proCountries: c.proCountries ?? []
                 }));
@@ -154,13 +162,21 @@ export const CustomerTable: React.FC = () => {
                 console.error("Failed to fetch customers:", error);
                 setLoading(false);
             });
-    };
+    }, [filters.customerName, filters.totalNumbers, filters.totalNumbersOp, loading]);
+
+    const debouncedFetchCustomers = useCallback(debounce(fetchCustomers, 350), [fetchCustomers]);
 
     const handleFilterChange = (field: string, value: string) => {
         setFilters(prev => ({ ...prev, [field]: value }));
         setPage(0);
         setHasMore(true);
-        fetchCustomers(0, true);
+
+        if (field === 'customerName') {
+            debouncedFetchCustomers(0, true);
+        } else {
+            // Для totalNumbers - можно сразу без дебаунса
+            fetchCustomers(0, true);
+        }
     };
 
     const handleScroll = useCallback(() => {
@@ -170,7 +186,7 @@ export const CustomerTable: React.FC = () => {
         if (scrollTop + clientHeight >= scrollHeight - 5) {
             fetchCustomers(page + 1);
         }
-    }, [loading, hasMore, page]);
+    }, [loading, hasMore, page, fetchCustomers]);
 
     useEffect(() => {
         const container = scrollContainerRef.current;
@@ -219,11 +235,11 @@ export const CustomerTable: React.FC = () => {
     };
 
     const isVoiceInProduct = (productType: string) => {
-        return productType.toLowerCase().includes('voice in');
+        return productType?.toLowerCase().includes('voice in');
     };
 
-    const ProductTypeCell: React.FC<{ productType: string }> = ({ productType }) => {
-        if (isVoiceInProduct(productType)) {
+    const ProductTypeCell: React.FC<{ productType?: string | null }> = ({ productType }) => {
+        if (productType && isVoiceInProduct(productType)) {
             return (
                 <Box
                     sx={{
@@ -246,7 +262,7 @@ export const CustomerTable: React.FC = () => {
         }
         return (
             <Typography variant="body2" fontWeight="500" color="text.secondary">
-                {productType}
+                {productType ?? '-'}
             </Typography>
         );
     };
@@ -306,10 +322,16 @@ export const CustomerTable: React.FC = () => {
                             <TextField
                                 label="Total Numbers"
                                 value={filters.totalNumbers}
-                                onChange={e => handleFilterChange('totalNumbers', e.target.value)}
+                                onChange={e => {
+                                    // разрешаем только цифры и пустую строку
+                                    const val = e.target.value;
+                                    if (/^\d*$/.test(val)) {
+                                        handleFilterChange('totalNumbers', val);
+                                    }
+                                }}
                                 variant="outlined"
                                 size="small"
-                                type="number"
+                                type="text"
                                 sx={{ minWidth: 150 }}
                             />
                         </Box>
@@ -349,12 +371,10 @@ export const CustomerTable: React.FC = () => {
                                                 <TableCell>{customer.proAccounts.length}</TableCell>
                                                 <TableCell>{customer.proCountries.length}</TableCell>
                                             </TableRow>
-                                            {/* Expand Customer */}
                                             <TableRow>
                                                 <TableCell colSpan={6} style={{ paddingBottom: 0, paddingTop: 0 }}>
                                                     <Collapse in={openRows[customer.customerId]} timeout="auto" unmountOnExit>
                                                         <Box sx={{ margin: 2 }}>
-                                                            {/* Accounts */}
                                                             <Typography variant="h6" gutterBottom>Accounts</Typography>
                                                             <Paper elevation={2}>
                                                                 <Table size="small">
@@ -380,7 +400,6 @@ export const CustomerTable: React.FC = () => {
                                                                                         <TableCell><TechAccountStatusChip status={acc.techAccountStatus} /></TableCell>
                                                                                         <TableCell>{new Intl.NumberFormat().format(acc.totalNumbers)}</TableCell>
                                                                                     </TableRow>
-                                                                                    {/* Expand Account Details */}
                                                                                     <TableRow>
                                                                                         <TableCell colSpan={4} style={{ paddingBottom: 0, paddingTop: 0 }}>
                                                                                             <Collapse in={expandedAccounts[acc.techAccountId]} timeout="auto" unmountOnExit>
@@ -419,8 +438,8 @@ export const CustomerTable: React.FC = () => {
                                                                                                                     {filterNumbersBySearch(acc.techAccountId).length > 0 ? (
                                                                                                                         filterNumbersBySearch(acc.techAccountId).map((detail, idx) => (
                                                                                                                             <TableRow key={idx} hover>
-                                                                                                                                <TableCell>{detail.startDate}</TableCell>
-                                                                                                                                <TableCell>{detail.endDate}</TableCell>
+                                                                                                                                <TableCell>{detail.startDate ?? '-'}</TableCell>
+                                                                                                                                <TableCell>{detail.endDate ?? '-'}</TableCell>
                                                                                                                                 <TableCell>{detail.number}</TableCell>
                                                                                                                                 <TableCell>{detail.comment ?? '-'}</TableCell>
                                                                                                                                 <TableCell>{detail.numberProviderName}</TableCell>
@@ -449,7 +468,6 @@ export const CustomerTable: React.FC = () => {
                                                                 </Table>
                                                             </Paper>
 
-                                                            {/* Countries */}
                                                             <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>Countries</Typography>
                                                             <Paper elevation={2}>
                                                                 <Table size="small">
