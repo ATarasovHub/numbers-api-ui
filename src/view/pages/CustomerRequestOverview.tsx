@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, TextField, Select, MenuItem, Button, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
-import providerData from '../../mocks/data/providers';
-import provisioningTypesData from '../../mocks/data/provisioningTypes';
+import { Box, Typography } from '@mui/material';
+
+import CreateCustomerRequestForm from '../components/CreateCustomerRequestForm';
+import SearchCustomerRequestForm from '../components/SearchCustomerRequestForm';
+import ProvisioningTable from '../components/ProvisioningTable';
+
+const mockBps = [
+  { id: 'twilio', name: 'twilio' },
+  { id: 'bp2', name: 'bp2' },
+];
 
 const mockProvisioning = [
   {
@@ -13,70 +20,22 @@ const mockProvisioning = [
   },
 ];
 
-const mockProviders = [
-  { id: 'twilio', name: 'Twilio' },
-  { id: 'dialogue', name: '[AUS] Dialogue AU' },
-];
-
-const mockBps = [
-  { id: 'twilio', name: 'twilio' },
-  { id: 'bp2', name: 'bp2' },
-];
-
 const CustomerRequestOverview: React.FC = () => {
-  const [requestedNumbers, setRequestedNumbers] = useState('');
-  const [provider, setProvider] = useState('');
-  const [bp, setBp] = useState('');
-  const [comment, setComment] = useState('');
-  const [requestDate, setRequestDate] = useState('2025-07-14');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [searchProvisioningType, setSearchProvisioningType] = useState('');
-  const [searchProvider, setSearchProvider] = useState('');
-  const [searchBp, setSearchBp] = useState('');
   const [provisioning, setProvisioning] = useState(mockProvisioning);
   const [providers, setProviders] = useState<any[]>([]);
 
   useEffect(() => {
     fetch('/provider')
-      .then(res => res.json())
-      .then(data => setProviders(data));
+        .then(res => res.json())
+        .then(data => setProviders(data));
   }, []);
 
-  const handleCreate = async () => {
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        requestedNumbers: Number(requestedNumbers),
-        providerId: provider,
-        bp,
-        comment,
-        requestDate,
-      };
-      const res = await fetch('/customer-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error('Failed to create request');
-      const data = await res.json();
-      alert('Customer request created!\n' + JSON.stringify(data, null, 2));
-      setRequestedNumbers('');
-      setProvider('');
-      setBp('');
-      setComment('');
-      setRequestDate('2025-07-14');
-    } catch (e: any) {
-      alert('Error: ' + (e.message || e));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const handleSearch = async (params: { provider: string, bp: string }) => {
+    const searchParams = new URLSearchParams();
+    if (params.provider) searchParams.append('providerId', params.provider);
+    if (params.bp) searchParams.append('bp', params.bp);
 
-  const handleSearch = async () => {
-    const params = new URLSearchParams();
-    if (searchProvider) params.append('providerId', searchProvider);
-    if (searchBp) params.append('bp', searchBp);
-    const res = await fetch('/customer-request?' + params.toString());
+    const res = await fetch('/customer-request?' + searchParams.toString());
     if (res.ok) {
       const data = await res.json();
       setProvisioning((data as any[]).map((r: any) => ({
@@ -92,97 +51,17 @@ const CustomerRequestOverview: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant="subtitle2" sx={{ fontSize: '1rem', color: '#888', mb: 1 }}>
-        Administration &gt; Customer Request overview
-      </Typography>
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Create New Customer Request</Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 600 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography sx={{ minWidth: 170 }}>Requested Numbers</Typography>
-            <TextField size="small" value={requestedNumbers} onChange={e => setRequestedNumbers(e.target.value)} sx={{ minWidth: 200 }} />
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography sx={{ minWidth: 170 }}>Provider</Typography>
-            <Select size="small" displayEmpty value={provider} onChange={e => setProvider(e.target.value)} sx={{ minWidth: 200 }}>
-              <MenuItem value=""><em>click to select</em></MenuItem>
-              {providers.map(p => <MenuItem key={p.providerId} value={p.providerId}>{p.providerName}</MenuItem>)}
-            </Select>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography sx={{ minWidth: 170 }}>BP</Typography>
-            <Select size="small" displayEmpty value={bp} onChange={e => setBp(e.target.value)} sx={{ minWidth: 200 }}>
-              <MenuItem value=""><em>start typing for select</em></MenuItem>
-              {mockBps.map(b => <MenuItem key={b.id} value={b.id}>{b.name}</MenuItem>)}
-            </Select>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-            <Typography sx={{ minWidth: 170, mt: 1 }}>Comment</Typography>
-            <TextField size="small" multiline minRows={4} value={comment} onChange={e => setComment(e.target.value)} sx={{ minWidth: 400 }} />
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography sx={{ minWidth: 170 }}>Request Date</Typography>
-            <TextField size="small" type="date" value={requestDate} onChange={e => setRequestDate(e.target.value)} sx={{ minWidth: 200 }} />
-          </Box>
-          <Box>
-            <Button variant="contained" onClick={handleCreate} disabled={isSubmitting}>Create</Button>
-          </Box>
-        </Box>
-      </Paper>
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>search</Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-          <Typography sx={{ minWidth: 170 }}>Provisioning Type</Typography>
-          <Select size="small" displayEmpty value={searchProvisioningType} onChange={e => setSearchProvisioningType(e.target.value)} sx={{ minWidth: 200 }}>
-            <MenuItem value=""><em>click to select</em></MenuItem>
-            {provisioningTypesData.map((pt: any) => <MenuItem key={pt.id} value={pt.id}>{pt.name}</MenuItem>)}
-          </Select>
-          <Typography sx={{ minWidth: 100 }}>Provider</Typography>
-          <Select size="small" displayEmpty value={searchProvider} onChange={e => setSearchProvider(e.target.value)} sx={{ minWidth: 200 }}>
-            <MenuItem value=""><em>click to select</em></MenuItem>
-            {providers.map(p => <MenuItem key={p.providerId} value={p.providerId}>{p.providerName}</MenuItem>)}
-          </Select>
-          <Typography sx={{ minWidth: 50 }}>BP</Typography>
-          <Select size="small" displayEmpty value={searchBp} onChange={e => setSearchBp(e.target.value)} sx={{ minWidth: 200 }}>
-            <MenuItem value=""><em>start typing for select</em></MenuItem>
-            {mockBps.map(b => <MenuItem key={b.id} value={b.id}>{b.name}</MenuItem>)}
-          </Select>
-          <Button variant="contained" sx={{ ml: 2 }} onClick={handleSearch}>search</Button>
-          <Button variant="outlined" color="error" sx={{ ml: 1 }}>delete with selected criteria</Button>
-        </Box>
-      </Paper>
-      <Paper variant="outlined" sx={{ p: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Provisioning</Typography>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Provider</TableCell>
-              <TableCell>BP</TableCell>
-              <TableCell>Comment</TableCell>
-              <TableCell>Requested Numbers</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {provisioning.map((row, idx) => (
-              <TableRow key={idx}>
-                <TableCell>{row.provider}</TableCell>
-                <TableCell>{row.bp}</TableCell>
-                <TableCell>{row.comment}</TableCell>
-                <TableCell>{row.requestedNumbers}</TableCell>
-                <TableCell>{row.date}</TableCell>
-                <TableCell>
-                  <Button size="small" color="error">✗</Button>
-                  <Button size="small">✎</Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Paper>
-    </Box>
+      <Box sx={{ p: 2 }}>
+        <Typography variant="subtitle2" sx={{ fontSize: '1rem', color: '#888', mb: 1 }}>
+          Administration &gt; Customer Request overview
+        </Typography>
+
+        <CreateCustomerRequestForm providers={providers} bps={mockBps} />
+
+        <SearchCustomerRequestForm providers={providers} onSearch={handleSearch} />
+
+        <ProvisioningTable provisioning={provisioning} />
+      </Box>
   );
 };
 

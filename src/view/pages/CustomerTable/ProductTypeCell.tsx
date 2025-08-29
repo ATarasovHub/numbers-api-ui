@@ -2,11 +2,12 @@ import React from 'react';
 import { Box, Typography, alpha } from '@mui/material';
 import { calmTheme } from './theme';
 
-const isVoiceInProduct = (productType?: string | null) =>
-    !!productType && productType.toLowerCase().includes('voice in');
+const isVoiceInProduct = (productType: string) => {
+    return productType?.toLowerCase().includes('voice in');
+};
 
 const ProductTypeCell: React.FC<{ productType?: string | null }> = ({ productType }) => {
-    if (isVoiceInProduct(productType)) {
+    if (productType && isVoiceInProduct(productType)) {
         return (
             <Box
                 sx={{
@@ -18,7 +19,7 @@ const ProductTypeCell: React.FC<{ productType?: string | null }> = ({ productTyp
                     borderRadius: '16px',
                     backgroundColor: alpha(calmTheme.palette.primary.main, 0.15),
                     color: calmTheme.palette.primary.main,
-                    border: `1px solid ${alpha(calmTheme.palette.primary.main, 0.3)}`
+                    border: `1px solid ${alpha(calmTheme.palette.primary.main, 0.3)}`,
                 }}
             >
                 <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>

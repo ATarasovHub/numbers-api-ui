@@ -14,14 +14,14 @@ import {
     Collapse,
     IconButton,
     Paper,
+    alpha,
+    createTheme,
     ThemeProvider,
     CircularProgress,
     Chip
-} from '@mui/material';
+} from "@mui/material";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { calmTheme } from './theme';
-import ProductTypeCell from '../CustomerTable/ProductTypeCell';
 
 export interface CustomerOverviewProAccount {
     techAccountId: number;
@@ -55,14 +55,37 @@ export interface TechAccountDetails {
     serviceDetail: string;
 }
 
+const calmTheme = createTheme({
+    palette: {
+        primary: {
+            main: 'hsl(224, 76%, 31%)',
+            light: 'hsl(214, 95%, 93%)',
+            dark: 'hsl(224, 76%, 25%)',
+        },
+        secondary: {
+            main: 'hsl(214, 91%, 60%)',
+            light: 'hsl(214, 95%, 93%)',
+        },
+        background: {
+            default: 'hsl(210, 40%, 98%)',
+            paper: '#ffffff',
+        },
+        grey: {
+            50: 'hsl(214, 95%, 97%)',
+            100: 'hsl(214, 95%, 93%)',
+        },
+        text: {
+            primary: '#334155',
+            secondary: '#64748b',
+        }
+    },
+});
+
 const ITEMS_PER_PAGE = 20;
 
-function debounce<Args extends any[]>(
-    func: (...args: Args) => void,
-    wait: number
-) {
-    let timeout: ReturnType<typeof setTimeout> | null = null;
-    return (...args: Args) => {
+function debounce<T extends (...args: any) => void>(func: T, wait: number) {
+    let timeout: ReturnType<typeof setTimeout> | null;
+    return (...args: Parameters<T>) => {
         if (timeout) clearTimeout(timeout);
         timeout = setTimeout(() => func(...args), wait);
     };
@@ -71,12 +94,17 @@ function debounce<Args extends any[]>(
 export const CustomerTable: React.FC = () => {
     const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
     const [displayedCustomers, setDisplayedCustomers] = useState<Customer[]>([]);
-    const [filters, setFilters] = useState({ customerName: '', totalNumbers: '', totalNumbersOp: '>=' });
+    const [filters, setFilters] = useState({
+        customerName: '',
+        totalNumbers: '',
+        totalNumbersOp: '>='
+    });
     const [openRows, setOpenRows] = useState<{ [key: number]: boolean }>({});
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(0);
-    const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+
     const [expandedAccounts, setExpandedAccounts] = useState<{ [key: number]: boolean }>({});
     const [accountDetails, setAccountDetails] = useState<{ [key: number]: TechAccountDetails[] }>({});
     const [loadingAccount, setLoadingAccount] = useState<{ [key: number]: boolean }>({});
@@ -86,46 +114,55 @@ export const CustomerTable: React.FC = () => {
         fetchCustomers(0, true);
     }, []);
 
-    const fetchCustomers = useCallback(
-        (pageNum: number, resetData = false) => {
-            if (loading) return;
-            setLoading(true);
-            const params = new URLSearchParams({ page: pageNum.toString(), size: ITEMS_PER_PAGE.toString() });
-            if (filters.customerName.trim()) params.append('customerName', filters.customerName.trim());
-            if (filters.totalNumbers.trim() && !isNaN(Number(filters.totalNumbers))) {
+    const fetchCustomers = useCallback((pageNum: number, resetData = false) => {
+        if (loading) return;
+
+        setLoading(true);
+        const params = new URLSearchParams({
+            page: pageNum.toString(),
+            size: ITEMS_PER_PAGE.toString()
+        });
+
+        if (filters.customerName.trim()) {
+            params.append('customerName', filters.customerName.trim());
+        }
+        if (filters.totalNumbers.trim()) {
+            if (!isNaN(Number(filters.totalNumbers))) {
                 params.append('totalNumbers', filters.totalNumbers.trim());
                 params.append('totalNumbersOp', filters.totalNumbersOp);
             }
-            fetch(`http://localhost:8080/customer/overview?${params.toString()}`)
-                .then(res => {
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    return res.json();
-                })
-                .then((data: any) => {
-                    const normalized: Customer[] = data.content.map((c: any) => ({
-                        ...c,
-                        productType: c.productType ?? '-',
-                        proAccounts: c.proAccounts ?? [],
-                        proCountries: c.proCountries ?? []
-                    }));
-                    if (pageNum === 0 || resetData) {
-                        setAllCustomers(normalized);
-                        setDisplayedCustomers(normalized);
-                    } else {
-                        setAllCustomers(prev => [...prev, ...normalized]);
-                        setDisplayedCustomers(prev => [...prev, ...normalized]);
-                    }
-                    setHasMore(!data.last);
-                    setPage(pageNum);
-                    setLoading(false);
-                })
-                .catch(e => {
-                    setLoading(false);
-                    console.error('Failed to fetch customers:', e);
-                });
-        },
-        [filters.customerName, filters.totalNumbers, filters.totalNumbersOp, loading]
-    );
+        }
+
+        fetch(`http://localhost:8080/customer/overview?${params.toString()}`)
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then((data: any) => {
+                const normalized: Customer[] = data.content.map((c: any) => ({
+                    ...c,
+                    productType: c.productType ?? '-',
+                    proAccounts: c.proAccounts ?? [],
+                    proCountries: c.proCountries ?? []
+                }));
+
+                if (pageNum === 0 || resetData) {
+                    setAllCustomers(normalized);
+                    setDisplayedCustomers(normalized);
+                } else {
+                    setAllCustomers(prev => [...prev, ...normalized]);
+                    setDisplayedCustomers(prev => [...prev, ...normalized]);
+                }
+
+                setHasMore(!data.last);
+                setPage(pageNum);
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error("Failed to fetch customers:", error);
+                setLoading(false);
+            });
+    }, [filters.customerName, filters.totalNumbers, filters.totalNumbersOp, loading]);
 
     const debouncedFetchCustomers = useCallback(debounce(fetchCustomers, 350), [fetchCustomers]);
 
@@ -133,14 +170,22 @@ export const CustomerTable: React.FC = () => {
         setFilters(prev => ({ ...prev, [field]: value }));
         setPage(0);
         setHasMore(true);
-        if (field === 'customerName') debouncedFetchCustomers(0, true);
-        else fetchCustomers(0, true);
+
+        if (field === 'customerName') {
+            debouncedFetchCustomers(0, true);
+        } else {
+            // Для totalNumbers - можно сразу без дебаунса
+            fetchCustomers(0, true);
+        }
     };
 
     const handleScroll = useCallback(() => {
         if (!scrollContainerRef.current || loading || !hasMore) return;
+
         const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
-        if (scrollTop + clientHeight >= scrollHeight - 5) fetchCustomers(page + 1);
+        if (scrollTop + clientHeight >= scrollHeight - 5) {
+            fetchCustomers(page + 1);
+        }
     }, [loading, hasMore, page, fetchCustomers]);
 
     useEffect(() => {
@@ -151,48 +196,102 @@ export const CustomerTable: React.FC = () => {
         }
     }, [handleScroll]);
 
-    const handleRowToggle = (customerId: number) => setOpenRows(prev => ({ ...prev, [customerId]: !prev[customerId] }));
-    const handleAccountToggle = (techAccountId: number) =>
+    const handleRowToggle = (customerId: number) => {
+        setOpenRows(prev => ({ ...prev, [customerId]: !prev[customerId] }));
+    };
+
+    const handleAccountToggle = (techAccountId: number) => {
         setExpandedAccounts(prev => ({ ...prev, [techAccountId]: !prev[techAccountId] }));
+    };
 
     const fetchAccountDetails = (customerName: string, techAccountId: number) => {
         if (accountDetails[techAccountId] && expandedAccounts[techAccountId]) {
             handleAccountToggle(techAccountId);
             return;
         }
+
         if (loadingAccount[techAccountId]) return;
+
         setLoadingAccount(prev => ({ ...prev, [techAccountId]: true }));
+
         const url = `http://localhost:8080/customer/overview/${encodeURIComponent(customerName)}/${techAccountId}`;
+
         fetch(url)
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json() as Promise<TechAccountDetails[]>;
             })
-            .then(data => {
+            .then((data: TechAccountDetails[]) => {
                 setAccountDetails(prev => ({ ...prev, [techAccountId]: data }));
                 handleAccountToggle(techAccountId);
             })
             .catch(err => {
+                console.error("Ошибка при получении деталей аккаунта:", err);
                 handleAccountToggle(techAccountId);
-                console.error('Account details error:', err);
             })
-            .finally(() => setLoadingAccount(prev => ({ ...prev, [techAccountId]: false })));
+            .finally(() =>
+                setLoadingAccount(prev => ({ ...prev, [techAccountId]: false }))
+            );
+    };
+
+    const isVoiceInProduct = (productType: string) => {
+        return productType?.toLowerCase().includes('voice in');
+    };
+
+    const ProductTypeCell: React.FC<{ productType?: string | null }> = ({ productType }) => {
+        if (productType && isVoiceInProduct(productType)) {
+            return (
+                <Box
+                    sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        px: 1.5,
+                        py: 0.5,
+                        borderRadius: '16px',
+                        backgroundColor: alpha(calmTheme.palette.primary.main, 0.15),
+                        color: calmTheme.palette.primary.main,
+                        border: `1px solid ${alpha(calmTheme.palette.primary.main, 0.3)}`,
+                    }}
+                >
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+                        {productType}
+                    </Typography>
+                </Box>
+            );
+        }
+        return (
+            <Typography variant="body2" fontWeight="500" color="text.secondary">
+                {productType ?? '-'}
+            </Typography>
+        );
     };
 
     const TechAccountStatusChip: React.FC<{ status: string }> = ({ status }) => {
-        const s = (status || '').toLowerCase();
-        const color = s === 'active' ? 'success' : s === 'suspended' ? 'error' : s === 'unknown status' ? 'default' : 'info';
+        const color =
+            status.toLowerCase() === 'active'
+                ? 'success'
+                : status.toLowerCase() === 'suspended'
+                    ? 'error'
+                    : status.toLowerCase() === 'unknown status'
+                        ? 'default'
+                        : 'info';
         return <Chip label={status} color={color as any} size="small" />;
     };
 
     const filterNumbersBySearch = (techAccountId: number) => {
         const numbers = accountDetails[techAccountId] || [];
         const query = searchQuery[techAccountId]?.toLowerCase() || '';
-        if (!query) return numbers;
-        return numbers.filter(detail => detail.number.toLowerCase().includes(query));
+
+        if (!query) {
+            return numbers;
+        }
+
+        return numbers.filter(detail =>
+            detail.number.toLowerCase().includes(query)
+        );
     };
 
-    //Test2
     return (
         <ThemeProvider theme={calmTheme}>
             <Card elevation={6} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, maxWidth: '100vw' }}>
@@ -224,8 +323,11 @@ export const CustomerTable: React.FC = () => {
                                 label="Total Numbers"
                                 value={filters.totalNumbers}
                                 onChange={e => {
+                                    // разрешаем только цифры и пустую строку
                                     const val = e.target.value;
-                                    if (/^\d*$/.test(val)) handleFilterChange('totalNumbers', val);
+                                    if (/^\d*$/.test(val)) {
+                                        handleFilterChange('totalNumbers', val);
+                                    }
                                 }}
                                 variant="outlined"
                                 size="small"
@@ -241,11 +343,12 @@ export const CustomerTable: React.FC = () => {
                         <Table sx={{ minWidth: 750 }} aria-label="customers table">
                             <TableHead>
                                 <TableRow>
-                                    {['', 'Customer Name', 'Product Type', 'Total Numbers', 'Accounts', 'Countries'].map((t, i) => (
-                                        <TableCell key={i} sx={{ fontWeight: '700' }}>
-                                            {t}
-                                        </TableCell>
-                                    ))}
+                                    {['', 'Customer Name', 'Product Type', 'Total Numbers', 'Accounts', 'Countries']
+                                        .map((title, idx) => (
+                                            <TableCell key={idx} sx={{ fontWeight: '700' }}>
+                                                {title}
+                                            </TableCell>
+                                        ))}
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -263,9 +366,7 @@ export const CustomerTable: React.FC = () => {
                                                     </IconButton>
                                                 </TableCell>
                                                 <TableCell>{customer.customerName}</TableCell>
-                                                <TableCell>
-                                                    <ProductTypeCell productType={customer.productType} />
-                                                </TableCell>
+                                                <TableCell><ProductTypeCell productType={customer.productType} /></TableCell>
                                                 <TableCell>{new Intl.NumberFormat().format(customer.totalNumbers)}</TableCell>
                                                 <TableCell>{customer.proAccounts.length}</TableCell>
                                                 <TableCell>{customer.proCountries.length}</TableCell>
@@ -274,9 +375,7 @@ export const CustomerTable: React.FC = () => {
                                                 <TableCell colSpan={6} style={{ paddingBottom: 0, paddingTop: 0 }}>
                                                     <Collapse in={openRows[customer.customerId]} timeout="auto" unmountOnExit>
                                                         <Box sx={{ margin: 2 }}>
-                                                            <Typography variant="h6" gutterBottom>
-                                                                Accounts
-                                                            </Typography>
+                                                            <Typography variant="h6" gutterBottom>Accounts</Typography>
                                                             <Paper elevation={2}>
                                                                 <Table size="small">
                                                                     <TableHead>
@@ -293,25 +392,17 @@ export const CustomerTable: React.FC = () => {
                                                                                 <React.Fragment key={acc.techAccountId}>
                                                                                     <TableRow
                                                                                         hover
-                                                                                        onClick={() =>
-                                                                                            fetchAccountDetails(customer.customerName, acc.techAccountId)
-                                                                                        }
+                                                                                        onClick={() => fetchAccountDetails(customer.customerName, acc.techAccountId)}
                                                                                         sx={{ cursor: 'pointer' }}
                                                                                     >
                                                                                         <TableCell>{acc.techAccountId}</TableCell>
                                                                                         <TableCell>{acc.techAccountName}</TableCell>
-                                                                                        <TableCell>
-                                                                                            <TechAccountStatusChip status={acc.techAccountStatus} />
-                                                                                        </TableCell>
+                                                                                        <TableCell><TechAccountStatusChip status={acc.techAccountStatus} /></TableCell>
                                                                                         <TableCell>{new Intl.NumberFormat().format(acc.totalNumbers)}</TableCell>
                                                                                     </TableRow>
                                                                                     <TableRow>
                                                                                         <TableCell colSpan={4} style={{ paddingBottom: 0, paddingTop: 0 }}>
-                                                                                            <Collapse
-                                                                                                in={expandedAccounts[acc.techAccountId]}
-                                                                                                timeout="auto"
-                                                                                                unmountOnExit
-                                                                                            >
+                                                                                            <Collapse in={expandedAccounts[acc.techAccountId]} timeout="auto" unmountOnExit>
                                                                                                 <Box margin={1}>
                                                                                                     <Box sx={{ mb: 2 }}>
                                                                                                         <TextField
@@ -319,59 +410,51 @@ export const CustomerTable: React.FC = () => {
                                                                                                             variant="outlined"
                                                                                                             size="small"
                                                                                                             value={searchQuery[acc.techAccountId] || ''}
-                                                                                                            onChange={e =>
-                                                                                                                setSearchQuery(prev => ({
-                                                                                                                    ...prev,
-                                                                                                                    [acc.techAccountId]: e.target.value
-                                                                                                                }))
-                                                                                                            }
+                                                                                                            onChange={(e) => setSearchQuery(prev => ({
+                                                                                                                ...prev,
+                                                                                                                [acc.techAccountId]: e.target.value
+                                                                                                            }))}
                                                                                                             fullWidth
                                                                                                         />
                                                                                                     </Box>
+
                                                                                                     {loadingAccount[acc.techAccountId] && (
-                                                                                                        <Typography variant="body2" color="textSecondary">
-                                                                                                            Loading...
-                                                                                                        </Typography>
+                                                                                                        <Typography variant="body2" color="textSecondary">Loading...</Typography>
                                                                                                     )}
-                                                                                                    {!loadingAccount[acc.techAccountId] &&
-                                                                                                        accountDetails[acc.techAccountId] && (
-                                                                                                            <Paper elevation={1} sx={{ mt: 2 }}>
-                                                                                                                <Table size="small">
-                                                                                                                    <TableHead>
-                                                                                                                        <TableRow>
-                                                                                                                            <TableCell>Start Date</TableCell>
-                                                                                                                            <TableCell>End Date</TableCell>
-                                                                                                                            <TableCell>Number</TableCell>
-                                                                                                                            <TableCell>Comment</TableCell>
-                                                                                                                            <TableCell>Provider</TableCell>
-                                                                                                                            <TableCell>Service Detail</TableCell>
-                                                                                                                        </TableRow>
-                                                                                                                    </TableHead>
-                                                                                                                    <TableBody>
-                                                                                                                        {filterNumbersBySearch(acc.techAccountId).length > 0 ? (
-                                                                                                                            filterNumbersBySearch(acc.techAccountId).map(
-                                                                                                                                (detail, idx) => (
-                                                                                                                                    <TableRow key={idx} hover>
-                                                                                                                                        <TableCell>{detail.startDate ?? '-'}</TableCell>
-                                                                                                                                        <TableCell>{detail.endDate ?? '-'}</TableCell>
-                                                                                                                                        <TableCell>{detail.number}</TableCell>
-                                                                                                                                        <TableCell>{detail.comment ?? '-'}</TableCell>
-                                                                                                                                        <TableCell>{detail.numberProviderName}</TableCell>
-                                                                                                                                        <TableCell>{detail.serviceDetail}</TableCell>
-                                                                                                                                    </TableRow>
-                                                                                                                                )
-                                                                                                                            )
-                                                                                                                        ) : (
-                                                                                                                            <TableRow>
-                                                                                                                                <TableCell colSpan={6} align="center">
-                                                                                                                                    No numbers match the search query
-                                                                                                                                </TableCell>
+                                                                                                    {!loadingAccount[acc.techAccountId] && accountDetails[acc.techAccountId] && (
+                                                                                                        <Paper elevation={1} sx={{ mt: 2 }}>
+                                                                                                            <Table size="small">
+                                                                                                                <TableHead>
+                                                                                                                    <TableRow>
+                                                                                                                        <TableCell>Start Date</TableCell>
+                                                                                                                        <TableCell>End Date</TableCell>
+                                                                                                                        <TableCell>Number</TableCell>
+                                                                                                                        <TableCell>Comment</TableCell>
+                                                                                                                        <TableCell>Provider</TableCell>
+                                                                                                                        <TableCell>Service Detail</TableCell>
+                                                                                                                    </TableRow>
+                                                                                                                </TableHead>
+                                                                                                                <TableBody>
+                                                                                                                    {filterNumbersBySearch(acc.techAccountId).length > 0 ? (
+                                                                                                                        filterNumbersBySearch(acc.techAccountId).map((detail, idx) => (
+                                                                                                                            <TableRow key={idx} hover>
+                                                                                                                                <TableCell>{detail.startDate ?? '-'}</TableCell>
+                                                                                                                                <TableCell>{detail.endDate ?? '-'}</TableCell>
+                                                                                                                                <TableCell>{detail.number}</TableCell>
+                                                                                                                                <TableCell>{detail.comment ?? '-'}</TableCell>
+                                                                                                                                <TableCell>{detail.numberProviderName}</TableCell>
+                                                                                                                                <TableCell>{detail.serviceDetail}</TableCell>
                                                                                                                             </TableRow>
-                                                                                                                        )}
-                                                                                                                    </TableBody>
-                                                                                                                </Table>
-                                                                                                            </Paper>
-                                                                                                        )}
+                                                                                                                        ))
+                                                                                                                    ) : (
+                                                                                                                        <TableRow>
+                                                                                                                            <TableCell colSpan={6} align="center">No numbers match the search query</TableCell>
+                                                                                                                        </TableRow>
+                                                                                                                    )}
+                                                                                                                </TableBody>
+                                                                                                            </Table>
+                                                                                                        </Paper>
+                                                                                                    )}
                                                                                                 </Box>
                                                                                             </Collapse>
                                                                                         </TableCell>
@@ -379,19 +462,13 @@ export const CustomerTable: React.FC = () => {
                                                                                 </React.Fragment>
                                                                             ))
                                                                         ) : (
-                                                                            <TableRow>
-                                                                                <TableCell colSpan={4} align="center">
-                                                                                    No accounts found
-                                                                                </TableCell>
-                                                                            </TableRow>
+                                                                            <TableRow><TableCell colSpan={4} align="center">No accounts found</TableCell></TableRow>
                                                                         )}
                                                                     </TableBody>
                                                                 </Table>
                                                             </Paper>
 
-                                                            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-                                                                Countries
-                                                            </Typography>
+                                                            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>Countries</Typography>
                                                             <Paper elevation={2}>
                                                                 <Table size="small">
                                                                     <TableHead>
@@ -409,17 +486,11 @@ export const CustomerTable: React.FC = () => {
                                                                                     <TableCell>{country.countryId}</TableCell>
                                                                                     <TableCell>{country.countryName}</TableCell>
                                                                                     <TableCell>{country.totalAccounts}</TableCell>
-                                                                                    <TableCell>
-                                                                                        {new Intl.NumberFormat().format(country.totalNumbers)}
-                                                                                    </TableCell>
+                                                                                    <TableCell>{new Intl.NumberFormat().format(country.totalNumbers)}</TableCell>
                                                                                 </TableRow>
                                                                             ))
                                                                         ) : (
-                                                                            <TableRow>
-                                                                                <TableCell colSpan={4} align="center">
-                                                                                    No countries found
-                                                                                </TableCell>
-                                                                            </TableRow>
+                                                                            <TableRow><TableCell colSpan={4} align="center">No countries found</TableCell></TableRow>
                                                                         )}
                                                                     </TableBody>
                                                                 </Table>
@@ -433,16 +504,14 @@ export const CustomerTable: React.FC = () => {
                                 ) : (
                                     <TableRow>
                                         <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                                            {loading ? 'Loading customer data...' : 'No customers found'}
+                                            {loading ? "Loading customer data..." : "No customers found"}
                                         </TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
                         </Table>
                         {loading && (
-                            <Box display="flex" justifyContent="center" my={2}>
-                                <CircularProgress />
-                            </Box>
+                            <Box display="flex" justifyContent="center" my={2}><CircularProgress /></Box>
                         )}
                     </Box>
                 </Paper>
@@ -450,5 +519,3 @@ export const CustomerTable: React.FC = () => {
         </ThemeProvider>
     );
 };
-
-export default CustomerTable;
