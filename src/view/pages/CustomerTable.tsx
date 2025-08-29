@@ -192,6 +192,7 @@ export const CustomerTable: React.FC = () => {
         return numbers.filter(detail => detail.number.toLowerCase().includes(query));
     };
 
+    //Test2
     return (
         <ThemeProvider theme={calmTheme}>
             <Card elevation={6} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, maxWidth: '100vw' }}>
