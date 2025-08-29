@@ -20,8 +20,8 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import {CountryStats, NumberProvider} from "../utils/domain";
-import {isDefined} from "../utils/util";
+import {CountryStats, NumberProvider} from "../../utils/domain";
+import {isDefined} from "../../utils/util";
 import {CircularProgress} from "@mui/material";
 import InfiniteScroll from 'react-infinite-scroll-component';
 

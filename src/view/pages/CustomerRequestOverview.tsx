@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Paper, TextField, Select, MenuItem, Button, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
-import providerData from '../mocks/data/providers';
-import provisioningTypesData from '../mocks/data/provisioningTypes';
+import providerData from '../../mocks/data/providers';
+import provisioningTypesData from '../../mocks/data/provisioningTypes';
 
 const mockProvisioning = [
   {

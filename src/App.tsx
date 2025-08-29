@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { ProviderOverview } from "./view/ProviderOverview";
+import { ProviderOverview } from "./view/pages/ProviderOverview";
 import fakeApi from "./mocks/fakeApi/fakeApi";
-import { CustomerTable } from "./view/CustomerTable";
+import { CustomerTable } from "./view/pages/CustomerTable";
 import Header, { Page } from "./view/components/Header";
-import ProviderAdminPage from "./view/ProviderAdminPage";
-import CustomerRequestOverview from "./view/CustomerRequestOverview";
-import {RangeAssignment} from "./view/RangeAssignment";
+import ProviderAdminPage from "./view/pages/ProviderAdminPage";
+import CustomerRequestOverview from "./view/pages/CustomerRequestOverview";
+import {RangeAssignment} from "./view/pages/RangeAssignment";
 
 
 

@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, Paper, TextField, Select, MenuItem, Button, Checkbox, FormControlLabel, Table, TableHead, TableRow, TableCell, TableBody, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import provisioningTypesData from '../mocks/data/provisioningTypes';
-import countriesData from '../mocks/data/countries';
-import connectionTypesData from '../mocks/data/connectionTypes';
-import numberTypesData from '../mocks/data/numberTypes';
-import providerDetailsData from '../mocks/data/providerDetails';
+import provisioningTypesData from '../../mocks/data/provisioningTypes';
+import countriesData from '../../mocks/data/countries';
+import connectionTypesData from '../../mocks/data/connectionTypes';
+import numberTypesData from '../../mocks/data/numberTypes';
+import providerDetailsData from '../../mocks/data/providerDetails';
 import {
     boxStyle,
     subtitle2Style,
@@ -21,7 +21,7 @@ import {
     flexGap1,
     tableSubtitle2,
     paperNoMargin
-} from './styles/ProviderAdminPageStyles';
+} from '../styles/ProviderAdminPageStyles';
 
 const providerDetailsTyped: { [key: string]: any } = providerDetailsData;
 
