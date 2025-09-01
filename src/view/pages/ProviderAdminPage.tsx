@@ -72,6 +72,7 @@ const ProviderAdminPage: React.FC = () => {
 
             <AddSpecificNumbersForm countries={countries} />
 
+            //Test
             <CurrentRangesTable
                 selectedProviderId={selectedProviderId}
                 providers={providers}
