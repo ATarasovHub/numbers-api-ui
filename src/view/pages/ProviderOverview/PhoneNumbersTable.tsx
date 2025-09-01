@@ -39,7 +39,7 @@ const PhoneNumbersTable: React.FC<{
     }
 
     return (
-        <Paper elevation={1} sx={{ m: 2, borderRadius: 2, overflow: 'hidden', border: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}`, display: 'flex', flexDirection: 'column', minHeight: '200px', maxHeight: '400px' }}>
+        <Paper elevation={1} sx={{ m: 2, borderRadius: 2, overflow: 'hidden', border: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}`, display: 'flex', flexDirection: 'column', minHeight: '200px', maxHeight: '400px', width: '100%' }}>
             <Box sx={{ p: 2, borderBottom: `1px solid ${alpha(calmTheme.palette.divider, 0.3)}` }}>
                 <TextField
                     label="Search by Number"
@@ -50,8 +50,8 @@ const PhoneNumbersTable: React.FC<{
                     fullWidth
                 />
             </Box>
-            <Box sx={{ flexGrow: 0, flexShrink: 0 }}>
-                <Table size="small" sx={{ tableLayout: 'fixed' }}>
+            <Box sx={{ flexGrow: 0, flexShrink: 0, width: '100%' }}>
+                <Table size="small" sx={{ tableLayout: 'fixed', width: '100%' }}>
                     <TableHead sx={{ backgroundColor: alpha(calmTheme.palette.secondary.main, 0.1) }}>
                         <TableRow>
                             <TableCell sx={{ fontWeight: '600', fontSize: '0.8rem', width: '15%' }}>Number</TableCell>
@@ -65,7 +65,7 @@ const PhoneNumbersTable: React.FC<{
                     </TableHead>
                 </Table>
             </Box>
-            <Box id={`scrollable-phone-numbers-${countryId}`} sx={{ flexGrow: 1, overflowY: 'auto', maxHeight: 'calc(100% - 40px)' }}>
+            <Box id={`scrollable-phone-numbers-${countryId}`} sx={{ flexGrow: 1, overflowY: 'auto', maxHeight: 'calc(100% - 40px)', width: '100%' }}>
                 <InfiniteScroll
                     dataLength={displayedNumbers.length}
                     next={loadMorePhoneNumbers}
@@ -74,7 +74,7 @@ const PhoneNumbersTable: React.FC<{
                     scrollableTarget={`scrollable-phone-numbers-${countryId}`}
                     style={{ overflow: 'hidden' }}
                 >
-                    <Table size="small" sx={{ tableLayout: 'fixed' }}>
+                    <Table size="small" sx={{ tableLayout: 'fixed', width: '100%' }}>
                         <TableBody>
                             {displayedNumbers.map((phone: PhoneNumberData, idx: number) => (
                                 <TableRow key={idx} hover>

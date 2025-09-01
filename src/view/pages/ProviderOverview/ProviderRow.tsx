@@ -20,21 +20,21 @@ const ProviderRow: React.FC<{ provider: NumberProvider }> = ({ provider }) => {
     return (
         <React.Fragment>
             <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
-                <TableCell>
+                <TableCell sx={{ width: '5%' }}>
                     <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
                         {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
                 </TableCell>
-                <TableCell component="th" scope="row">{provider.providerName}</TableCell>
-                <TableCell>{new Intl.NumberFormat().format(provider.totalNumbers)}</TableCell>
-                <TableCell>{new Intl.NumberFormat().format(provider.totalAssignedNumbers)}</TableCell>
-                <TableCell>{new Intl.NumberFormat().format(provider.totalNumbers - provider.totalAssignedNumbers)}</TableCell>
-                <TableCell>{new Intl.NumberFormat().format(provider.totalMonthlyCost)}</TableCell>
+                <TableCell sx={{ width: '30%' }} component="th" scope="row">{provider.providerName}</TableCell>
+                <TableCell sx={{ width: '15%' }}>{new Intl.NumberFormat().format(provider.totalNumbers)}</TableCell>
+                <TableCell sx={{ width: '15%' }}>{new Intl.NumberFormat().format(provider.totalAssignedNumbers)}</TableCell>
+                <TableCell sx={{ width: '15%' }}>{new Intl.NumberFormat().format(provider.totalNumbers - provider.totalAssignedNumbers)}</TableCell>
+                <TableCell sx={{ width: '20%' }}>{new Intl.NumberFormat().format(provider.totalMonthlyCost)}</TableCell>
             </TableRow>
             <TableRow>
                 <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
-                        <Box sx={{ margin: 1 }}>
+                        <Box sx={{ m: 1, width: '100%' }}>
                             <Typography variant="h6" gutterBottom component="div">
                                 Country Statistics for {provider.providerName}
                             </Typography>

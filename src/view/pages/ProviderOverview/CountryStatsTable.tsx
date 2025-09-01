@@ -44,39 +44,39 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
 
     return (
         <Paper elevation={2} sx={{ mb: 3, borderRadius: 2, overflow: 'hidden', border: `1px solid ${alpha(calmTheme.palette.divider, 0.5)}` }}>
-            <Table size="small">
+            <Table size="small" sx={{ tableLayout: 'fixed', width: '100%' }}>
                 <TableHead sx={{ backgroundColor: alpha(calmTheme.palette.primary.main, 0.12) }}>
                     <TableRow>
-                        <TableCell sx={{ width: '5%' }}><Typography variant="subtitle2" fontWeight="600"></Typography></TableCell>
-                        <TableCell><Typography variant="subtitle2" fontWeight="600">Country ID</Typography></TableCell>
-                        <TableCell><Typography variant="subtitle2" fontWeight="600">Country Name</Typography></TableCell>
-                        <TableCell><Typography variant="subtitle2" fontWeight="600">Total Numbers</Typography></TableCell>
-                        <TableCell><Typography variant="subtitle2" fontWeight="600">Assigned Numbers</Typography></TableCell>
-                        <TableCell><Typography variant="subtitle2" fontWeight="600">Not Assigned Numbers</Typography></TableCell>
-                        <TableCell><Typography variant="subtitle2" fontWeight="600">Monthly Cost</Typography></TableCell>
+                        <TableCell sx={{ width: '5%' }} />
+                        <TableCell sx={{ width: '15%' }}><Typography variant="subtitle2" fontWeight="600">Country ID</Typography></TableCell>
+                        <TableCell sx={{ width: '20%' }}><Typography variant="subtitle2" fontWeight="600">Country Name</Typography></TableCell>
+                        <TableCell sx={{ width: '15%' }}><Typography variant="subtitle2" fontWeight="600">Total Numbers</Typography></TableCell>
+                        <TableCell sx={{ width: '15%' }}><Typography variant="subtitle2" fontWeight="600">Assigned Numbers</Typography></TableCell>
+                        <TableCell sx={{ width: '15%' }}><Typography variant="subtitle2" fontWeight="600">Not Assigned Numbers</Typography></TableCell>
+                        <TableCell sx={{ width: '15%' }}><Typography variant="subtitle2" fontWeight="600">Monthly Cost</Typography></TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {stats && stats.length > 0 ? (
-                        stats.map((stat, idx) => (
+                        stats.map((stat) => (
                             <React.Fragment key={stat.countryId}>
                                 <TableRow sx={{ '&:hover': { backgroundColor: alpha(calmTheme.palette.secondary.light, 0.2) } }}>
-                                    <TableCell>
+                                    <TableCell sx={{ width: '5%' }}>
                                         <IconButton aria-label="expand row" size="small" onClick={() => toggleCountryExpansion(stat.countryId.toString(), stat.countryName)}>
                                             {expandedCountries[stat.countryId] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                                         </IconButton>
                                     </TableCell>
-                                    <TableCell><Typography variant="body2" fontWeight="500">{stat.countryId}</Typography></TableCell>
-                                    <TableCell><Typography variant="body2" fontWeight="500">{stat.countryName}</Typography></TableCell>
-                                    <TableCell><Typography variant="body2" fontWeight="500">{new Intl.NumberFormat().format(stat.totalNumbers)}</Typography></TableCell>
-                                    <TableCell><Typography variant="body2" fontWeight="500">{new Intl.NumberFormat().format(stat.assignedNumbers)}</Typography></TableCell>
-                                    <TableCell><Typography variant="body2" fontWeight="500">{new Intl.NumberFormat().format(stat.totalNumbers - stat.assignedNumbers)}</Typography></TableCell>
-                                    <TableCell><Typography variant="body2" fontWeight="500">{new Intl.NumberFormat().format(stat.totalMonthlyCost)}</Typography></TableCell>
+                                    <TableCell sx={{ width: '15%' }}><Typography variant="body2" fontWeight="500">{stat.countryId}</Typography></TableCell>
+                                    <TableCell sx={{ width: '20%' }}><Typography variant="body2" fontWeight="500">{stat.countryName}</Typography></TableCell>
+                                    <TableCell sx={{ width: '15%' }}><Typography variant="body2" fontWeight="500">{new Intl.NumberFormat().format(stat.totalNumbers)}</Typography></TableCell>
+                                    <TableCell sx={{ width: '15%' }}><Typography variant="body2" fontWeight="500">{new Intl.NumberFormat().format(stat.assignedNumbers)}</Typography></TableCell>
+                                    <TableCell sx={{ width: '15%' }}><Typography variant="body2" fontWeight="500">{new Intl.NumberFormat().format(stat.totalNumbers - stat.assignedNumbers)}</Typography></TableCell>
+                                    <TableCell sx={{ width: '15%' }}><Typography variant="body2" fontWeight="500">{new Intl.NumberFormat().format(stat.totalMonthlyCost)}</Typography></TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
                                         <Collapse in={expandedCountries[stat.countryId]} timeout="auto" unmountOnExit>
-                                            <Box sx={{ margin: 2 }}>
+                                            <Box sx={{ margin: 2, width: '100%' }}>
                                                 <Typography variant="h6" gutterBottom>Statistics for {stat.countryName}</Typography>
                                                 <PhoneNumbersTable
                                                     countryId={stat.countryId.toString()}
@@ -90,7 +90,11 @@ const CountryStatsTable: React.FC<{ stats: CountryStats[] }> = ({ stats }) => {
                             </React.Fragment>
                         ))
                     ) : (
-                        <TableRow><TableCell colSpan={7} align="center" sx={{ py: 3 }}><Typography>No country statistics</Typography></TableCell></TableRow>
+                        <TableRow>
+                            <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                                <Typography>No country statistics</Typography>
+                            </TableCell>
+                        </TableRow>
                     )}
                 </TableBody>
             </Table>
