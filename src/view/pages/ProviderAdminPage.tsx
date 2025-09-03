@@ -6,6 +6,8 @@ import ProviderEditForm from '../components/ProviderEditForm';
 import AddNumbersRangeForm from '../components/AddNumbersRangeForm';
 import AddSpecificNumbersForm from '../components/AddSpecificNumbersForm';
 import CurrentRangesTable from '../components/CurrentRangesTable';
+import AddNumbersBulkForm from '../components/AddNumbersBulkForm';
+
 
 import { boxStyle, subtitle2Style } from '../styles/ProviderAdminPageStyles';
 
@@ -77,6 +79,11 @@ const ProviderAdminPage: React.FC = () => {
                 providers={providers}
                 countryStats={providerDetails?.countryStats}
             />
+
+            <AddNumbersRangeForm countries={countries} />
+            <AddSpecificNumbersForm countries={countries} />
+            <AddNumbersBulkForm selectedProviderId={selectedProviderId} />
+
         </Box>
     );
 };
