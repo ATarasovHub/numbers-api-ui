@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ProviderOverview } from "./view/pages/ProviderOverview";
 import fakeApi from "./mocks/fakeApi/fakeApi";
-import { CustomerTable } from "./view/pages/CustomerTable";
+import { CustomerTable } from "./view/pages/CustomerTable/CustomerTable";
 import Header, { Page } from "./view/components/Header";
 import ProviderAdminPage from "./view/pages/ProviderAdminPage";
 import CustomerRequestOverview from "./view/pages/CustomerRequestOverview";
