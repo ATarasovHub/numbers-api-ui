@@ -1,7 +1,11 @@
 import React from 'react';
 import { Chip } from '@mui/material';
 
-const TechAccountStatusChip: React.FC<{ status: string }> = ({ status }) => {
+interface Props {
+    status: string;
+}
+
+export const TechAccountStatusChip: React.FC<Props> = ({ status }) => {
     const color =
         status.toLowerCase() === 'active'
             ? 'success'
@@ -10,7 +14,6 @@ const TechAccountStatusChip: React.FC<{ status: string }> = ({ status }) => {
                 : status.toLowerCase() === 'unknown status'
                     ? 'default'
                     : 'info';
+
     return <Chip label={status} color={color as any} size="small" />;
 };
-
-export default TechAccountStatusChip;

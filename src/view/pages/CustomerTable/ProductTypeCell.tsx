@@ -1,13 +1,16 @@
 import React from 'react';
-import { Box, Typography, alpha } from '@mui/material';
+import { Typography, Box } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { calmTheme } from './theme';
 
-const isVoiceInProduct = (productType: string) => {
-    return productType?.toLowerCase().includes('voice in');
-};
+interface Props {
+    productType?: string | null;
+}
 
-const ProductTypeCell: React.FC<{ productType?: string | null }> = ({ productType }) => {
-    if (productType && isVoiceInProduct(productType)) {
+export const ProductTypeCell: React.FC<Props> = ({ productType }) => {
+    const isVoiceIn = productType?.toLowerCase().includes('voice in');
+
+    if (isVoiceIn) {
         return (
             <Box
                 sx={{
@@ -28,11 +31,10 @@ const ProductTypeCell: React.FC<{ productType?: string | null }> = ({ productTyp
             </Box>
         );
     }
+
     return (
-        <Typography variant="body2" fontWeight="500" color="text.secondary">
+        <Typography variant="body2" fontWeight={500} color="text.secondary">
             {productType ?? '-'}
         </Typography>
     );
 };
-
-export default ProductTypeCell;

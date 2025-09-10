@@ -1,3 +1,12 @@
+export interface Customer {
+    customerId: number;
+    customerName: string;
+    productType?: string | null;
+    totalNumbers: number;
+    proAccounts: CustomerOverviewProAccount[];
+    proCountries: CustomerOverviewProCountry[];
+}
+
 export interface CustomerOverviewProAccount {
     techAccountId: number;
     techAccountName: string;
@@ -10,15 +19,6 @@ export interface CustomerOverviewProCountry {
     countryName: string;
     totalAccounts: number;
     totalNumbers: number;
-}
-
-export interface Customer {
-    customerId: number;
-    customerName: string;
-    productType?: string | null;
-    totalNumbers: number;
-    proAccounts: CustomerOverviewProAccount[];
-    proCountries: CustomerOverviewProCountry[];
 }
 
 export interface TechAccountDetails {

@@ -1,91 +1,64 @@
 import React, { useState } from 'react';
-import { TableRow, TableCell, Collapse, IconButton, Box, Typography, Paper, Table, TableHead, TableBody, TextField } from '@mui/material';
+import {
+    TableRow,
+    TableCell,
+    Collapse,
+    IconButton,
+    Box,
+    Typography,
+    Paper,
+    Table,
+    TableBody,
+    TableHead,
+} from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Customer, TechAccountDetails } from './types';
-import ProductTypeCell from './ProductTypeCell';
-import TechAccountStatusChip from './TechAccountStatusChip';
+import { Customer } from './types';
+import { ProductTypeCell } from './ProductTypeCell';
+import { TechAccountStatusChip } from './TechAccountStatusChip';
+import { AccountDetailsTable } from './AccountDetailsTable';
 
-interface CustomerRowProps {
+interface Props {
     customer: Customer;
+    onToggle: () => void;
+    open: boolean;
+    onAccountToggle: (techAccountId: number) => void;
+    expandedAccounts: Record<number, boolean>;
+    fetchAccountDetails: (customerName: string, techAccountId: number, pageNum: number) => void;
+    accountDetails: Record<number, any>;
+    loadingAccount: Record<number, boolean>;
+    accountDetailsHasMore: Record<number, boolean>;
+    searchQuery: Record<number, string>;
+    onSearchChange: (techAccountId: number, query: string) => void;
+    getScrollRef: (techAccountId: number) => React.RefObject<HTMLDivElement | null>;
 }
 
-const AccountDetailsTable: React.FC<{ details: TechAccountDetails[], searchQuery: string }> = ({ details, searchQuery }) => {
-    const filteredDetails = details.filter(detail =>
-        detail.number.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+export const CustomerRow: React.FC<Props> = ({
+                                                 customer,
+                                                 onToggle,
+                                                 open,
+                                                 onAccountToggle,
+                                                 expandedAccounts,
+                                                 fetchAccountDetails,
+                                                 accountDetails,
+                                                 loadingAccount,
+                                                 accountDetailsHasMore,
+                                                 searchQuery,
+                                                 onSearchChange,
+                                                 getScrollRef,
+                                             }) => {
+    const [localSearchQuery, setLocalSearchQuery] = useState<Record<number, string>>({});
 
-    return (
-        <Paper elevation={1} sx={{ mt: 2 }}>
-            <Table size="small">
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Start Date</TableCell>
-                        <TableCell>End Date</TableCell>
-                        <TableCell>Number</TableCell>
-                        <TableCell>Comment</TableCell>
-                        <TableCell>Provider</TableCell>
-                        <TableCell>Service Detail</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {filteredDetails.length > 0 ? (
-                        filteredDetails.map((detail, idx) => (
-                            <TableRow key={idx} hover>
-                                <TableCell>{detail.startDate ?? '-'}</TableCell>
-                                <TableCell>{detail.endDate ?? '-'}</TableCell>
-                                <TableCell>{detail.number}</TableCell>
-                                <TableCell>{detail.comment ?? '-'}</TableCell>
-                                <TableCell>{detail.numberProviderName}</TableCell>
-                                <TableCell>{detail.serviceDetail}</TableCell>
-                            </TableRow>
-                        ))
-                    ) : (
-                        <TableRow>
-                            <TableCell colSpan={6} align="center">No numbers match the search query</TableCell>
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
-        </Paper>
-    );
-};
-
-const CustomerRow: React.FC<CustomerRowProps> = ({ customer }) => {
-    const [open, setOpen] = useState(false);
-    const [expandedAccounts, setExpandedAccounts] = useState<{ [key: number]: boolean }>({});
-    const [accountDetails, setAccountDetails] = useState<{ [key: number]: TechAccountDetails[] }>({});
-    const [loadingAccount, setLoadingAccount] = useState<{ [key: number]: boolean }>({});
-    const [searchQuery, setSearchQuery] = useState<{ [key: number]: string }>({});
-
-    const handleAccountToggle = (techAccountId: number) => {
-        setExpandedAccounts(prev => ({ ...prev, [techAccountId]: !prev[techAccountId] }));
-    };
-
-    const fetchAccountDetails = (customerName: string, techAccountId: number) => {
-        if (accountDetails[techAccountId]) {
-            handleAccountToggle(techAccountId);
-            return;
-        }
-        if (loadingAccount[techAccountId]) return;
-
-        setLoadingAccount(prev => ({ ...prev, [techAccountId]: true }));
-        const url = `http://localhost:8080/customer/overview/${encodeURIComponent(customerName)}/${techAccountId}`;
-        fetch(url)
-            .then(res => res.json())
-            .then((data: TechAccountDetails[]) => {
-                setAccountDetails(prev => ({ ...prev, [techAccountId]: data }));
-                handleAccountToggle(techAccountId);
-            })
-            .catch(err => console.error("Failed to fetch account details:", err))
-            .finally(() => setLoadingAccount(prev => ({ ...prev, [techAccountId]: false })));
+    const handleSearchChange = (techAccountId: number, query: string) => {
+        setLocalSearchQuery(prev => ({ ...prev, [techAccountId]: query }));
+        onSearchChange(techAccountId, query);
     };
 
     return (
-        <React.Fragment>
+        <>
             <TableRow hover>
                 <TableCell>
-                    <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
+                    <IconButton aria-label="expand row" size="small" onClick={onToggle}>
                         {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
                 </TableCell>
@@ -95,12 +68,13 @@ const CustomerRow: React.FC<CustomerRowProps> = ({ customer }) => {
                 <TableCell>{customer.proAccounts.length}</TableCell>
                 <TableCell>{customer.proCountries.length}</TableCell>
             </TableRow>
+
             <TableRow>
-                <TableCell colSpan={6} style={{ paddingBottom: 0, paddingTop: 0 }}>
+                <TableCell colSpan={6} style={{ paddingBottom: 0, paddingTop: 0, borderBottom: 'none' }}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
-                        <Box sx={{ margin: 2 }}>
+                        <Box sx={{ margin: 2, border: '1px solid #e0e0e0', borderRadius: 2, p: 2 }}>
                             <Typography variant="h6" gutterBottom>Accounts</Typography>
-                            <Paper elevation={2}>
+                            <Paper elevation={2} sx={{ mb: 3 }}>
                                 <Table size="small">
                                     <TableHead>
                                         <TableRow>
@@ -111,40 +85,53 @@ const CustomerRow: React.FC<CustomerRowProps> = ({ customer }) => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {customer.proAccounts.map(acc => (
-                                            <React.Fragment key={acc.techAccountId}>
-                                                <TableRow hover onClick={() => fetchAccountDetails(customer.customerName, acc.techAccountId)} sx={{ cursor: 'pointer' }}>
-                                                    <TableCell>{acc.techAccountId}</TableCell>
-                                                    <TableCell>{acc.techAccountName}</TableCell>
-                                                    <TableCell><TechAccountStatusChip status={acc.techAccountStatus} /></TableCell>
-                                                    <TableCell>{new Intl.NumberFormat().format(acc.totalNumbers)}</TableCell>
-                                                </TableRow>
-                                                <TableRow>
-                                                    <TableCell colSpan={4} style={{ paddingBottom: 0, paddingTop: 0 }}>
-                                                        <Collapse in={expandedAccounts[acc.techAccountId]} timeout="auto" unmountOnExit>
-                                                            <Box margin={1}>
-                                                                <TextField
-                                                                    label="Search Number"
-                                                                    variant="outlined"
-                                                                    size="small"
-                                                                    value={searchQuery[acc.techAccountId] || ''}
-                                                                    onChange={(e) => setSearchQuery(prev => ({ ...prev, [acc.techAccountId]: e.target.value }))}
-                                                                    fullWidth
-                                                                    sx={{mb: 2}}
-                                                                />
-                                                                {loadingAccount[acc.techAccountId] && <Typography>Loading...</Typography>}
-                                                                {accountDetails[acc.techAccountId] &&
-                                                                    <AccountDetailsTable details={accountDetails[acc.techAccountId]} searchQuery={searchQuery[acc.techAccountId] || ''} />
-                                                                }
-                                                            </Box>
-                                                        </Collapse>
-                                                    </TableCell>
-                                                </TableRow>
-                                            </React.Fragment>
-                                        ))}
+                                        {customer.proAccounts.length > 0 ? (
+                                            customer.proAccounts.map(acc => (
+                                                <React.Fragment key={acc.techAccountId}>
+                                                    <TableRow
+                                                        hover
+                                                        onClick={() => {
+                                                            if (!accountDetails[acc.techAccountId] || !expandedAccounts[acc.techAccountId]) {
+                                                                fetchAccountDetails(customer.customerName, acc.techAccountId, 0);
+                                                            } else {
+                                                                onAccountToggle(acc.techAccountId);
+                                                            }
+                                                        }}
+                                                        sx={{ cursor: 'pointer' }}
+                                                    >
+                                                        <TableCell>{acc.techAccountId}</TableCell>
+                                                        <TableCell>{acc.techAccountName}</TableCell>
+                                                        <TableCell><TechAccountStatusChip status={acc.techAccountStatus} /></TableCell>
+                                                        <TableCell>{new Intl.NumberFormat().format(acc.totalNumbers)}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                        <TableCell colSpan={4} style={{ paddingBottom: 0, paddingTop: 0, borderBottom: 'none' }}>
+                                                            <AccountDetailsTable
+                                                                techAccountId={acc.techAccountId}
+                                                                customerName={customer.customerName}
+                                                                initialDetails={accountDetails[acc.techAccountId]}
+                                                                expanded={expandedAccounts[acc.techAccountId]}
+                                                                onToggle={() => onAccountToggle(acc.techAccountId)}
+                                                                loading={loadingAccount[acc.techAccountId]}
+                                                                hasMore={accountDetailsHasMore[acc.techAccountId]}
+                                                                searchQuery={localSearchQuery[acc.techAccountId] || ''}
+                                                                onSearchChange={q => handleSearchChange(acc.techAccountId, q)}
+                                                                onLoadMore={() => fetchAccountDetails(customer.customerName, acc.techAccountId, 0)}
+                                                                scrollRef={getScrollRef(acc.techAccountId)}
+                                                            />
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </React.Fragment>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={4} align="center">No accounts found</TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </Paper>
+
                             <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>Countries</Typography>
                             <Paper elevation={2}>
                                 <Table size="small">
@@ -157,14 +144,20 @@ const CustomerRow: React.FC<CustomerRowProps> = ({ customer }) => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {customer.proCountries.map(country => (
-                                            <TableRow key={country.countryId} hover>
-                                                <TableCell>{country.countryId}</TableCell>
-                                                <TableCell>{country.countryName}</TableCell>
-                                                <TableCell>{country.totalAccounts}</TableCell>
-                                                <TableCell>{new Intl.NumberFormat().format(country.totalNumbers)}</TableCell>
+                                        {customer.proCountries.length > 0 ? (
+                                            customer.proCountries.map(country => (
+                                                <TableRow key={country.countryId} hover>
+                                                    <TableCell>{country.countryId}</TableCell>
+                                                    <TableCell>{country.countryName}</TableCell>
+                                                    <TableCell>{new Intl.NumberFormat().format(country.totalAccounts)}</TableCell>
+                                                    <TableCell>{new Intl.NumberFormat().format(country.totalNumbers)}</TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={4} align="center">No countries found</TableCell>
                                             </TableRow>
-                                        ))}
+                                        )}
                                     </TableBody>
                                 </Table>
                             </Paper>
@@ -172,8 +165,6 @@ const CustomerRow: React.FC<CustomerRowProps> = ({ customer }) => {
                     </Collapse>
                 </TableCell>
             </TableRow>
-        </React.Fragment>
+        </>
     );
 };
-
-export default CustomerRow;

@@ -1,4 +1,4 @@
-import { createTheme } from '@mui/material';
+import { createTheme, alpha } from '@mui/material/styles';
 
 export const calmTheme = createTheme({
     palette: {
@@ -23,5 +23,14 @@ export const calmTheme = createTheme({
             primary: '#334155',
             secondary: '#64748b',
         }
+    },
+    components: {
+        MuiTableCell: {
+            styleOverrides: {
+                root: {
+                    borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                },
+            },
+        },
     },
 });
