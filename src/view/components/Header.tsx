@@ -23,9 +23,6 @@ export type Page =
     | 'used_number_range_admin'
     | 'overview'
     | 'provider_statistic'
-    | 'history_account'
-    | 'history_numberassignment'
-    | 'info'
     | 'provider_overview'
     | 'customer_overview';
 
@@ -37,16 +34,16 @@ interface HeaderProps {
 const calmTheme = createTheme({
     palette: {
         primary: {
-            main: 'hsl(224, 76%, 31%)', // Dark blue
-            light: 'hsl(214, 95%, 93%)', // Light blue
-            dark: 'hsl(224, 76%, 25%)', // Darker blue
+            main: 'hsl(224, 76%, 31%)',
+            light: 'hsl(214, 95%, 93%)',
+            dark: 'hsl(224, 76%, 25%)',
         },
         secondary: {
-            main: 'hsl(214, 91%, 60%)', // Medium blue
-            light: 'hsl(214, 95%, 93%)', // Light blue
+            main: 'hsl(214, 91%, 60%)',
+            light: 'hsl(214, 95%, 93%)',
         },
         background: {
-            default: 'hsl(210, 40%, 98%)', // Very light blue-gray
+            default: 'hsl(210, 40%, 98%)',
             paper: '#ffffff',
         },
         grey: {
@@ -62,22 +59,11 @@ const calmTheme = createTheme({
 
 const Header: React.FC<HeaderProps> = ({ page, setPage }) => {
     const [adminAnchorEl, setAdminAnchorEl] = useState<null | HTMLElement>(null);
-    const [historyAnchorEl, setHistoryAnchorEl] = useState<null | HTMLElement>(null);
     const [overviewAnchorEl, setOverviewAnchorEl] = useState<null | HTMLElement>(null);
 
     const administrationPages: { label: string; page: Page }[] = [
-        { label: 'Number Assignment', page: 'number_assignment' },
-        { label: 'Number Reservation', page: 'number_reservation' },
-        { label: 'Number Range Administration', page: 'number_range_admin' },
-        { label: 'Used Number Range Administration', page: 'used_number_range_admin' },
         { label: 'Customer Request Overview', page: 'customer_request_overview' },
         { label: 'Provider Administration', page: 'providers' },
-    ];
-
-    const historyPages: { label: string; page: Page }[] = [
-        { label: 'Provider (Statistic)', page: 'provider_statistic' },
-        { label: 'History (Account)', page: 'history_account' },
-        { label: 'History (Number Assignment)', page: 'history_numberassignment' },
     ];
 
     const overviewPages: { label: string; page: Page }[] = [
@@ -276,105 +262,6 @@ const Header: React.FC<HeaderProps> = ({ page, setPage }) => {
                                 ))}
                             </Menu>
                         </Box>
-
-                        <Box onMouseLeave={handleClose(setHistoryAnchorEl)}>
-                            <Button
-                                onMouseEnter={handleOpen(setHistoryAnchorEl)}
-                                sx={{
-                                    color: calmTheme.palette.common.white,
-                                    textTransform: 'uppercase',
-                                    fontWeight: 700,
-                                    fontSize: '0.875rem',
-                                    padding: '8px 16px',
-                                    borderRadius: '8px',
-                                    letterSpacing: '0.5px',
-                                    transition: calmTheme.transitions.create(['background-color', 'box-shadow', 'transform'], {
-                                        duration: calmTheme.transitions.duration.short,
-                                    }),
-                                    '&:hover': {
-                                        backgroundColor: alpha(calmTheme.palette.common.white, 0.15),
-                                        boxShadow: `inset 0 0 0 2px ${alpha(calmTheme.palette.common.white, 0.25)}`,
-                                        transform: 'translateY(-1px)',
-                                    },
-                                }}
-                            >
-                                HISTORY
-                            </Button>
-                            <Menu
-                                anchorEl={historyAnchorEl}
-                                open={Boolean(historyAnchorEl)}
-                                onClose={handleClose(setHistoryAnchorEl)}
-                                MenuListProps={{ onMouseLeave: handleClose(setHistoryAnchorEl) }}
-                                PaperProps={{
-                                    elevation: 8,
-                                    sx: {
-                                        mt: 1,
-                                        borderRadius: 3,
-                                        border: `1px solid ${alpha(calmTheme.palette.primary.main, 0.2)}`,
-                                        backgroundColor: alpha(calmTheme.palette.background.paper, 0.95),
-                                        backdropFilter: 'blur(10px)',
-                                        boxShadow: `0 10px 30px ${alpha(calmTheme.palette.common.black, 0.2)}`,
-                                    },
-                                }}
-                            >
-                                {historyPages.map((p) => (
-                                    <MenuItem
-                                        key={p.page}
-                                        onClick={handleMenuClick(p.page, setHistoryAnchorEl)}
-                                        sx={{
-                                            fontSize: '0.875rem',
-                                            py: 1.5,
-                                            px: 3,
-                                            color: calmTheme.palette.text.primary,
-                                            fontWeight: 500,
-                                            transition: calmTheme.transitions.create(['background-color', 'color'], {
-                                                duration: calmTheme.transitions.duration.shortest,
-                                            }),
-                                            '&:hover': {
-                                                backgroundColor: alpha(calmTheme.palette.secondary.main, 0.1),
-                                                color: calmTheme.palette.secondary.main,
-                                            },
-                                            ...(page === p.page && {
-                                                backgroundColor: alpha(calmTheme.palette.secondary.main, 0.15),
-                                                color: calmTheme.palette.secondary.main,
-                                                fontWeight: 600,
-                                                borderLeft: `3px solid ${calmTheme.palette.secondary.main}`,
-                                            }),
-                                        }}
-                                    >
-                                        {p.label}
-                                    </MenuItem>
-                                ))}
-                            </Menu>
-                        </Box>
-
-                        <Button
-                            onClick={() => setPage('info')}
-                            sx={{
-                                color: calmTheme.palette.common.white,
-                                textTransform: 'uppercase',
-                                fontWeight: 700,
-                                fontSize: '0.875rem',
-                                padding: '8px 16px',
-                                borderRadius: '8px',
-                                letterSpacing: '0.5px',
-                                transition: calmTheme.transitions.create(['background-color', 'box-shadow', 'transform'], {
-                                    duration: calmTheme.transitions.duration.short,
-                                }),
-                                '&:hover': {
-                                    backgroundColor: alpha(calmTheme.palette.common.white, 0.15),
-                                    boxShadow: `inset 0 0 0 2px ${alpha(calmTheme.palette.common.white, 0.25)}`,
-                                    transform: 'translateY(-1px)',
-                                },
-                                ...(page === 'info' && {
-                                    backgroundColor: alpha(calmTheme.palette.common.white, 0.2),
-                                    boxShadow: `inset 0 0 0 2px ${alpha(calmTheme.palette.common.white, 0.3)}`,
-                                    fontWeight: 800,
-                                }),
-                            }}
-                        >
-                            INFO
-                        </Button>
                     </Box>
                 </Toolbar>
             </AppBar>

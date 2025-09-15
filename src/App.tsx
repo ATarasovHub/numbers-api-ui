@@ -7,8 +7,6 @@ import ProviderAdminPage from "./view/pages/ProviderAdminPage";
 import CustomerRequestOverview from "./view/pages/CustomerRequestOverview";
 import {RangeAssignment} from "./view/pages/RangeAssignment";
 
-
-
 function App() {
     const [page, setPage] = useState<Page>('providers');
 
@@ -32,10 +30,6 @@ function App() {
             case 'customer_overview':
                 return <CustomerTable />;
             case 'provider_statistic':
-            case 'history_account':
-            case 'history_numberassignment':
-            case 'info':
-                return <div>Page: {page}</div>;
             default:
                 return <ProviderOverview />;
         }
