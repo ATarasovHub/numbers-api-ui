@@ -13,7 +13,6 @@ import {
     Stack,
     Chip,
     Divider,
-    Switch,
     Alert,
     Snackbar,
     CircularProgress,
@@ -171,16 +170,12 @@ const AddNumbersBulkForm: React.FC<AddNumbersBulkFormProps> = ({ selectedProvide
                         control={<Checkbox checked={voiceEnabled} onChange={(e) => setVoiceEnabled(e.target.checked)} />}
                         label="Voice Enabled"
                     />
-                    <FormControlLabel
-                        control={<Switch checked={postValidOnly} onChange={(e) => setPostValidOnly(e.target.checked)} />}
-                        label={postValidOnly ? 'Send: Valid & Unique' : 'Send: All Parsed'}
-                    />
                 </Stack>
             </Stack>
 
             <Divider sx={{ my: 2 }} />
 
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <Stack direction={{ xs: 'column', md: 'row' } as const} spacing={2}>
                 <Box sx={listBoxStyle}>
                     <List dense subheader={<ListSubheader>Valid & Unique</ListSubheader>}>
                         {parsed.valid.length > 0 ? parsed.valid.slice(0, 100).map((n) => <ListItem key={`v-${n}`}>{n}</ListItem>) : <ListItem>Empty</ListItem>}
