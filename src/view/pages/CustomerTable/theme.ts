@@ -24,4 +24,13 @@ export const calmTheme = createTheme({
             secondary: '#64748b',
         }
     },
+    components: {
+        MuiTableCell: {
+            styleOverrides: {
+                root: {
+                    borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                },
+            },
+        },
+    },
 });

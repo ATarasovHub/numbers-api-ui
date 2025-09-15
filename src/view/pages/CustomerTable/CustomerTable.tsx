@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import {
-    Box, Paper, CircularProgress, Table, TableHead, TableRow, TableCell, TableBody, Card,
+    Box, Paper, CircularProgress, Table, TableHead, TableRow, TableCell, TableBody, Card, Typography, alpha,
 } from '@mui/material';
 import CustomerFilter from './CustomerFilter';
 import { CustomerRow } from './CustomerRow';
@@ -19,6 +19,19 @@ export const CustomerTable: React.FC = () => {
     const [loadingAccount, setLoadingAccount] = useState<Record<number, boolean>>({});
     const [accountDetailsHasMore, setAccountDetailsHasMore] = useState<Record<number, boolean>>({});
     const [searchQuery, setSearchQuery] = useState<Record<number, string>>({});
+    const tableContainerRef = useRef<HTMLDivElement>(null);
+
+    const handleScroll = () => {
+        const container = tableContainerRef.current;
+        if (container) {
+            const { scrollTop, scrollHeight, clientHeight } = container;
+            if (scrollHeight - scrollTop <= clientHeight * 1.1) {
+                if (!loading && hasMore) {
+                    loadMore();
+                }
+            }
+        }
+    };
 
     const accountDetailsScrollRefs = useRef<Record<number, React.RefObject<HTMLDivElement | null>>>({});
 
@@ -72,47 +85,81 @@ export const CustomerTable: React.FC = () => {
 
     return (
         <ThemeProvider theme={calmTheme}>
-            <Card elevation={6} sx={{ p: 2, maxWidth: '100vw' }}>
-                <CustomerFilter filters={filters} onFilterChange={(field, value) => handleFilterChange(field as any, value)} />
+            <Card
+                elevation={6}
+                sx={{
+                    p: { xs: 2, sm: 3 },
+                    borderRadius: 3,
+                    maxWidth: '100vw',
+                }}
+            >
+                <Box mb={3} pb={2} borderBottom={`2px solid ${alpha(calmTheme.palette.primary.main, 0.2)}`}>
+                    <Typography variant="h4" component="h1" fontWeight="800" color="primary">
+                        Customer Overview
+                    </Typography>
+                </Box>
+                <Paper
+                    elevation={3}
+                    sx={{ p: 2.5, mb: 3, borderRadius: 2.5 }}
+                >
+                    <CustomerFilter filters={filters} onFilterChange={(field, value) => handleFilterChange(field as any, value)} />
+                </Paper>
                 <Paper elevation={4} sx={{ borderRadius: 2.5, overflow: 'hidden' }}>
-                    <Box sx={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                    <Box
+                        ref={tableContainerRef}
+                        onScroll={handleScroll}
+                        sx={{ maxHeight: '70vh', overflowY: 'auto' }}
+                    >
                         <Table sx={{ minWidth: 750 }} aria-label="customers table">
                             <TableHead>
                                 <TableRow>
-                                    <TableCell />
-                                    <TableCell>Customer Name</TableCell>
-                                    <TableCell>Product Type</TableCell>
-                                    <TableCell>Total Numbers</TableCell>
-                                    <TableCell>Accounts</TableCell>
-                                    <TableCell>Countries</TableCell>
+                                    <TableCell sx={{ fontWeight: '700' }} />
+                                    <TableCell sx={{ fontWeight: '700' }}>Customer Name</TableCell>
+                                    <TableCell sx={{ fontWeight: '700' }}>Product Type</TableCell>
+                                    <TableCell sx={{ fontWeight: '700' }}>Total Numbers</TableCell>
+                                    <TableCell sx={{ fontWeight: '700' }}>Accounts</TableCell>
+                                    <TableCell sx={{ fontWeight: '700' }}>Countries</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {displayedCustomers.length ? (
-                                    displayedCustomers.map(customer => (
-                                        <CustomerRow
-                                            key={customer.customerId}
-                                            customer={customer}
-                                            onToggle={() => handleRowToggle(customer.customerId)}
-                                            open={openRows[customer.customerId] || false}
-                                            onAccountToggle={handleAccountToggle}
-                                            expandedAccounts={expandedAccounts}
-                                            fetchAccountDetails={fetchAccountDetails}
-                                            accountDetails={accountDetails}
-                                            loadingAccount={loadingAccount}
-                                            accountDetailsHasMore={accountDetailsHasMore}
-                                            searchQuery={searchQuery}
-                                            onSearchChange={handleSearchChange}
-                                            getScrollRef={getOrCreateScrollRef}
-                                        />
-                                    ))
-                                ) : loading ? (
+                                {displayedCustomers.map(customer => (
+                                    <CustomerRow
+                                        key={customer.customerId}
+                                        customer={customer}
+                                        onToggle={() => handleRowToggle(customer.customerId)}
+                                        open={openRows[customer.customerId] || false}
+                                        onAccountToggle={handleAccountToggle}
+                                        expandedAccounts={expandedAccounts}
+                                        fetchAccountDetails={fetchAccountDetails}
+                                        accountDetails={accountDetails}
+                                        loadingAccount={loadingAccount}
+                                        accountDetailsHasMore={accountDetailsHasMore}
+                                        searchQuery={searchQuery}
+                                        onSearchChange={handleSearchChange}
+                                        getScrollRef={getOrCreateScrollRef}
+                                    />
+                                ))}
+                                {loading && (
                                     <TableRow>
-                                        <TableCell colSpan={6} align="center"><CircularProgress /></TableCell>
+                                        <TableCell colSpan={6} align="center" sx={{ py: 2 }}>
+                                            <CircularProgress size={24} />
+                                        </TableCell>
                                     </TableRow>
-                                ) : (
+                                )}
+                                {!loading && !hasMore && displayedCustomers.length > 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={6} align="center">No customers found matching your criteria.</TableCell>
+                                        <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                                            <Typography variant="caption" color="textSecondary">
+                                                You've reached the end of the list.
+                                            </Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                                {!loading && displayedCustomers.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                                            <Typography>No customers found matching your criteria.</Typography>
+                                        </TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>

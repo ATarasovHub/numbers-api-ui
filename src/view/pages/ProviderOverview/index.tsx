@@ -133,7 +133,6 @@ export const ProviderOverview: React.FC = () => {
                                             </TableCell>
                                         ))}
                                 </TableRow>
-//Test3
                             </TableHead>
                             <TableBody>
                                 {loading ? (

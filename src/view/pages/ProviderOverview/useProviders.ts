@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { NumberProvider } from '../../../utils/domain';
 
 export const useProviders = () => {
@@ -14,45 +14,86 @@ export const useProviders = () => {
     });
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetch(`/provider`)
-            .then(res => {
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return res.json();
-            })
-            .then((data: NumberProvider[]) => {
-                setAllProviders(data);
-            })
-            .catch(error => {
-                console.error("Failed to fetch providers:", error.message || 'Something went wrong');
-                setAllProviders([]);
-            })
-            .finally(() => setLoading(false));
+    const abortRef = useRef<AbortController | null>(null);
+    const inFlightRef = useRef(false);
+    const pollRef = useRef<number | null>(null);
+    const POLL_MS = 15000;
+
+    const fetchProviders = useCallback(async (withLoading: boolean) => {
+        if (inFlightRef.current) return;
+        inFlightRef.current = true;
+        if (withLoading) setLoading(true);
+        abortRef.current?.abort();
+        const controller = new AbortController();
+        abortRef.current = controller;
+        try {
+            const res = await fetch(`/provider`, { signal: controller.signal, cache: 'no-store' });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data: NumberProvider[] = await res.json();
+            setAllProviders(data);
+        } catch {
+            setAllProviders([]);
+        } finally {
+            if (withLoading) setLoading(false);
+            inFlightRef.current = false;
+        }
     }, []);
+
+    useEffect(() => {
+        const start = () => {
+            if (pollRef.current == null) {
+                pollRef.current = window.setInterval(() => fetchProviders(false), POLL_MS);
+            }
+        };
+        const stop = () => {
+            if (pollRef.current != null) {
+                clearInterval(pollRef.current);
+                pollRef.current = null;
+            }
+        };
+        const onVisibility = () => {
+            if (document.hidden) {
+                stop();
+            } else {
+                fetchProviders(false);
+                start();
+            }
+        };
+        const onFocus = () => fetchProviders(false);
+
+        fetchProviders(true);
+        start();
+        document.addEventListener('visibilitychange', onVisibility);
+        window.addEventListener('focus', onFocus);
+
+        return () => {
+            stop();
+            abortRef.current?.abort();
+            document.removeEventListener('visibilitychange', onVisibility);
+            window.removeEventListener('focus', onFocus);
+        };
+    }, [fetchProviders]);
 
     const filteredProviders = useMemo(() => {
         const isAllFiltersEmpty = !filters.providerName && !filters.totalNumbers && !filters.totalAssignedNumbers && !filters.totalMonthlyCost;
         if (isAllFiltersEmpty) return allProviders;
 
-        return allProviders.filter(provider => {
-            let pass = true;
-            if (filters.providerName && !provider.providerName.toLowerCase().includes(filters.providerName.toLowerCase())) pass = false;
-
-            const checkNumericFilter = (value: number, filterValue: string, op: string) => {
-                if(filterValue){
-                    const numFilterValue = Number(filterValue);
-                    if(isNaN(numFilterValue)) return true; // Or false, depending on desired behavior for invalid input
-                    if (op === '>=') return value >= numFilterValue;
-                    if (op === '<=') return value <= numFilterValue;
-                }
-                return true;
+        const checkNumericFilter = (value: number, filterValue: string, op: string) => {
+            if (filterValue) {
+                const num = Number(filterValue);
+                if (isNaN(num)) return true;
+                if (op === '>=') return value >= num;
+                if (op === '<=') return value <= num;
             }
+            return true;
+        };
 
-            pass = pass && checkNumericFilter(provider.totalNumbers, filters.totalNumbers, filters.totalNumbersOp);
-            pass = pass && checkNumericFilter(provider.totalAssignedNumbers, filters.totalAssignedNumbers, filters.totalAssignedNumbersOp);
-            pass = pass && checkNumericFilter(provider.totalMonthlyCost, filters.totalMonthlyCost, filters.totalMonthlyCostOp);
-
-            return pass;
+        return allProviders.filter(provider => {
+            if (filters.providerName && !provider.providerName.toLowerCase().includes(filters.providerName.toLowerCase())) return false;
+            if (!checkNumericFilter(provider.totalNumbers, filters.totalNumbers, filters.totalNumbersOp)) return false;
+            if (!checkNumericFilter(provider.totalAssignedNumbers, filters.totalAssignedNumbers, filters.totalAssignedNumbersOp)) return false;
+            if (!checkNumericFilter(provider.totalMonthlyCost, filters.totalMonthlyCost, filters.totalMonthlyCostOp)) return false;
+            return true;
         });
     }, [allProviders, filters]);
 
@@ -60,10 +101,13 @@ export const useProviders = () => {
         setFilters(prev => ({ ...prev, [field]: value }));
     };
 
+    const refreshNow = () => fetchProviders(true);
+
     return {
         providers: filteredProviders,
         filters,
         loading,
         handleFilterChange,
+        refreshNow,
     };
 };

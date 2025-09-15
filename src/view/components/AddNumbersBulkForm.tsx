@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     Box,
     Button,
@@ -10,8 +10,17 @@ import {
     List,
     ListItem,
     ListSubheader,
+    Stack,
+    Chip,
+    Divider,
+    Switch,
+    Alert,
+    Snackbar,
+    CircularProgress,
+    Badge
 } from '@mui/material';
-import { paperStyle, subtitle1Style, flexGap1 } from '../styles/ProviderAdminPageStyles';
+import { paperStyle, subtitle1Style } from '../styles/ProviderAdminPageStyles';
+import { countsBarStyle, listBoxStyle } from '../styles/AddNumbersBulkFormStyles';
 
 interface AddNumbersBulkFormProps {
     selectedProviderId: string;
@@ -33,49 +42,92 @@ interface BulkNumbersResponseDTO {
     alreadyExist: string[];
 }
 
+function normalizeNumber(input: string): string {
+    const trimmed = input.trim();
+    if (!trimmed) return '';
+    let s = trimmed.replace(/[^\d+]/g, '');
+    if (s.startsWith('00')) s = '+' + s.slice(2);
+    if (!s.startsWith('+') && /^\d+$/.test(s)) s = '+' + s;
+    return s;
+}
+
+function isValidE164(num: string): boolean {
+    return /^\+[1-9]\d{6,14}$/.test(num);
+}
+
+function tokenize(text: string): string[] {
+    return text.split(/[\s,;|\n\r\t]+/).map(t => t.trim()).filter(Boolean);
+}
+
 const AddNumbersBulkForm: React.FC<AddNumbersBulkFormProps> = ({ selectedProviderId }) => {
     const [numbersText, setNumbersText] = useState('');
     const [smsEnabled, setSmsEnabled] = useState(true);
     const [voiceEnabled, setVoiceEnabled] = useState(true);
+    const [postValidOnly, setPostValidOnly] = useState(true);
     const [loading, setLoading] = useState(false);
-    const [response, setResponse] = useState<BulkNumbersResponseDTO | null>(null);
+    const [snack, setSnack] = useState<{ open: boolean; severity: 'success' | 'error' | 'info'; msg: string }>({
+        open: false,
+        severity: 'info',
+        msg: ''
+    });
+
+    const parsed = useMemo(() => {
+        const raw = tokenize(numbersText);
+        const normalized = raw.map(normalizeNumber).filter(Boolean);
+        const seen = new Set<string>();
+        const valid: string[] = [];
+        const invalidFormat: string[] = [];
+        const duplicatesInRequest: string[] = [];
+        normalized.forEach(n => {
+            if (!seen.has(n)) {
+                seen.add(n);
+                if (isValidE164(n)) valid.push(n);
+                else invalidFormat.push(n);
+            } else {
+                duplicatesInRequest.push(n);
+            }
+        });
+        const uniqueDuplicates = Array.from(new Set(duplicatesInRequest));
+        const uniqueInvalid = Array.from(new Set(invalidFormat));
+        return {
+            total: raw.length,
+            normalized,
+            valid,
+            invalidFormat: uniqueInvalid,
+            duplicatesInRequest: uniqueDuplicates,
+            toSend: postValidOnly ? valid : normalized
+        };
+    }, [numbersText, postValidOnly]);
+
+    const canSubmit = Boolean(selectedProviderId) && parsed.toSend.length > 0;
 
     const handleSubmit = async () => {
         if (!selectedProviderId) {
-            alert('Please select provider first');
+            setSnack({ open: true, severity: 'error', msg: 'Select a provider first' });
             return;
         }
-
-        const numbers = numbersText
-            .split(/[\s,;\n]+/)
-            .map((n) => n.trim())
-            .filter((n) => n.length > 0);
-
-        if (numbers.length === 0) {
-            alert('Please enter at least one number');
+        if (parsed.toSend.length === 0) {
+            setSnack({ open: true, severity: 'error', msg: 'No numbers to submit' });
             return;
         }
-
         setLoading(true);
-        setResponse(null);
         try {
             const res = await fetch(`http://localhost:8080/provider/${selectedProviderId}/numbers-bulk`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    numbers,
+                    numbers: parsed.toSend,
                     smsEnabled,
-                    voiceEnabled,
-                }),
+                    voiceEnabled
+                })
             });
-
             if (res.ok) {
                 const data: BulkNumbersResponseDTO = await res.json();
-                setResponse(data);
-                setNumbersText('');
+                setSnack({ open: true, severity: 'success', msg: `Uploaded: ${data.created.length}` });
+                if (postValidOnly) setNumbersText('');
             } else {
                 const error = await res.text();
-                alert(`Error: ${error}`);
+                setSnack({ open: true, severity: 'error', msg: error || 'Request failed' });
             }
         } finally {
             setLoading(false);
@@ -88,67 +140,90 @@ const AddNumbersBulkForm: React.FC<AddNumbersBulkFormProps> = ({ selectedProvide
 
             <TextField
                 label="Numbers (comma, space or newline separated)"
+                placeholder="+491761234567,+491761234568  +380501234567"
                 multiline
-                rows={4}
+                rows={5}
                 fullWidth
                 value={numbersText}
-                onChange={(e) => {
-                    setNumbersText(e.target.value);
-                    setResponse(null);
-                }}
+                onChange={(e) => setNumbersText(e.target.value)}
                 sx={{ mb: 2 }}
             />
 
-            <Box sx={flexGap1}>
-                <FormControlLabel
-                    control={<Checkbox checked={smsEnabled} onChange={(e) => setSmsEnabled(e.target.checked)} />}
-                    label="SMS Enabled"
-                />
-                <FormControlLabel
-                    control={<Checkbox checked={voiceEnabled} onChange={(e) => setVoiceEnabled(e.target.checked)} />}
-                    label="Voice Enabled"
-                />
-            </Box>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={countsBarStyle}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                    <Badge color="success" badgeContent={parsed.valid.length}>
+                        <Chip label="Valid" color="success" />
+                    </Badge>
+                    <Badge color="warning" badgeContent={parsed.duplicatesInRequest.length}>
+                        <Chip label="Duplicates" color="warning" variant="outlined" />
+                    </Badge>
+                    <Badge color="error" badgeContent={parsed.invalidFormat.length}>
+                        <Chip label="Invalid" color="error" variant="outlined" />
+                    </Badge>
+                    <Chip label={`Total: ${parsed.total}`} />
+                </Stack>
+                <Stack direction="row" spacing={2} alignItems="center">
+                    <FormControlLabel
+                        control={<Checkbox checked={smsEnabled} onChange={(e) => setSmsEnabled(e.target.checked)} />}
+                        label="SMS Enabled"
+                    />
+                    <FormControlLabel
+                        control={<Checkbox checked={voiceEnabled} onChange={(e) => setVoiceEnabled(e.target.checked)} />}
+                        label="Voice Enabled"
+                    />
+                    <FormControlLabel
+                        control={<Switch checked={postValidOnly} onChange={(e) => setPostValidOnly(e.target.checked)} />}
+                        label={postValidOnly ? 'Send: Valid & Unique' : 'Send: All Parsed'}
+                    />
+                </Stack>
+            </Stack>
 
-            <Button variant="contained" onClick={handleSubmit} disabled={loading}>
-                {loading ? 'Uploading...' : 'Upload Numbers'}
-            </Button>
+            <Divider sx={{ my: 2 }} />
 
-            {response && (
-                <Box mt={3}>
-                    <List subheader={<ListSubheader>Successfully Created Numbers</ListSubheader>}>
-                        {response.created.length > 0 ? (
-                            response.created.map((num) => <ListItem key={num.numberId}>{num.number}</ListItem>)
-                        ) : (
-                            <ListItem>No numbers created</ListItem>
-                        )}
-                    </List>
-
-                    <List subheader={<ListSubheader>Duplicates in Request</ListSubheader>}>
-                        {response.duplicatesInRequest.length > 0 ? (
-                            response.duplicatesInRequest.map((num, idx) => <ListItem key={idx}>{num}</ListItem>)
-                        ) : (
-                            <ListItem>No duplicates found</ListItem>
-                        )}
-                    </List>
-
-                    <List subheader={<ListSubheader>Invalid Format</ListSubheader>}>
-                        {response.invalidFormat.length > 0 ? (
-                            response.invalidFormat.map((num, idx) => <ListItem key={idx}>{num}</ListItem>)
-                        ) : (
-                            <ListItem>No invalid formats</ListItem>
-                        )}
-                    </List>
-
-                    <List subheader={<ListSubheader>Already Exist</ListSubheader>}>
-                        {response.alreadyExist.length > 0 ? (
-                            response.alreadyExist.map((num, idx) => <ListItem key={idx}>{num}</ListItem>)
-                        ) : (
-                            <ListItem>No existing numbers</ListItem>
-                        )}
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                <Box sx={listBoxStyle}>
+                    <List dense subheader={<ListSubheader>Valid & Unique</ListSubheader>}>
+                        {parsed.valid.length > 0 ? parsed.valid.slice(0, 100).map((n) => <ListItem key={`v-${n}`}>{n}</ListItem>) : <ListItem>Empty</ListItem>}
                     </List>
                 </Box>
-            )}
+                <Box sx={listBoxStyle}>
+                    <List dense subheader={<ListSubheader>Duplicates in Request</ListSubheader>}>
+                        {parsed.duplicatesInRequest.length > 0 ? parsed.duplicatesInRequest.slice(0, 100).map((n) => <ListItem key={`d-${n}`}>{n}</ListItem>) : <ListItem>Empty</ListItem>}
+                    </List>
+                </Box>
+                <Box sx={listBoxStyle}>
+                    <List dense subheader={<ListSubheader>Invalid Format</ListSubheader>}>
+                        {parsed.invalidFormat.length > 0 ? parsed.invalidFormat.slice(0, 100).map((n) => <ListItem key={`i-${n}`}>{n}</ListItem>) : <ListItem>Empty</ListItem>}
+                    </List>
+                </Box>
+            </Stack>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Stack direction="row" spacing={2} alignItems="center">
+                <Button
+                    variant="contained"
+                    onClick={handleSubmit}
+                    disabled={!canSubmit || loading}
+                    startIcon={loading ? <CircularProgress color="inherit" size={18} /> : undefined}
+                >
+                    {loading ? 'Uploading...' : `Upload Numbers (${parsed.toSend.length})`}
+                </Button>
+                <Button variant="outlined" onClick={() => setNumbersText('')}>
+                    Clear
+                </Button>
+            </Stack>
+
+            <Snackbar
+                open={snack.open}
+                autoHideDuration={4000}
+                onClose={() => setSnack(s => ({ ...s, open: false }))}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert severity={snack.severity} onClose={() => setSnack(s => ({ ...s, open: false }))}>
+                    {snack.msg}
+                </Alert>
+            </Snackbar>
         </Paper>
     );
 };
