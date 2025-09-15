@@ -134,7 +134,6 @@ export const ProviderOverview: React.FC = () => {
                                         ))}
                                 </TableRow>
 
-                                //Test
                             </TableHead>
                             <TableBody>
                                 {loading ? (
