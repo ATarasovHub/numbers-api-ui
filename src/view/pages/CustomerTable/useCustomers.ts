@@ -1,4 +1,3 @@
-// useCustomers.ts
 import { useState, useCallback, useEffect } from 'react';
 import { Customer, CustomerOverviewProAccount, TechAccountDetails } from './types';
 
@@ -105,7 +104,6 @@ export const useCustomers = () => {
         }
     }, [loading, hasMore, page, fetchCustomers]);
 
-    // Initial load
     useEffect(() => {
         fetchCustomers(0, true);
     }, []);

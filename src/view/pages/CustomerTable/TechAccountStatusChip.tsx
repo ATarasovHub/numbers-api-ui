@@ -15,5 +15,19 @@ export const TechAccountStatusChip: React.FC<Props> = ({ status }) => {
                     ? 'default'
                     : 'info';
 
-    return <Chip label={status} color={color as any} size="small" />;
+    return (
+        <Chip
+            label={status}
+            color={color as any}
+            size="small"
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            sx={{
+                pointerEvents: 'none',
+                cursor: 'default',
+                '&:hover': {
+                    backgroundColor: 'transparent',
+                },
+            }}
+        />
+    );
 };
