@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Paper, Table, TableHead, TableBody, TableRow, TableCell, CircularProgress } from '@mui/material';
+import { Box, Typography, Table, TableHead, TableBody, TableRow, TableCell, CircularProgress } from '@mui/material';
 import { NumberOverview } from './types';
 import { styles } from './styles';
 
@@ -18,7 +18,7 @@ const formatDate = (dateString: string | null) => {
 
 const RangeTable: React.FC<RangeTableProps> = ({ tableData, loading, isInitialSearch, hasMore, onScroll }) => {
     return (
-        <Paper sx={styles.tableContainer}>
+        <Box sx={{ mt: 2 }}>   {/* вместо Paper */}
             <Typography sx={styles.sectionTitle}>Range Table</Typography>
             {loading && isInitialSearch ? (
                 <Box sx={styles.loadingContainer}>
@@ -68,7 +68,7 @@ const RangeTable: React.FC<RangeTableProps> = ({ tableData, loading, isInitialSe
                     )}
                 </Box>
             )}
-        </Paper>
+        </Box>
     );
 };
 
