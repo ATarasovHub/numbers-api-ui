@@ -27,7 +27,7 @@ export const useProviders = () => {
         const controller = new AbortController();
         abortRef.current = controller;
         try {
-            const res = await fetch(`/provider`, { signal: controller.signal, cache: 'no-store' });
+            const res = await fetch(`http://localhost:8080/provider`, { signal: controller.signal, cache: 'no-store' });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data: NumberProvider[] = await res.json();
             setAllProviders(data);
