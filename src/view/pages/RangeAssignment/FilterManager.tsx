@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, TextField, Select, MenuItem, Button, CircularProgress, Autocomplete, AutocompleteRenderInputParams } from '@mui/material';
+import { Box, Typography, TextField, Select, MenuItem, Button, CircularProgress, Autocomplete } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { CustomerData, TechAccountData } from './types';
 import { styles } from './styles';
@@ -33,7 +33,6 @@ interface FilterManagerProps {
     onCountryChange: (value: string) => void;
     onSearch: () => void;
     onExport: () => void;
-    onDebugExport: () => void;
     fetchCustomerOptions: (searchText: string, page: number, reset: boolean) => void;
     fetchTechAccountOptions: (searchText: string, page: number, reset: boolean) => void;
     loadMoreCustomers: () => void;
@@ -48,7 +47,7 @@ const FilterManager: React.FC<FilterManagerProps> = (props) => {
     const {
         filter, country, loading, isInitialSearch, customerOptions, techAccountOptions,
         customerLoading, techAccountLoading, onFilterChange, onCountryChange, onSearch,
-        onExport, onDebugExport, fetchCustomerOptions, fetchTechAccountOptions,
+        onExport, fetchCustomerOptions, fetchTechAccountOptions,
         loadMoreCustomers, loadMoreTechAccounts,
         setCurrentCustomerSearch, setCurrentTechAccountSearch
     } = props;
@@ -101,7 +100,7 @@ const FilterManager: React.FC<FilterManagerProps> = (props) => {
                                         onFilterChange(field.label, selectedValue);
                                     }}
                                     getOptionLabel={(option) => typeof option === 'string' ? option : (option as any).customerName || (option as any).techAccountName}
-                                    renderInput={(params: AutocompleteRenderInputParams) => (
+                                    renderInput={(params) => (
                                         <TextField
                                             {...params}
                                             size="small"
@@ -110,21 +109,16 @@ const FilterManager: React.FC<FilterManagerProps> = (props) => {
                                                 ...params.InputProps,
                                                 endAdornment: (
                                                     <>
-                                                        {(field.label === "Customer Name" ? customerLoading : techAccountLoading) && <CircularProgress color="inherit" size={20} sx={styles.autocompleteLoading} />}
+                                                        {(field.label === "Customer Name" ? customerLoading : techAccountLoading) && (
+                                                            <CircularProgress color="inherit" size={20} sx={styles.autocompleteLoading} />
+                                                        )}
                                                         {params.InputProps.endAdornment}
                                                     </>
-                                                )
+                                                ),
                                             }}
                                         />
                                     )}
                                     ListboxProps={{
-                                        onScroll: (event: React.SyntheticEvent) => {
-                                            const listboxNode = event.currentTarget as HTMLElement;
-                                            if (listboxNode.scrollTop + listboxNode.clientHeight >= listboxNode.scrollHeight - 5) {
-                                                if (field.label === "Customer Name") loadMoreCustomers();
-                                                else loadMoreTechAccounts();
-                                            }
-                                        },
                                     }}
                                 />
                             </Box>
@@ -162,9 +156,6 @@ const FilterManager: React.FC<FilterManagerProps> = (props) => {
                 </Button>
                 <Button onClick={onExport}>
                     Export to Excel
-                </Button>
-                <Button onClick={onDebugExport} color="secondary">
-                    Debug Export
                 </Button>
             </Box>
         </Box>

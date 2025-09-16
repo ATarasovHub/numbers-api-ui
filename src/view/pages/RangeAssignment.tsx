@@ -86,7 +86,6 @@ export function RangeAssignment() {
                 onCountryChange={setCountry}
                 onSearch={handleSearch}
                 onExport={handleExport}
-                onDebugExport={handleDebugExport}
                 fetchCustomerOptions={fetchCustomerOptions}
                 fetchTechAccountOptions={fetchTechAccountOptions}
                 loadMoreCustomers={loadMoreCustomers}
