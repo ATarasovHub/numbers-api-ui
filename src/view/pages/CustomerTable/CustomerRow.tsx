@@ -24,7 +24,7 @@ interface Props {
     open: boolean;
     onAccountToggle: (techAccountId: number) => void;
     expandedAccounts: Record<number, boolean>;
-    fetchAccountDetails: (customerName: string, techAccountId: number, pageNum: number) => void;
+    fetchAccountDetails: (customerName: string, techAccountId: number, pageNum: number, searchNumber?: string) => void;
     accountDetails: Record<number, any>;
     loadingAccount: Record<number, boolean>;
     accountDetailsHasMore: Record<number, boolean>;
@@ -48,6 +48,22 @@ export const CustomerRow: React.FC<Props> = ({
 
     const handleSearchChange = (techAccountId: number, query: string) => {
         setLocalSearchQuery(prev => ({ ...prev, [techAccountId]: query }));
+    };
+
+    const handleSearchSubmit = (techAccountId: number) => {
+        const query = localSearchQuery[techAccountId] || '';
+        if (!query.trim()) return;
+
+        setAccountPages(prev => ({ ...prev, [techAccountId]: 0 }));
+
+        fetchAccountDetails(customer.customerName, techAccountId, 0, query);
+    };
+
+    const handleSearchReset = (techAccountId: number) => {
+        setLocalSearchQuery(prev => ({ ...prev, [techAccountId]: '' }));
+        setAccountPages(prev => ({ ...prev, [techAccountId]: 0 }));
+
+        fetchAccountDetails(customer.customerName, techAccountId, 0);
     };
 
     return (
@@ -112,6 +128,8 @@ export const CustomerRow: React.FC<Props> = ({
                                                                 hasMore={accountDetailsHasMore[acc.techAccountId]}
                                                                 searchQuery={localSearchQuery[acc.techAccountId] || ''}
                                                                 onSearchChange={q => handleSearchChange(acc.techAccountId, q)}
+                                                                onSearchSubmit={() => handleSearchSubmit(acc.techAccountId)}
+                                                                onSearchReset={() => handleSearchReset(acc.techAccountId)}
                                                                 onLoadMore={() => {
                                                                     const nextPage = (accountPages[acc.techAccountId] || 0) + 1;
                                                                     setAccountPages(prev => ({ ...prev, [acc.techAccountId]: nextPage }));

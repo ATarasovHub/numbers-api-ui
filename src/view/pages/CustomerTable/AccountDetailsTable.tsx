@@ -11,8 +11,11 @@ import {
     TableBody,
     Paper,
     Collapse,
+    Button,
+    IconButton,
 } from '@mui/material';
-import { TechAccountDetails } from './types';
+import { TechAccountDetails } from "./types";
+import ClearIcon from '@mui/icons-material/Clear';
 
 interface Props {
     techAccountId: number;
@@ -26,6 +29,8 @@ interface Props {
     onSearchChange: (query: string) => void;
     onLoadMore: () => void;
     scrollRef: React.RefObject<HTMLDivElement | null>;
+    onSearchSubmit: () => void;
+    onSearchReset: () => void;
 }
 
 export const AccountDetailsTable: React.FC<Props> = ({
@@ -40,18 +45,28 @@ export const AccountDetailsTable: React.FC<Props> = ({
                                                          onSearchChange,
                                                          onLoadMore,
                                                          scrollRef,
+                                                         onSearchSubmit,
+                                                         onSearchReset,
                                                      }) => {
     const [details, setDetails] = useState<TechAccountDetails[]>(initialDetails || []);
+    const [appliedSearchQuery, setAppliedSearchQuery] = useState<string>('');
 
     useEffect(() => {
         setDetails(initialDetails || []);
     }, [initialDetails]);
 
+    const cleanNumber = (num: string): string => {
+        return num.replace(/[^0-9]/g, '');
+    };
+
     const filteredDetails = useMemo(() => {
-        return details.filter(detail =>
-            detail.number.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }, [details, searchQuery]);
+        if (!appliedSearchQuery.trim()) return details;
+        const queryClean = cleanNumber(appliedSearchQuery);
+        return details.filter(detail => {
+            const numberClean = cleanNumber(detail.number);
+            return numberClean.includes(queryClean);
+        });
+    }, [details, appliedSearchQuery]);
 
     const handleScroll = useCallback(() => {
         if (!scrollRef.current || loading || !hasMore) return;
@@ -69,19 +84,75 @@ export const AccountDetailsTable: React.FC<Props> = ({
         }
     }, [handleScroll, scrollRef]);
 
+    useEffect(() => {
+        if (filteredDetails.length > 0 && appliedSearchQuery.trim()) {
+            const container = scrollRef.current;
+            if (container) {
+                const firstRow = container.querySelector('table tbody tr');
+                if (firstRow) {
+                    firstRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        }
+    }, [filteredDetails, appliedSearchQuery, scrollRef]);
+
+    const handleLocalSearchSubmit = () => {
+        setAppliedSearchQuery(searchQuery);
+        onSearchSubmit();
+    };
+
+    const handleResetSearch = () => {
+        onSearchChange('');
+        setAppliedSearchQuery('');
+        onSearchReset();
+    };
+
     return (
         <Box>
             <Collapse in={expanded} timeout="auto" unmountOnExit>
                 <Box margin={1}>
-                    <TextField
-                        label="Search Number"
-                        variant="outlined"
-                        size="small"
-                        value={searchQuery}
-                        onChange={e => onSearchChange(e.target.value)}
-                        fullWidth
-                        sx={{ mb: 2 }}
-                    />
+                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                        <TextField
+                            label="Search Number"
+                            variant="outlined"
+                            size="small"
+                            value={searchQuery}
+                            onChange={e => onSearchChange(e.target.value)}
+                            fullWidth
+                            placeholder="Enter number to find..."
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            InputProps={{
+                                endAdornment: searchQuery && (
+                                    <IconButton
+                                        size="small"
+                                        onClick={handleResetSearch}
+                                        sx={{ mr: -1 }}
+                                    >
+                                        <ClearIcon fontSize="small" />
+                                    </IconButton>
+                                )
+                            }}
+                        />
+                        <Button
+                            variant="contained"
+                            onClick={handleLocalSearchSubmit}
+                            disabled={loading || !searchQuery.trim()}
+                            sx={{ minWidth: 80 }}
+                        >
+                            FIND
+                        </Button>
+                        {appliedSearchQuery && (
+                            <Button
+                                variant="outlined"
+                                onClick={handleResetSearch}
+                                sx={{ minWidth: 80 }}
+                            >
+                                RESET
+                            </Button>
+                        )}
+                    </Box>
 
                     {loading && (
                         <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>

@@ -41,12 +41,17 @@ export const CustomerTable: React.FC = () => {
         return accountDetailsScrollRefs.current[techAccountId];
     };
 
-    const fetchAccountDetails = (customerName: string, techAccountId: number, pageNum: number) => {
+    const fetchAccountDetails = (customerName: string, techAccountId: number, pageNum: number, searchNumber?: string) => {
         if (loadingAccount[techAccountId]) return;
 
         setLoadingAccount(prev => ({ ...prev, [techAccountId]: true }));
 
-        fetch(`http://localhost:8080/customer/overview/${encodeURIComponent(customerName)}/${techAccountId}?page=${pageNum}&size=10`)
+        let url = `http://localhost:8080/customer/overview/${encodeURIComponent(customerName)}/${techAccountId}?page=${pageNum}&size=10`;
+        if (searchNumber) {
+            url += `&number=${encodeURIComponent(searchNumber)}`;
+        }
+
+        fetch(url)
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json();
@@ -54,10 +59,12 @@ export const CustomerTable: React.FC = () => {
             .then(response => {
                 const isLastPage = response.last;
                 const newContent = response.content;
+
                 setAccountDetails(prev => ({
                     ...prev,
                     [techAccountId]: pageNum === 0 ? newContent : [...(prev[techAccountId] || []), ...newContent],
                 }));
+
                 setAccountDetailsHasMore(prev => ({ ...prev, [techAccountId]: !isLastPage }));
                 setExpandedAccounts(prev => ({ ...prev, [techAccountId]: true }));
             })
