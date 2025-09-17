@@ -18,6 +18,7 @@ export const CustomerTable: React.FC = () => {
     const [accountDetails, setAccountDetails] = useState<Record<number, any>>({});
     const [loadingAccount, setLoadingAccount] = useState<Record<number, boolean>>({});
     const [accountDetailsHasMore, setAccountDetailsHasMore] = useState<Record<number, boolean>>({});
+    const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
     const tableContainerRef = useRef<HTMLDivElement>(null);
 
     const handleScroll = () => {
@@ -85,6 +86,13 @@ export const CustomerTable: React.FC = () => {
         setExpandedAccounts(prev => ({ ...prev, [techAccountId]: !prev[techAccountId] }));
     };
 
+    React.useEffect(() => {
+        if (loading) return;
+        if (!hasLoadedOnce) {
+            setHasLoadedOnce(true);
+        }
+    }, [loading, hasLoadedOnce]);
+
     return (
         <ThemeProvider theme={calmTheme}>
             <Card
@@ -139,17 +147,24 @@ export const CustomerTable: React.FC = () => {
                                         getScrollRef={getOrCreateScrollRef}
                                     />
                                 ))}
-                                {loading && (
+                                {loading && displayedCustomers.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={6} align="center" sx={{ py: 2 }}>
+                                        <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
                                             <CircularProgress size={24} />
                                         </TableCell>
                                     </TableRow>
                                 )}
-                                {!loading && displayedCustomers.length === 0 && (
+                                {!loading && (displayedCustomers.length === 0 && !hasMore) && (
                                     <TableRow>
-                                        <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                                            <Typography>No customers found matching your criteria.</Typography>
+                                        <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                                                <Typography variant="h6" color="text.secondary" fontWeight={500}>
+                                                    🔍 No customers found
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400 }}>
+                                                    Try adjusting your search criteria or check if the customer name is spelled correctly.
+                                                </Typography>
+                                            </Box>
                                         </TableCell>
                                     </TableRow>
                                 )}

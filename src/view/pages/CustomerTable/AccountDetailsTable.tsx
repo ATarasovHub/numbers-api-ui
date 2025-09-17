@@ -197,7 +197,7 @@ export const AccountDetailsTable: React.FC<Props> = ({
                                         ) : (
                                             <TableRow>
                                                 <TableCell colSpan={6} align="center">
-                                                    No numbers match the search query
+                                                    {appliedSearchQuery ? "No numbers match the search query" : "No numbers available"}
                                                 </TableCell>
                                             </TableRow>
                                         )}
@@ -207,9 +207,15 @@ export const AccountDetailsTable: React.FC<Props> = ({
                         </Box>
                     )}
 
-                    {!loading && !details.length && (
+                    {!loading && details.length === 0 && !initialDetails && (
                         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
-                            Failed to load account details.
+                            Click to load account details.
+                        </Typography>
+                    )}
+
+                    {!loading && details.length === 0 && initialDetails && (
+                        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+                            No numbers found for this account.
                         </Typography>
                     )}
                 </Box>
