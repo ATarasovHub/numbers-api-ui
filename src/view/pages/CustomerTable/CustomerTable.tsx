@@ -18,7 +18,6 @@ export const CustomerTable: React.FC = () => {
     const [accountDetails, setAccountDetails] = useState<Record<number, any>>({});
     const [loadingAccount, setLoadingAccount] = useState<Record<number, boolean>>({});
     const [accountDetailsHasMore, setAccountDetailsHasMore] = useState<Record<number, boolean>>({});
-    const [searchQuery, setSearchQuery] = useState<Record<number, string>>({});
     const tableContainerRef = useRef<HTMLDivElement>(null);
 
     const handleScroll = () => {
@@ -79,10 +78,6 @@ export const CustomerTable: React.FC = () => {
         setExpandedAccounts(prev => ({ ...prev, [techAccountId]: !prev[techAccountId] }));
     };
 
-    const handleSearchChange = (techAccountId: number, query: string) => {
-        setSearchQuery(prev => ({ ...prev, [techAccountId]: query }));
-    };
-
     return (
         <ThemeProvider theme={calmTheme}>
             <Card
@@ -134,8 +129,6 @@ export const CustomerTable: React.FC = () => {
                                         accountDetails={accountDetails}
                                         loadingAccount={loadingAccount}
                                         accountDetailsHasMore={accountDetailsHasMore}
-                                        searchQuery={searchQuery}
-                                        onSearchChange={handleSearchChange}
                                         getScrollRef={getOrCreateScrollRef}
                                     />
                                 ))}
@@ -143,15 +136,6 @@ export const CustomerTable: React.FC = () => {
                                     <TableRow>
                                         <TableCell colSpan={6} align="center" sx={{ py: 2 }}>
                                             <CircularProgress size={24} />
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                                {!loading && !hasMore && displayedCustomers.length > 0 && (
-                                    <TableRow>
-                                        <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
-                                            <Typography variant="caption" color="textSecondary">
-                                                You've reached the end of the list.
-                                            </Typography>
                                         </TableCell>
                                     </TableRow>
                                 )}

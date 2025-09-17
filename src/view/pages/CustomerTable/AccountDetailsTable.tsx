@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
     Box,
     TextField,
@@ -42,17 +42,14 @@ export const AccountDetailsTable: React.FC<Props> = ({
                                                          scrollRef,
                                                      }) => {
     const [details, setDetails] = useState<TechAccountDetails[]>(initialDetails || []);
-    const [filteredDetails, setFilteredDetails] = useState<TechAccountDetails[]>(initialDetails || []);
 
     useEffect(() => {
         setDetails(initialDetails || []);
     }, [initialDetails]);
 
-    useEffect(() => {
-        setFilteredDetails(
-            details.filter(detail =>
-                detail.number.toLowerCase().includes(searchQuery.toLowerCase())
-            )
+    const filteredDetails = useMemo(() => {
+        return details.filter(detail =>
+            detail.number.toLowerCase().includes(searchQuery.toLowerCase())
         );
     }, [details, searchQuery]);
 

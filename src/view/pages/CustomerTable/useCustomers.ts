@@ -1,12 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Customer, CustomerOverviewProAccount, TechAccountDetails } from './types';
+import { Customer } from './types';
 
 const ITEMS_PER_PAGE = 20;
 
 export interface FilterState {
     customerName: string;
-    totalNumbers: string;
-    totalNumbersOp: '>=' | '<=' | '=';
 }
 
 function debounce<A extends any[], R>(
@@ -23,18 +21,15 @@ function debounce<A extends any[], R>(
 }
 
 export const useCustomers = () => {
-    const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
     const [displayedCustomers, setDisplayedCustomers] = useState<Customer[]>([]);
     const [filters, setFilters] = useState<FilterState>({
         customerName: '',
-        totalNumbers: '',
-        totalNumbersOp: '>='
     });
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(0);
 
-    const fetchCustomers = useCallback((pageNum: number, resetData = false) => {
+    const fetchCustomers = useCallback((pageNum: number, currentFilters: FilterState, resetData = false) => {
         if (loading) return;
         setLoading(true);
 
@@ -43,12 +38,8 @@ export const useCustomers = () => {
             size: ITEMS_PER_PAGE.toString()
         });
 
-        if (filters.customerName.trim()) {
-            params.append('customerName', filters.customerName.trim());
-        }
-        if (filters.totalNumbers.trim() && !isNaN(Number(filters.totalNumbers))) {
-            params.append('totalNumbers', filters.totalNumbers.trim());
-            params.append('totalNumbersOp', filters.totalNumbersOp);
+        if (currentFilters.customerName.trim()) {
+            params.append('customerName', currentFilters.customerName.trim());
         }
 
         fetch(`http://localhost:8080/customer/overview?${params.toString()}`)
@@ -64,13 +55,9 @@ export const useCustomers = () => {
                     proCountries: c.proCountries ?? []
                 }));
 
-                if (pageNum === 0 || resetData) {
-                    setAllCustomers(normalized);
-                    setDisplayedCustomers(normalized);
-                } else {
-                    setAllCustomers(prev => [...prev, ...normalized]);
-                    setDisplayedCustomers(prev => [...prev, ...normalized]);
-                }
+                setDisplayedCustomers(prev =>
+                    pageNum === 0 ? normalized : [...prev, ...normalized]
+                );
 
                 setHasMore(!data.last);
                 setPage(pageNum);
@@ -80,43 +67,46 @@ export const useCustomers = () => {
                 console.error("Failed to fetch customers:", error);
                 setLoading(false);
             });
-    }, [filters, loading]);
+    }, []);
 
-    const debouncedFetchCustomers = useCallback(
-        debounce((pageNum: number, resetData: boolean) => fetchCustomers(pageNum, resetData), 350),
+    const debouncedFetchWithFilters = useCallback(
+        debounce((currentFilters: FilterState) => {
+            setPage(0);
+            setDisplayedCustomers([]);
+            setHasMore(true);
+            fetchCustomers(0, currentFilters, true);
+        }, 500),
         [fetchCustomers]
     );
 
+    useEffect(() => {
+        if (page === 0) {
+            debouncedFetchWithFilters(filters);
+        }
+    }, [filters, debouncedFetchWithFilters]);
+
+    useEffect(() => {
+        if (page > 0) {
+            fetchCustomers(page, filters);
+        }
+    }, [page, fetchCustomers, filters]);
+
     const handleFilterChange = useCallback((field: keyof FilterState, value: string) => {
         setFilters(prev => ({ ...prev, [field]: value }));
-        setPage(0);
-        setHasMore(true);
-        if (field === 'customerName') {
-            debouncedFetchCustomers(0, true);
-        } else {
-            fetchCustomers(0, true);
-        }
-    }, [debouncedFetchCustomers, fetchCustomers]);
+    }, []);
 
     const loadMore = useCallback(() => {
         if (!loading && hasMore) {
-            fetchCustomers(page + 1);
+            setPage(prevPage => prevPage + 1);
         }
-    }, [loading, hasMore, page, fetchCustomers]);
-
-    useEffect(() => {
-        fetchCustomers(0, true);
-    }, []);
+    }, [loading, hasMore]);
 
     return {
-        allCustomers,
         displayedCustomers,
         filters,
         loading,
         hasMore,
-        page,
         handleFilterChange,
         loadMore,
-        fetchCustomers,
     };
 };

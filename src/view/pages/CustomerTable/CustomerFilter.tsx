@@ -1,10 +1,8 @@
 import React from 'react';
-import { Box, Typography, TextField, Select, MenuItem, Paper } from "@mui/material";
+import { Box, TextField, Paper, Typography } from "@mui/material";
 
 interface Filters {
     customerName: string;
-    totalNumbers: string;
-    totalNumbersOp: string;
 }
 
 interface CustomerFilterProps {
@@ -25,34 +23,9 @@ const CustomerFilter: React.FC<CustomerFilterProps> = ({ filters, onFilterChange
                     onChange={e => onFilterChange('customerName', e.target.value)}
                     variant="outlined"
                     size="small"
-                    sx={{ minWidth: 220 }}
+                    sx={{ minWidth: 300 }}
+                    placeholder="Start typing to search..."
                 />
-                <Box display="flex" alignItems="center" gap={1}>
-                    <Select
-                        value={filters.totalNumbersOp}
-                        onChange={e => onFilterChange('totalNumbersOp', e.target.value as string)}
-                        variant="outlined"
-                        size="small"
-                        sx={{ minWidth: 70 }}
-                    >
-                        <MenuItem value=">=">&ge;</MenuItem>
-                        <MenuItem value="<=">&le;</MenuItem>
-                    </Select>
-                    <TextField
-                        label="Total Numbers"
-                        value={filters.totalNumbers}
-                        onChange={e => {
-                            const val = e.target.value;
-                            if (/^\d*$/.test(val)) {
-                                onFilterChange('totalNumbers', val);
-                            }
-                        }}
-                        variant="outlined"
-                        size="small"
-                        type="text"
-                        sx={{ minWidth: 150 }}
-                    />
-                </Box>
             </Box>
         </Paper>
     );

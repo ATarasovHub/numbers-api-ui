@@ -28,8 +28,6 @@ interface Props {
     accountDetails: Record<number, any>;
     loadingAccount: Record<number, boolean>;
     accountDetailsHasMore: Record<number, boolean>;
-    searchQuery: Record<number, string>;
-    onSearchChange: (techAccountId: number, query: string) => void;
     getScrollRef: (techAccountId: number) => React.RefObject<HTMLDivElement | null>;
 }
 
@@ -43,15 +41,13 @@ export const CustomerRow: React.FC<Props> = ({
                                                  accountDetails,
                                                  loadingAccount,
                                                  accountDetailsHasMore,
-                                                 searchQuery,
-                                                 onSearchChange,
                                                  getScrollRef,
                                              }) => {
     const [localSearchQuery, setLocalSearchQuery] = useState<Record<number, string>>({});
+    const [accountPages, setAccountPages] = useState<Record<number, number>>({});
 
     const handleSearchChange = (techAccountId: number, query: string) => {
         setLocalSearchQuery(prev => ({ ...prev, [techAccountId]: query }));
-        onSearchChange(techAccountId, query);
     };
 
     return (
@@ -116,7 +112,11 @@ export const CustomerRow: React.FC<Props> = ({
                                                                 hasMore={accountDetailsHasMore[acc.techAccountId]}
                                                                 searchQuery={localSearchQuery[acc.techAccountId] || ''}
                                                                 onSearchChange={q => handleSearchChange(acc.techAccountId, q)}
-                                                                onLoadMore={() => fetchAccountDetails(customer.customerName, acc.techAccountId, 0)}
+                                                                onLoadMore={() => {
+                                                                    const nextPage = (accountPages[acc.techAccountId] || 0) + 1;
+                                                                    setAccountPages(prev => ({ ...prev, [acc.techAccountId]: nextPage }));
+                                                                    fetchAccountDetails(customer.customerName, acc.techAccountId, nextPage);
+                                                                }}
                                                                 scrollRef={getScrollRef(acc.techAccountId)}
                                                             />
                                                         </TableCell>
