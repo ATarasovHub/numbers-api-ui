@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import {
     Box,
     TextField,
@@ -13,6 +13,7 @@ import {
     Collapse,
     Button,
     IconButton,
+    InputAdornment,
 } from '@mui/material';
 import { TechAccountDetails } from "./types";
 import ClearIcon from '@mui/icons-material/Clear';
@@ -55,17 +56,14 @@ export const AccountDetailsTable: React.FC<Props> = ({
         setDetails(initialDetails || []);
     }, [initialDetails]);
 
-    const cleanNumber = (num: string): string => {
-        return num.replace(/[^0-9]/g, '');
-    };
+    const cleanNumber = (num: string): string => num.replace(/[^0-9]/g, '');
 
     const filteredDetails = useMemo(() => {
         if (!appliedSearchQuery.trim()) return details;
         const queryClean = cleanNumber(appliedSearchQuery);
-        return details.filter(detail => {
-            const numberClean = cleanNumber(detail.number);
-            return numberClean.includes(queryClean);
-        });
+        return details.filter(detail =>
+            cleanNumber(detail.number).includes(queryClean)
+        );
     }, [details, appliedSearchQuery]);
 
     const handleScroll = useCallback(() => {
@@ -75,14 +73,6 @@ export const AccountDetailsTable: React.FC<Props> = ({
             onLoadMore();
         }
     }, [loading, hasMore, onLoadMore, scrollRef]);
-
-    useEffect(() => {
-        const container = scrollRef.current;
-        if (container) {
-            container.addEventListener('scroll', handleScroll);
-            return () => container.removeEventListener('scroll', handleScroll);
-        }
-    }, [handleScroll, scrollRef]);
 
     useEffect(() => {
         if (filteredDetails.length > 0 && appliedSearchQuery.trim()) {
@@ -118,20 +108,22 @@ export const AccountDetailsTable: React.FC<Props> = ({
                             size="small"
                             value={searchQuery}
                             onChange={e => onSearchChange(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleLocalSearchSubmit()}
                             fullWidth
                             placeholder="Enter number to find..."
                             InputLabelProps={{
                                 shrink: true,
                             }}
                             InputProps={{
-                                endAdornment: searchQuery && (
-                                    <IconButton
-                                        size="small"
-                                        onClick={handleResetSearch}
-                                        sx={{ mr: -1 }}
-                                    >
-                                        <ClearIcon fontSize="small" />
-                                    </IconButton>
+                                endAdornment: searchQuery.trim() !== '' && (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            size="small"
+                                            onClick={handleResetSearch}
+                                        >
+                                            <ClearIcon fontSize="small" />
+                                        </IconButton>
+                                    </InputAdornment>
                                 )
                             }}
                         />
@@ -141,20 +133,18 @@ export const AccountDetailsTable: React.FC<Props> = ({
                             disabled={loading || !searchQuery.trim()}
                             sx={{ minWidth: 80 }}
                         >
-                            FIND
+                            {loading ? <CircularProgress size={18} color="inherit" /> : "FIND"}
                         </Button>
-                        {appliedSearchQuery && (
-                            <Button
-                                variant="outlined"
-                                onClick={handleResetSearch}
-                                sx={{ minWidth: 80 }}
-                            >
-                                RESET
-                            </Button>
-                        )}
+                        <Button
+                            variant="outlined"
+                            onClick={handleResetSearch}
+                            sx={{ minWidth: 80 }}
+                        >
+                            RESET
+                        </Button>
                     </Box>
 
-                    {loading && (
+                    {loading && details.length === 0 && (
                         <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
                             <CircularProgress size={24} />
                         </Box>
@@ -163,6 +153,7 @@ export const AccountDetailsTable: React.FC<Props> = ({
                     {!loading && details.length > 0 && (
                         <Box
                             ref={scrollRef}
+                            onScroll={handleScroll}
                             sx={{
                                 maxHeight: '400px',
                                 overflowY: 'auto',
@@ -185,7 +176,10 @@ export const AccountDetailsTable: React.FC<Props> = ({
                                     <TableBody>
                                         {filteredDetails.length > 0 ? (
                                             filteredDetails.map((detail, idx) => (
-                                                <TableRow key={idx} hover>
+                                                <TableRow
+                                                    key={`${detail.number}-${detail.startDate ?? idx}`}
+                                                    hover
+                                                >
                                                     <TableCell>{detail.startDate ?? '-'}</TableCell>
                                                     <TableCell>{detail.endDate ?? '-'}</TableCell>
                                                     <TableCell>{detail.number}</TableCell>
@@ -197,7 +191,9 @@ export const AccountDetailsTable: React.FC<Props> = ({
                                         ) : (
                                             <TableRow>
                                                 <TableCell colSpan={6} align="center">
-                                                    {appliedSearchQuery ? "No numbers match the search query" : "No numbers available"}
+                                                    {appliedSearchQuery
+                                                        ? "No numbers match the search query"
+                                                        : "No numbers available"}
                                                 </TableCell>
                                             </TableRow>
                                         )}
@@ -208,13 +204,21 @@ export const AccountDetailsTable: React.FC<Props> = ({
                     )}
 
                     {!loading && details.length === 0 && !initialDetails && (
-                        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ textAlign: 'center', py: 3 }}
+                        >
                             Click to load account details.
                         </Typography>
                     )}
 
                     {!loading && details.length === 0 && initialDetails && (
-                        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ textAlign: 'center', py: 3 }}
+                        >
                             No numbers found for this account.
                         </Typography>
                     )}

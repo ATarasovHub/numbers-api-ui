@@ -3,32 +3,71 @@ import { createTheme, alpha } from '@mui/material/styles';
 export const calmTheme = createTheme({
     palette: {
         primary: {
-            main: 'hsl(224, 76%, 31%)',
-            light: 'hsl(214, 95%, 93%)',
-            dark: 'hsl(224, 76%, 25%)',
+            main: '#1e40af',
+            light: '#93c5fd',
+            dark: '#1e3a8a',
+            contrastText: '#fff',
         },
         secondary: {
-            main: 'hsl(214, 91%, 60%)',
-            light: 'hsl(214, 95%, 93%)',
+            main: '#3b82f6',
+            light: '#bfdbfe',
+            contrastText: '#fff',
         },
         background: {
-            default: 'hsl(210, 40%, 98%)',
+            default: '#f1f5f9',
             paper: '#ffffff',
         },
-        grey: {
-            50: 'hsl(214, 95%, 97%)',
-            100: 'hsl(214, 95%, 93%)',
-        },
         text: {
-            primary: '#334155',
-            secondary: '#64748b',
-        }
+            primary: '#0f172a',
+            secondary: '#475569',
+        },
+    },
+    shape: {
+        borderRadius: 12,
     },
     components: {
-        MuiTableCell: {
+        MuiPaper: {
             styleOverrides: {
                 root: {
-                    borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                    borderRadius: 12,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                },
+            },
+        },
+        MuiTableRow: {
+            styleOverrides: {
+                root: {
+                    '&:hover': {
+                        backgroundColor: alpha('#3b82f6', 0.1),
+                    },
+                    '&.Mui-selected': {
+                        backgroundColor: alpha('#3b82f6', 0.2),
+                        '&:hover': {
+                            backgroundColor: alpha('#3b82f6', 0.25),
+                        },
+                    },
+                },
+            },
+        },
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    textTransform: 'none',
+                    borderRadius: 10,
+                    '&:hover': {
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
+                    },
+                },
+            },
+        },
+        MuiOutlinedInput: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 10,
+                    '&.Mui-focused fieldset': {
+                        borderColor: '#1e40af',
+                        borderWidth: 2,
+                    },
                 },
             },
         },
