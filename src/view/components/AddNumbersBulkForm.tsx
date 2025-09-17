@@ -23,6 +23,7 @@ import { countsBarStyle, listBoxStyle } from '../styles/AddNumbersBulkFormStyles
 
 interface AddNumbersBulkFormProps {
     selectedProviderId: string;
+    selectedCountryId: string;
 }
 
 interface NumberDTO {
@@ -58,7 +59,7 @@ function tokenize(text: string): string[] {
     return text.split(/[\s,;|\n\r\t]+/).map(t => t.trim()).filter(Boolean);
 }
 
-const AddNumbersBulkForm: React.FC<AddNumbersBulkFormProps> = ({ selectedProviderId }) => {
+const AddNumbersBulkForm: React.FC<AddNumbersBulkFormProps> = ({ selectedProviderId, selectedCountryId }) => {
     const [numbersText, setNumbersText] = useState('');
     const [smsEnabled, setSmsEnabled] = useState(true);
     const [voiceEnabled, setVoiceEnabled] = useState(true);
@@ -98,11 +99,11 @@ const AddNumbersBulkForm: React.FC<AddNumbersBulkFormProps> = ({ selectedProvide
         };
     }, [numbersText, postValidOnly]);
 
-    const canSubmit = Boolean(selectedProviderId) && parsed.toSend.length > 0;
+    const canSubmit = Boolean(selectedProviderId) && Boolean(selectedCountryId) && parsed.toSend.length > 0;
 
     const handleSubmit = async () => {
-        if (!selectedProviderId) {
-            setSnack({ open: true, severity: 'error', msg: 'Select a provider first' });
+        if (!selectedProviderId || !selectedCountryId) {
+            setSnack({ open: true, severity: 'error', msg: 'Select provider and country first' });
             return;
         }
         if (parsed.toSend.length === 0) {
@@ -111,7 +112,8 @@ const AddNumbersBulkForm: React.FC<AddNumbersBulkFormProps> = ({ selectedProvide
         }
         setLoading(true);
         try {
-            const res = await fetch(`http://localhost:8080/provider/${selectedProviderId}/numbers-bulk`, {
+            const url = `http://localhost:8080/provider/${selectedProviderId}/numbers-bulk?countryId=${encodeURIComponent(selectedCountryId)}`;
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

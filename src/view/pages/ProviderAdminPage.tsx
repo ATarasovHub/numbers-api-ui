@@ -29,6 +29,7 @@ function normalizeToArray(d: unknown): any[] {
 const ProviderAdminPage: React.FC = () => {
     const [providers, setProviders] = useState<ProviderOption[]>([]);
     const [selectedProviderId, setSelectedProviderId] = useState<string>('');
+    const [selectedCountryId, setSelectedCountryId] = useState<string>('');
     const [providerDetails, setProviderDetails] = useState<any>(null);
     const [countries, setCountries] = useState<CountryOption[]>([]);
 
@@ -109,7 +110,10 @@ const ProviderAdminPage: React.FC = () => {
                 countryStats={providerDetails?.countryStats}
             />
 
-            <AddNumbersBulkForm selectedProviderId={selectedProviderId} />
+            <AddNumbersBulkForm 
+                selectedProviderId={selectedProviderId} 
+                selectedCountryId={selectedCountryId} 
+            />
         </Box>
     );
 };
