@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, CircularProgress } from '@mui/material';
 
 import ProviderSelector from '../components/ProviderSelector';
 import ProviderEditForm from '../components/ProviderEditForm';
@@ -32,34 +32,38 @@ const ProviderAdminPage: React.FC = () => {
     const [selectedCountryId, setSelectedCountryId] = useState<string>('');
     const [providerDetails, setProviderDetails] = useState<any>(null);
     const [countries, setCountries] = useState<CountryOption[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         const load = async () => {
             try {
-                const res = await fetch('http://localhost:8080/provider');
-                const raw = await res.json();
-                const arr = normalizeToArray(raw);
+                const [providersRes, countriesRes] = await Promise.all([
+                    fetch('http://localhost:8080/provider'),
+                    fetch('http://localhost:8080/country')
+                ]);
+
+                const providersRaw = await providersRes.json();
+                const providersArr = normalizeToArray(providersRaw);
                 setProviders(
-                    arr.map((p: any): ProviderOption => ({
+                    providersArr.map((p: any): ProviderOption => ({
                         numberProviderId: String(p.providerId ?? p.numberProviderId ?? p.id),
                         numberProviderName: String(p.providerName ?? p.numberProviderName ?? p.name)
                     }))
                 );
-            } catch {
-                setProviders([]);
-            }
-            try {
-                const res = await fetch('http://localhost:8080/country');
-                const raw = await res.json();
-                const arr = normalizeToArray(raw);
+
+                const countriesRaw = await countriesRes.json();
+                const countriesArr = normalizeToArray(countriesRaw);
                 setCountries(
-                    arr.map((c: any): CountryOption => ({
+                    countriesArr.map((c: any): CountryOption => ({
                         countryId: String(c.countryId ?? c.id),
                         countryName: String(c.countryName ?? c.name)
                     }))
                 );
-            } catch {
+            } catch (error) {
+                setProviders([]);
                 setCountries([]);
+            } finally {
+                setLoading(false);
             }
         };
         load();
@@ -86,6 +90,14 @@ const ProviderAdminPage: React.FC = () => {
         setProviderDetails((prev: any) => ({ ...prev, [field]: value }));
     };
 
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
+
     return (
         <Box sx={boxStyle}>
             <Typography variant="subtitle2" sx={subtitle2Style}>
@@ -110,9 +122,9 @@ const ProviderAdminPage: React.FC = () => {
                 countryStats={providerDetails?.countryStats}
             />
 
-            <AddNumbersBulkForm 
-                selectedProviderId={selectedProviderId} 
-                selectedCountryId={selectedCountryId} 
+            <AddNumbersBulkForm
+                selectedProviderId={selectedProviderId}
+                selectedCountryId={selectedCountryId}
             />
         </Box>
     );
@@ -120,4 +132,3 @@ const ProviderAdminPage: React.FC = () => {
 
 export default ProviderAdminPage;
 
-//Test
