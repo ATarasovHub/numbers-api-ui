@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React from 'react';
 import {
     Box,
     TextField,
@@ -15,8 +15,10 @@ import {
     IconButton,
     InputAdornment,
 } from '@mui/material';
-import { TechAccountDetails } from "./types";
+import {TechAccountDetails} from "../../../types/types";
 import ClearIcon from '@mui/icons-material/Clear';
+import {accountDetailsTableStyles} from './AccountDetailsTable.styles';
+import {useAccountDetailsTable} from './useAccountDetailsTable';
 
 interface Props {
     techAccountId: number;
@@ -49,59 +51,30 @@ export const AccountDetailsTable: React.FC<Props> = ({
                                                          onSearchSubmit,
                                                          onSearchReset,
                                                      }) => {
-    const [details, setDetails] = useState<TechAccountDetails[]>(initialDetails || []);
-    const [appliedSearchQuery, setAppliedSearchQuery] = useState<string>('');
-
-    useEffect(() => {
-        setDetails(initialDetails || []);
-    }, [initialDetails]);
-
-    const cleanNumber = (num: string): string => num.replace(/[^0-9]/g, '');
-
-    const filteredDetails = useMemo(() => {
-        if (!appliedSearchQuery.trim()) return details;
-        const queryClean = cleanNumber(appliedSearchQuery);
-        return details.filter(detail =>
-            cleanNumber(detail.number).includes(queryClean)
-        );
-    }, [details, appliedSearchQuery]);
-
-    const handleScroll = useCallback(() => {
-        if (!scrollRef.current || loading || !hasMore) return;
-        const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-        if (scrollTop + clientHeight >= scrollHeight - 5) {
-            onLoadMore();
-        }
-    }, [loading, hasMore, onLoadMore, scrollRef]);
-
-    useEffect(() => {
-        if (filteredDetails.length > 0 && appliedSearchQuery.trim()) {
-            const container = scrollRef.current;
-            if (container) {
-                const firstRow = container.querySelector('table tbody tr');
-                if (firstRow) {
-                    firstRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-            }
-        }
-    }, [filteredDetails, appliedSearchQuery, scrollRef]);
-
-    const handleLocalSearchSubmit = () => {
-        setAppliedSearchQuery(searchQuery);
-        onSearchSubmit();
-    };
-
-    const handleResetSearch = () => {
-        onSearchChange('');
-        setAppliedSearchQuery('');
-        onSearchReset();
-    };
+    const {
+        details,
+        filteredDetails,
+        appliedSearchQuery,
+        handleLocalSearchSubmit,
+        handleResetSearch,
+        handleScroll,
+    } = useAccountDetailsTable({
+        initialDetails,
+        searchQuery,
+        onSearchSubmit,
+        onSearchReset,
+        onSearchChange,
+        onLoadMore,
+        hasMore,
+        loading,
+        scrollRef,
+    });
 
     return (
         <Box>
             <Collapse in={expanded} timeout="auto" unmountOnExit>
                 <Box margin={1}>
-                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                    <Box sx={accountDetailsTableStyles.searchFieldContainer}>
                         <TextField
                             label="Search Number"
                             variant="outlined"
@@ -121,32 +94,33 @@ export const AccountDetailsTable: React.FC<Props> = ({
                                             size="small"
                                             onClick={handleResetSearch}
                                         >
-                                            <ClearIcon fontSize="small" />
+                                            <ClearIcon fontSize="small"/>
                                         </IconButton>
                                     </InputAdornment>
-                                )
+                                ),
+                                sx: accountDetailsTableStyles.searchField,
                             }}
                         />
                         <Button
                             variant="contained"
                             onClick={handleLocalSearchSubmit}
                             disabled={loading || !searchQuery.trim()}
-                            sx={{ minWidth: 80 }}
+                            sx={accountDetailsTableStyles.actionButton}
                         >
-                            {loading ? <CircularProgress size={18} color="inherit" /> : "FIND"}
+                            {loading ? <CircularProgress size={18} color="inherit"/> : "FIND"}
                         </Button>
                         <Button
                             variant="outlined"
                             onClick={handleResetSearch}
-                            sx={{ minWidth: 80 }}
+                            sx={accountDetailsTableStyles.actionButton}
                         >
                             RESET
                         </Button>
                     </Box>
 
                     {loading && details.length === 0 && (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-                            <CircularProgress size={24} />
+                        <Box sx={accountDetailsTableStyles.loaderContainer}>
+                            <CircularProgress size={24}/>
                         </Box>
                     )}
 
@@ -154,23 +128,19 @@ export const AccountDetailsTable: React.FC<Props> = ({
                         <Box
                             ref={scrollRef}
                             onScroll={handleScroll}
-                            sx={{
-                                maxHeight: '400px',
-                                overflowY: 'auto',
-                                border: '1px solid #eee',
-                                borderRadius: 1.5,
-                            }}
+                            sx={accountDetailsTableStyles.scrollContainer}
                         >
                             <Paper elevation={1}>
                                 <Table size="small">
                                     <TableHead>
                                         <TableRow>
-                                            <TableCell>Start Date</TableCell>
-                                            <TableCell>End Date</TableCell>
-                                            <TableCell>Number</TableCell>
-                                            <TableCell>Comment</TableCell>
-                                            <TableCell>Provider</TableCell>
-                                            <TableCell>Service Detail</TableCell>
+                                            <TableCell sx={accountDetailsTableStyles.tableHeader}>Start Date</TableCell>
+                                            <TableCell sx={accountDetailsTableStyles.tableHeader}>End Date</TableCell>
+                                            <TableCell sx={accountDetailsTableStyles.tableHeader}>Number</TableCell>
+                                            <TableCell sx={accountDetailsTableStyles.tableHeader}>Comment</TableCell>
+                                            <TableCell sx={accountDetailsTableStyles.tableHeader}>Provider</TableCell>
+                                            <TableCell sx={accountDetailsTableStyles.tableHeader}>Service
+                                                Detail</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -180,12 +150,18 @@ export const AccountDetailsTable: React.FC<Props> = ({
                                                     key={`${detail.number}-${detail.startDate ?? idx}`}
                                                     hover
                                                 >
-                                                    <TableCell>{detail.startDate ?? '-'}</TableCell>
-                                                    <TableCell>{detail.endDate ?? '-'}</TableCell>
-                                                    <TableCell>{detail.number}</TableCell>
-                                                    <TableCell>{detail.comment ?? '-'}</TableCell>
-                                                    <TableCell>{detail.numberProviderName}</TableCell>
-                                                    <TableCell>{detail.serviceDetail}</TableCell>
+                                                    <TableCell
+                                                        sx={accountDetailsTableStyles.tableCell}>{detail.startDate ?? '-'}</TableCell>
+                                                    <TableCell
+                                                        sx={accountDetailsTableStyles.tableCell}>{detail.endDate ?? '-'}</TableCell>
+                                                    <TableCell
+                                                        sx={accountDetailsTableStyles.tableCell}>{detail.number}</TableCell>
+                                                    <TableCell
+                                                        sx={accountDetailsTableStyles.tableCell}>{detail.comment ?? '-'}</TableCell>
+                                                    <TableCell
+                                                        sx={accountDetailsTableStyles.tableCell}>{detail.numberProviderName}</TableCell>
+                                                    <TableCell
+                                                        sx={accountDetailsTableStyles.tableCell}>{detail.serviceDetail}</TableCell>
                                                 </TableRow>
                                             ))
                                         ) : (
@@ -207,7 +183,7 @@ export const AccountDetailsTable: React.FC<Props> = ({
                         <Typography
                             variant="body2"
                             color="text.secondary"
-                            sx={{ textAlign: 'center', py: 3 }}
+                            sx={accountDetailsTableStyles.emptyMessage}
                         >
                             Click to load account details.
                         </Typography>
@@ -217,7 +193,7 @@ export const AccountDetailsTable: React.FC<Props> = ({
                         <Typography
                             variant="body2"
                             color="text.secondary"
-                            sx={{ textAlign: 'center', py: 3 }}
+                            sx={accountDetailsTableStyles.emptyMessage}
                         >
                             No numbers found for this account.
                         </Typography>

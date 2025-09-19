@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Customer } from './types';
+import { Customer } from '../types/types';
 
 const ITEMS_PER_PAGE = 20;
 

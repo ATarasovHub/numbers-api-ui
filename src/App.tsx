@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ProviderOverview } from "./view/pages/ProviderOverview";
 import fakeApi from "./mocks/fakeApi/fakeApi";
-import { CustomerTable } from "./view/pages/CustomerTable/CustomerTable";
+import { CustomerOverviewPage } from "./view/pages/CustomerOverviewPage";
+import { CustomerTable } from "./view/components/Customer/CustomerTable/CustomerTable";
 import Header, { Page } from "./view/components/Header";
 import ProviderAdminPage from "./view/pages/ProviderAdminPage";
 import CustomerRequestOverview from "./view/pages/CustomerRequestOverview";
@@ -15,7 +16,7 @@ function App() {
             case 'providers':
                 return <ProviderAdminPage />;
             case 'customers':
-                return <CustomerRequestOverview />;
+                return <CustomerOverviewPage />;
             case 'customer_request_overview':
                 return <CustomerRequestOverview />;
             case 'range_assignment':
