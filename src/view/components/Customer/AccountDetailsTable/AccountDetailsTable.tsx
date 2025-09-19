@@ -15,7 +15,7 @@ import {
     IconButton,
     InputAdornment,
 } from '@mui/material';
-import {TechAccountDetails} from "../../../types/types";
+import {TechAccountDetails} from "../../../types/customerOverviewTypes";
 import ClearIcon from '@mui/icons-material/Clear';
 import {accountDetailsTableStyles} from './AccountDetailsTable.styles';
 import {useAccountDetailsTable} from './useAccountDetailsTable';

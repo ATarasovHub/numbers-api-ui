@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
-import { NumberOverview, CustomerData, TechAccountData } from './types';
+import { RangeAssignmentService } from '../services/rangeAssignmentService';
+import { NumberOverview, CustomerData, TechAccountData } from '../types/rangeAssignmentTypes';
 
-export const useRangeAssignmentApi = () => {
+export const useRangeAssignment = () => {
     const [filter, setFilter] = useState<any>({});
     const [country, setCountry] = useState('United States');
 
@@ -48,25 +49,16 @@ export const useRangeAssignmentApi = () => {
 
         try {
             const filterPayload = buildFilterPayload();
-            const response = await fetch(`http://localhost:8080/numbers/overview/search?page=${currentPage}&size=20`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(filterPayload),
-            });
-            if (response.ok) {
-                const data: NumberOverview[] = await response.json();
-                if (reset) {
-                    setTableData(data);
-                    setPage(1);
-                } else {
-                    setTableData(prev => [...prev, ...data]);
-                    setPage(prev => prev + 1);
-                }
-                setHasMore(data.length === 20);
+            const data = await RangeAssignmentService.searchNumbers(filterPayload, currentPage, 20);
+
+            if (reset) {
+                setTableData(data);
+                setPage(1);
             } else {
-                if (reset) setTableData([]);
-                setHasMore(false);
+                setTableData(prev => [...prev, ...data]);
+                setPage(prev => prev + 1);
             }
+            setHasMore(data.length === 20);
         } catch (error) {
             console.error('Error fetching data:', error);
             if (reset) setTableData([]);
@@ -83,51 +75,45 @@ export const useRangeAssignmentApi = () => {
         searchNumbers(true);
     };
 
-    const fetchOptions = useCallback(async (
-        url: string,
-        setter: React.Dispatch<React.SetStateAction<any[]>>,
-        hasMoreSetter: React.Dispatch<React.SetStateAction<boolean>>,
-        pageSetter: React.Dispatch<React.SetStateAction<number>>,
-        loadingSetter: React.Dispatch<React.SetStateAction<boolean>>,
-        page: number,
-        reset: boolean
-    ) => {
-        loadingSetter(true);
+    const fetchCustomerOptions = useCallback(async (searchText: string, pageNum: number, reset: boolean) => {
+        setCustomerLoading(true);
         try {
-            const response = await fetch(url);
-            if (response.ok) {
-                const data = await response.json();
-                if (data && Array.isArray(data.content)) {
-                    if (reset) setter(data.content);
-                    else setter(prev => [...prev, ...data.content]);
-                    hasMoreSetter(!data.last);
-                    pageSetter(page);
-                } else {
-                    if (reset) setter([]);
-                    hasMoreSetter(false);
-                }
+            const data = await RangeAssignmentService.searchCustomers(searchText, pageNum, 10);
+            if (reset) {
+                setCustomerOptions(data.content);
             } else {
-                if (reset) setter([]);
-                hasMoreSetter(false);
+                setCustomerOptions(prev => [...prev, ...data.content]);
             }
+            setCustomerHasMore(!data.last);
+            setCustomerPage(pageNum);
         } catch (error) {
-            console.error('Error fetching options:', error);
-            if (reset) setter([]);
-            hasMoreSetter(false);
+            console.error('Error fetching customers:', error);
+            if (reset) setCustomerOptions([]);
+            setCustomerHasMore(false);
         } finally {
-            loadingSetter(false);
+            setCustomerLoading(false);
         }
     }, []);
 
-    const fetchCustomerOptions = useCallback((searchText: string, pageNum: number, reset: boolean) => {
-        const url = `http://localhost:8080/customer/overview/search?name=${encodeURIComponent(searchText)}&page=${pageNum}&size=10`;
-        fetchOptions(url, setCustomerOptions, setCustomerHasMore, setCustomerPage, setCustomerLoading, pageNum, reset);
-    }, [fetchOptions]);
-
-    const fetchTechAccountOptions = useCallback((searchText: string, pageNum: number, reset: boolean) => {
-        const url = `http://localhost:8080/accounts/search?query=${encodeURIComponent(searchText)}&page=${pageNum}&size=10`;
-        fetchOptions(url, setTechAccountOptions, setTechAccountHasMore, setTechAccountPage, setTechAccountLoading, pageNum, reset);
-    }, [fetchOptions]);
+    const fetchTechAccountOptions = useCallback(async (searchText: string, pageNum: number, reset: boolean) => {
+        setTechAccountLoading(true);
+        try {
+            const data = await RangeAssignmentService.searchTechAccounts(searchText, pageNum, 10);
+            if (reset) {
+                setTechAccountOptions(data.content);
+            } else {
+                setTechAccountOptions(prev => [...prev, ...data.content]);
+            }
+            setTechAccountHasMore(!data.last);
+            setTechAccountPage(pageNum);
+        } catch (error) {
+            console.error('Error fetching tech accounts:', error);
+            if (reset) setTechAccountOptions([]);
+            setTechAccountHasMore(false);
+        } finally {
+            setTechAccountLoading(false);
+        }
+    }, []);
 
     const loadMoreCustomers = useCallback(() => {
         if (customerHasMore && !customerLoading && currentCustomerSearch) {
@@ -143,26 +129,12 @@ export const useRangeAssignmentApi = () => {
 
     const loadAllDataForPrint = async () => {
         const filterPayload = buildFilterPayload();
-        try {
-            const response = await fetch(`http://localhost:8080/numbers/overview/searchP`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(filterPayload),
-            });
-            if (response.ok) {
-                return await response.json();
-            }
-            return null;
-        } catch (error) {
-            console.error('Error loading all data for export:', error);
-            return null;
-        }
+        return await RangeAssignmentService.searchAllNumbersForExport(filterPayload);
     };
 
     return {
         filter, country, tableData, loading, hasMore, isInitialSearch,
         customerOptions, techAccountOptions, customerLoading, techAccountLoading,
-        customerPage, techAccountPage,
         handleFilterChange, setCountry, handleSearch, searchNumbers,
         fetchCustomerOptions, fetchTechAccountOptions,
         loadMoreCustomers, loadMoreTechAccounts,

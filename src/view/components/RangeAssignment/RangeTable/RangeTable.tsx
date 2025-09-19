@@ -1,7 +1,17 @@
 import React from 'react';
-import { Box, Typography, Table, TableHead, TableBody, TableRow, TableCell, CircularProgress } from '@mui/material';
-import { NumberOverview } from './types';
-import { styles } from './styles';
+import {
+    Box,
+    Typography,
+    Table,
+    TableHead,
+    TableBody,
+    TableRow,
+    TableCell,
+    CircularProgress,
+} from '@mui/material';
+import { NumberOverview } from '../../../types/rangeAssignmentTypes';
+import { styles } from './RangeTable.styles';
+import { formatDate } from '../../../utils/formatDate';
 
 interface RangeTableProps {
     tableData: NumberOverview[];
@@ -11,15 +21,16 @@ interface RangeTableProps {
     onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
 }
 
-const formatDate = (dateString: string | null) => {
-    if (!dateString) return '';
-    return dateString.split('T')[0];
-};
-
-const RangeTable: React.FC<RangeTableProps> = ({ tableData, loading, isInitialSearch, hasMore, onScroll }) => {
+const RangeTable: React.FC<RangeTableProps> = ({
+                                                   tableData,
+                                                   loading,
+                                                   isInitialSearch,
+                                                   hasMore,
+                                                   onScroll,
+                                               }) => {
     return (
-        <Box sx={{ mt: 2 }}>   {/* вместо Paper */}
-            <Typography sx={styles.sectionTitle}>Range Table</Typography>
+        <Box sx={styles.container}>
+            <Typography sx={styles.title}>Range Table</Typography>
             {loading && isInitialSearch ? (
                 <Box sx={styles.loadingContainer}>
                     <CircularProgress />
@@ -62,7 +73,7 @@ const RangeTable: React.FC<RangeTableProps> = ({ tableData, loading, isInitialSe
                         </Box>
                     )}
                     {!hasMore && tableData.length > 0 && (
-                        <Box sx={{ textAlign: 'center', p: 2, color: '#666' }}>
+                        <Box sx={styles.noMoreData}>
                             <Typography>No more data to load</Typography>
                         </Box>
                     )}

@@ -1,6 +1,6 @@
 import { SxProps, Theme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import { calmTheme } from '../../../theme/theme';
+import { calmTheme } from '../../../theme/customerTheme';
 
 export const productTypeCellStyles = {
     voiceInContainer: {

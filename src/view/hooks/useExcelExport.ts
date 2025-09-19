@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import * as XLSX from 'xlsx';
-import { NumberOverview } from './types';
+import { NumberOverview } from '../types/rangeAssignmentTypes';
 
 const formatDate = (dateString: string | null) => {
     if (!dateString) return '';
@@ -31,9 +31,6 @@ export const useExcelExport = () => {
             const worksheetData = [headers, ...data];
             const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
             worksheet['!cols'] = [{ wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 18 }, { wch: 25 }, { wch: 18 }];
-
-            // Apply styles...
-            // (Styling logic from the original component)
 
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Range Assignment');
 

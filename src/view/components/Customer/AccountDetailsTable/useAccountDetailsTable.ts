@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { TechAccountDetails } from "../../../types/types";
+import { TechAccountDetails } from "../../../types/customerOverviewTypes";
 
 interface UseAccountDetailsTableProps {
     initialDetails?: TechAccountDetails[];

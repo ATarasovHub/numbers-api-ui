@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Customer } from '../../../types/types';
+import { Customer } from '../../../types/customerOverviewTypes';
 import { ProductTypeCell } from '../ProductTypeCell/ProductTypeCell';
 import { customerRowStyles } from './CustomerRow.styles';
 import { useCustomerRow } from './useCustomerRow';

@@ -34,40 +34,36 @@ const RangeAssignmentPage: React.FC = () => {
         setExportProgress(0);
 
         try {
+            setExportProgress(25);
             const allData = await loadAllDataForPrint();
-            if (allData) {
+
+            if (allData && allData.length > 0) {
                 setExportProgress(50);
-                setTimeout(() => {
-                    generateExcel(allData, country);
-                    setExportProgress(100);
-                    setTimeout(() => setExportDialogOpen(false), 1000);
-                }, 500);
+                // Генерируем Excel
+                generateExcel(allData, country);
+                setExportProgress(100);
+                setTimeout(() => setExportDialogOpen(false), 1000);
             } else {
                 setExportDialogOpen(false);
-                alert('Failed to load data for export');
+                alert('No data available to export');
             }
         } catch (error) {
             console.error('Export error:', error);
             setExportDialogOpen(false);
-            alert('Export failed');
+            alert('Export failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
         }
     };
-
-    useEffect(() => {
-        handleSearch();
-    }, []);
 
     return (
         <Box sx={{
             p: 3,
-            maxWidth: 1200,
-            m: '40px auto',
-            borderRadius: 2,
-            backgroundColor: 'background.paper'
+            maxWidth: 1400,
+            m: '20px auto',
         }}>
             <Typography variant="h4" sx={{
                 mb: 3,
-                fontWeight: 600
+                fontWeight: 600,
+                color: 'primary.main',
             }}>
                 Range Assignment
             </Typography>

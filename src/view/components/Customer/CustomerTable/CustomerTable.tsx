@@ -4,7 +4,7 @@ import {
 } from '@mui/material';
 import CustomerFilter from '../CustomerFilter/CustomerFilter';
 import { CustomerRow } from '../CustomerRow/CustomerRow';
-import { calmTheme } from '../../../theme/theme';
+import { calmTheme } from '../../../theme/customerTheme';
 import { ThemeProvider } from '@mui/material/styles';
 import { useCustomers } from '../../../hooks/useCustomers';
 import { useCustomerTable } from './useCustomerTable';

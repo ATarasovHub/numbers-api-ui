@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline } from '@mui/material';
 import { ProviderOverview } from "./view/pages/ProviderOverview";
 import fakeApi from "./mocks/fakeApi/fakeApi";
 import { CustomerOverviewPage } from "./view/pages/CustomerOverviewPage";
@@ -6,7 +8,8 @@ import { CustomerTable } from "./view/components/Customer/CustomerTable/Customer
 import Header, { Page } from "./view/components/Header";
 import ProviderAdminPage from "./view/pages/ProviderAdminPage";
 import CustomerRequestOverview from "./view/pages/CustomerRequestOverview";
-import {RangeAssignment} from "./view/pages/RangeAssignment";
+import RangeAssignmentPage from "./view/pages/RangeAssignmentPage";
+import {calmTheme} from "./view/theme/customerTheme";
 
 function App() {
     const [page, setPage] = useState<Page>('providers');
@@ -20,7 +23,7 @@ function App() {
             case 'customer_request_overview':
                 return <CustomerRequestOverview />;
             case 'range_assignment':
-                return <RangeAssignment />;
+                return <RangeAssignmentPage />;
             case 'number_assignment':
             case 'number_reservation':
             case 'number_range_admin':
@@ -37,10 +40,13 @@ function App() {
     }
 
     return (
-        <div className="App">
-            <Header page={page} setPage={setPage} />
-            {renderPage()}
-        </div>
+        <ThemeProvider theme={calmTheme}>
+            <CssBaseline />
+            <div className="App">
+                <Header page={page} setPage={setPage} />
+                {renderPage()}
+            </div>
+        </ThemeProvider>
     );
 }
 
