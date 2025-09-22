@@ -66,12 +66,8 @@ const CustomerRequestOverviewPage: React.FC = () => {
         <Typography variant="subtitle2" sx={{ fontSize: '1rem', color: '#888', mb: 1 }}>
           Administration &gt; Customer Request overview
         </Typography>
-
-
         <CreateCustomerRequestForm providers={providers} bps={mockBps} />
-
         <SearchCustomerRequestForm providers={providers} onSearch={handleSearch} />
-
         <ProvisioningTable provisioning={provisioning} />
       </Box>
   );

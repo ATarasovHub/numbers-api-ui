@@ -1,33 +1,58 @@
 import React from 'react';
-import { TableRow, TableCell, Button } from '@mui/material';
-import { ProvisioningRowProps } from '../ProvisioningTable.types';
-import { provisioningRowStyles } from './ProvisioningRow.styles';
+import { Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
+import ProvisioningActions from './ProvisioningActions/ProvisioningActions';
 
-const ProvisioningRow: React.FC<ProvisioningRowProps> = ({ row, onEdit, onDelete }) => (
-    <TableRow>
-        <TableCell>{row.provider}</TableCell>
-        <TableCell>{row.bp}</TableCell>
-        <TableCell>{row.comment}</TableCell>
-        <TableCell>{row.requestedNumbers}</TableCell>
-        <TableCell>{row.date}</TableCell>
-        <TableCell>
-            <Button
-                size="small"
-                color="error"
-                sx={provisioningRowStyles.actionButton}
-                onClick={onDelete}
-            >
-                ✗
-            </Button>
-            <Button
-                size="small"
-                sx={provisioningRowStyles.actionButton}
-                onClick={onEdit}
-            >
-                ✎
-            </Button>
-        </TableCell>
-    </TableRow>
-);
+interface ProvisioningRow {
+    provider: string;
+    bp: string;
+    comment: string;
+    requestedNumbers: number;
+    date: string;
+}
 
-export default ProvisioningRow;
+interface ProvisioningTableProps {
+    provisioning: ProvisioningRow[];
+    onDelete?: (row: ProvisioningRow) => void;
+    onEdit?: (row: ProvisioningRow) => void;
+}
+
+const ProvisioningTable: React.FC<ProvisioningTableProps> = ({ provisioning, onDelete, onEdit }) => {
+    return (
+        <Paper variant="outlined" sx={{ p: 2 }}>
+            <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
+                Provisioning
+            </Typography>
+            <Table size="small">
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Provider</TableCell>
+                        <TableCell>BP</TableCell>
+                        <TableCell>Comment</TableCell>
+                        <TableCell>Requested Numbers</TableCell>
+                        <TableCell>Date</TableCell>
+                        <TableCell>Actions</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {provisioning.map((row, idx) => (
+                        <TableRow key={idx}>
+                            <TableCell>{row.provider}</TableCell>
+                            <TableCell>{row.bp}</TableCell>
+                            <TableCell>{row.comment}</TableCell>
+                            <TableCell>{row.requestedNumbers}</TableCell>
+                            <TableCell>{row.date}</TableCell>
+                            <TableCell>
+                                <ProvisioningActions
+                                    onDelete={() => onDelete?.(row)}
+                                    onEdit={() => onEdit?.(row)}
+                                />
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </Paper>
+    );
+};
+
+export default ProvisioningTable;

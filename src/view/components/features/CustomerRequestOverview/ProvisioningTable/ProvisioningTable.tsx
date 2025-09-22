@@ -1,7 +1,16 @@
 import React from 'react';
-import { Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody, Button } from '@mui/material';
+import {
+    Typography,
+    Table,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableBody,
+} from '@mui/material';
+import ProvisioningActions from './ProvisioningRow/ProvisioningActions/ProvisioningActions';
+import { TableWrapper } from './ProvisioningTable.styles';
 
-interface ProvisioningRow {
+export interface ProvisioningRow {
     provider: string;
     bp: string;
     comment: string;
@@ -11,12 +20,16 @@ interface ProvisioningRow {
 
 interface ProvisioningTableProps {
     provisioning: ProvisioningRow[];
+    onDelete?: (row: ProvisioningRow) => void;
+    onEdit?: (row: ProvisioningRow) => void;
 }
 
-const ProvisioningTable: React.FC<ProvisioningTableProps> = ({ provisioning }) => {
+const ProvisioningTable: React.FC<ProvisioningTableProps> = ({ provisioning, onDelete, onEdit }) => {
     return (
-        <Paper variant="outlined" sx={{ p: 2 }}>
-            <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Provisioning</Typography>
+        <TableWrapper>
+            <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
+                Provisioning
+            </Typography>
             <Table size="small">
                 <TableHead>
                     <TableRow>
@@ -37,14 +50,16 @@ const ProvisioningTable: React.FC<ProvisioningTableProps> = ({ provisioning }) =
                             <TableCell>{row.requestedNumbers}</TableCell>
                             <TableCell>{row.date}</TableCell>
                             <TableCell>
-                                <Button size="small" color="error">✗</Button>
-                                <Button size="small">✎</Button>
+                                <ProvisioningActions
+                                    onDelete={() => onDelete?.(row)}
+                                    onEdit={() => onEdit?.(row)}
+                                />
                             </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
-        </Paper>
+        </TableWrapper>
     );
 };
 
