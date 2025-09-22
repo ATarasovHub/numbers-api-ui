@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Box, Typography, TextField, Button } from '@mui/material';
-import { CountryStats } from '../utils/domain';
+import { CountryStats } from '../../utils/domain';
 
 interface EditCountryStatsFormProps {
     open: boolean;

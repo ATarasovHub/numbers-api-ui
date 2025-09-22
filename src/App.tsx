@@ -4,7 +4,7 @@ import { CssBaseline } from '@mui/material';
 import { ProviderOverview } from "./view/pages/ProviderOverviewPage/ProviderOverviewPage";
 import fakeApi from "./mocks/fakeApi/fakeApi";
 import { CustomerOverviewPage } from "./view/pages/CustomerOverviewPage";
-import { CustomerTable } from "./view/components/CustomerOverview/CustomerTable/CustomerTable";
+import { CustomerTable } from "./view/components/features/CustomerOverview/CustomerTable/CustomerTable";
 import Header, { Page } from "./view/components/common/Header";
 import ProviderAdminPage from "./view/pages/ProviderAdminPage";
 import CustomerRequestOverview from "./view/pages/CustomerRequestOverview";

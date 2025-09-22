@@ -1,5 +1,5 @@
 import React from 'react';
-import { CustomerTable } from '../components/CustomerOverview/CustomerTable/CustomerTable';
+import { CustomerTable } from '../components/features/CustomerOverview/CustomerTable/CustomerTable';
 
 export const CustomerOverviewPage: React.FC = () => {
     return (

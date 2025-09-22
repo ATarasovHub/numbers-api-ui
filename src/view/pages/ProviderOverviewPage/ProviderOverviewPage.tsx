@@ -1,8 +1,8 @@
 import React from 'react';
 import { Card, Paper, ThemeProvider, Box, Typography } from '@mui/material';
-import { useProviders } from '../../hooks/useProviders';
-import ProviderFilters from '../../components/ProviderOverview/ProviderTableOverview/ProviderFilters/ProviderFilters';
-import ProviderTable from '../../components/ProviderOverview/ProviderTableOverview/ProviderTable/ProviderTable';
+import { useProviders } from '../../components/features/ProviderOverview/ProviderTableOverview/ProviderTable/useProviders';
+import ProviderFilters from '../../components/features/ProviderOverview/ProviderTableOverview/ProviderFilters/ProviderFilters';
+import ProviderTable from '../../components/features/ProviderOverview/ProviderTableOverview/ProviderTable/ProviderTable';
 import { calmTheme } from '../../theme/providerTheme';
 import { providerOverviewPageStyles } from './ProviderOverviewPage.styles';
 

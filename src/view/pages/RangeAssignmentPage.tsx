@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Typography, Box } from '@mui/material';
-import { useRangeAssignment } from '../hooks/useRangeAssignment';
-import { useExcelExport } from '../hooks/useExcelExport';
-import ExportDialog from '../components/RangeAssignment/ExportDialog/ExportDialog';
-import FilterManager from '../components/RangeAssignment/FilterManager/FilterManager';
-import RangeTable from '../components/RangeAssignment/RangeTable/RangeTable';
+import { useRangeAssignment } from '../components/features/RangeAssignment/RangeTable/useRangeAssignment';
+import { useExcelExport } from '../components/features/RangeAssignment/ExportDialog/useExcelExport';
+import ExportDialog from '../components/features/RangeAssignment/ExportDialog/ExportDialog';
+import FilterManager from '../components/features/RangeAssignment/FilterManager/FilterManager';
+import RangeTable from '../components/features/RangeAssignment/RangeTable/RangeTable';
 
 const RangeAssignmentPage: React.FC = () => {
     const {

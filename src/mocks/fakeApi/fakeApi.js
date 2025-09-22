@@ -31,12 +31,10 @@ export default function makeFakeApiServer() {
                 const number = request.params.number;
                 const numberInfos = JSON.parse(request.requestBody);
                 let updatedNumber = null;
-                let found = false;
                 provider.forEach(p => p.countryStats.forEach(cs => {
                     if (cs.numbers) {
                         cs.numbers = cs.numbers.map(n => {
                             if (String(n.number) === String(number)) {
-                                found = true;
                                 updatedNumber = { ...n, ...numberInfos };
                                 return updatedNumber;
                             }
@@ -72,7 +70,7 @@ export default function makeFakeApiServer() {
                     return new Response(404, {}, { message: 'CountryStat not found' });
                 }
             });
-    
+
             this.put("/provider/:providerId", (schema, request) => {
                 const providerId = Number(request.params.providerId);
                 const updateData = JSON.parse(request.requestBody);
@@ -112,7 +110,7 @@ export default function makeFakeApiServer() {
             });
 
             this.get("/customer/overview", (schema, request) => {
-               return customer;
+                return customer;
             });
 
             this.get("/customer/overview/:customerName", (_, request) => {
