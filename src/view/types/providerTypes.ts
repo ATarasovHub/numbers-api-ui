@@ -1,4 +1,4 @@
-import { NumberProvider } from "../../../utils/domain";
+import { NumberProvider } from "../utils/domain";
 
 export interface ProviderRowProps {
     provider: NumberProvider,

@@ -1,114 +1,133 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Typography, Box } from '@mui/material';
-import { useRangeAssignment } from '../hooks/useRangeAssignment';
-import { useExcelExport } from '../hooks/useExcelExport';
-import ExportDialog from '../components/RangeAssignment/ExportDialog/ExportDialog';
-import FilterManager from '../components/RangeAssignment/FilterManager/FilterManager';
-import RangeTable from '../components/RangeAssignment/RangeTable/RangeTable';
+import React, { useEffect, useState } from 'react';
+import { Box, Typography, CircularProgress } from '@mui/material';
 
-const RangeAssignmentPage: React.FC = () => {
-    const {
-        filter, country, tableData, loading, hasMore, isInitialSearch,
-        customerOptions, techAccountOptions, customerLoading, techAccountLoading,
-        handleFilterChange, setCountry, handleSearch, searchNumbers,
-        fetchCustomerOptions, fetchTechAccountOptions,
-        loadMoreCustomers, loadMoreTechAccounts,
-        setCurrentCustomerSearch, setCurrentTechAccountSearch,
-        loadAllDataForPrint
-    } = useRangeAssignment();
+import ProviderSelector from '../components/ProviderSelector';
+import ProviderEditForm from '../components/ProviderEditForm';
+import AddNumbersRangeForm from '../components/AddNumbersRangeForm';
+import AddSpecificNumbersForm from '../components/AddSpecificNumbersForm';
+import CurrentRangesTable from '../components/CurrentRangesTable';
+import AddNumbersBulkForm from '../components/AddNumbersBulkForm';
 
-    const { generateExcel } = useExcelExport();
+import { boxStyle, subtitle2Style } from '../styles/ProviderAdminPageStyles';
 
-    const [exportDialogOpen, setExportDialogOpen] = useState(false);
-    const [exportProgress, setExportProgress] = useState(0);
+type ProviderOption = { numberProviderId: string; numberProviderName: string };
+type CountryOption = { countryId: string; countryName: string };
 
-    const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-        if (scrollHeight - scrollTop <= clientHeight * 1.2 && !loading && hasMore) {
-            searchNumbers(false);
+function normalizeToArray(d: unknown): any[] {
+    if (Array.isArray(d)) return d;
+    if (d && typeof d === 'object') {
+        const o = d as Record<string, unknown>;
+        const keys = ['items', 'content', 'data', 'result', 'results', 'providers', 'countries'];
+        for (const k of keys) {
+            const v = (o as any)[k];
+            if (Array.isArray(v)) return v;
         }
-    }, [loading, hasMore, searchNumbers]);
+    }
+    return [];
+}
 
-    const handleExport = async () => {
-        setExportDialogOpen(true);
-        setExportProgress(0);
-
-        try {
-            const allData = await loadAllDataForPrint();
-            if (allData) {
-                setExportProgress(50);
-                setTimeout(() => {
-                    generateExcel(allData, country);
-                    setExportProgress(100);
-                    setTimeout(() => setExportDialogOpen(false), 1000);
-                }, 500);
-            } else {
-                setExportDialogOpen(false);
-                alert('Failed to load data for export');
-            }
-        } catch (error) {
-            console.error('Export error:', error);
-            setExportDialogOpen(false);
-            alert('Export failed');
-        }
-    };
+const ProviderAdminPage: React.FC = () => {
+    const [providers, setProviders] = useState<ProviderOption[]>([]);
+    const [selectedProviderId, setSelectedProviderId] = useState<string>('');
+    const [selectedCountryId, setSelectedCountryId] = useState<string>('');
+    const [providerDetails, setProviderDetails] = useState<any>(null);
+    const [countries, setCountries] = useState<CountryOption[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        handleSearch();
+        const load = async () => {
+            try {
+                const [providersRes, countriesRes] = await Promise.all([
+                    fetch('http://localhost:8080/provider'),
+                    fetch('http://localhost:8080/country')
+                ]);
+
+                const providersRaw = await providersRes.json();
+                const providersArr = normalizeToArray(providersRaw);
+                setProviders(
+                    providersArr.map((p: any): ProviderOption => ({
+                        numberProviderId: String(p.providerId ?? p.numberProviderId ?? p.id),
+                        numberProviderName: String(p.providerName ?? p.numberProviderName ?? p.name)
+                    }))
+                );
+
+                const countriesRaw = await countriesRes.json();
+                const countriesArr = normalizeToArray(countriesRaw);
+                setCountries(
+                    countriesArr.map((c: any): CountryOption => ({
+                        countryId: String(c.countryId ?? c.id),
+                        countryName: String(c.countryName ?? c.name)
+                    }))
+                );
+            } catch (error) {
+                setProviders([]);
+                setCountries([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
     }, []);
 
+    useEffect(() => {
+        const loadDetails = async () => {
+            if (!selectedProviderId) {
+                setProviderDetails(null);
+                return;
+            }
+            try {
+                const res = await fetch(`http://localhost:8080/provider/${selectedProviderId}`);
+                const data = await res.json();
+                setProviderDetails(data);
+            } catch {
+                setProviderDetails(null);
+            }
+        };
+        loadDetails();
+    }, [selectedProviderId]);
+
+    const handleProviderDetailChange = (field: string, value: any) => {
+        setProviderDetails((prev: any) => ({ ...prev, [field]: value }));
+    };
+
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
+
     return (
-        <Box sx={{
-            p: 3,
-            maxWidth: 1200,
-            m: '40px auto',
-            borderRadius: 2,
-            backgroundColor: 'background.paper'
-        }}>
-            <Typography variant="h4" sx={{
-                mb: 3,
-                fontWeight: 600
-            }}>
-                Range Assignment
+        <Box sx={boxStyle}>
+            <Typography variant="subtitle2" sx={subtitle2Style}>
+                <span style={{ fontSize: '1rem', color: '#888' }}>Administration &gt; Provider Administration</span>
             </Typography>
 
-            <FilterManager
-                filter={filter}
-                country={country}
-                loading={loading}
-                isInitialSearch={isInitialSearch}
-                customerOptions={customerOptions}
-                techAccountOptions={techAccountOptions}
-                customerLoading={customerLoading}
-                techAccountLoading={techAccountLoading}
-                onFilterChange={handleFilterChange}
-                onCountryChange={setCountry}
-                onSearch={handleSearch}
-                onExport={handleExport}
-                fetchCustomerOptions={fetchCustomerOptions}
-                fetchTechAccountOptions={fetchTechAccountOptions}
-                loadMoreCustomers={loadMoreCustomers}
-                loadMoreTechAccounts={loadMoreTechAccounts}
-                setCurrentCustomerSearch={setCurrentCustomerSearch}
-                setCurrentTechAccountSearch={setCurrentTechAccountSearch}
+            <ProviderSelector
+                providers={providers}
+                selectedProviderId={selectedProviderId}
+                onSelectProvider={setSelectedProviderId}
             />
 
-            <RangeTable
-                tableData={tableData}
-                loading={loading}
-                isInitialSearch={isInitialSearch}
-                hasMore={hasMore}
-                onScroll={handleScroll}
+            <ProviderEditForm providerDetails={providerDetails} onDetailChange={handleProviderDetailChange} />
+
+            <AddNumbersRangeForm countries={countries} providerId={selectedProviderId} />
+
+            <AddSpecificNumbersForm countries={countries} />
+
+            <CurrentRangesTable
+                selectedProviderId={selectedProviderId}
+                providers={providers}
+                countryStats={providerDetails?.countryStats}
             />
 
-            <ExportDialog
-                open={exportDialogOpen}
-                loading={exportProgress < 100}
-                progress={exportProgress}
-                onClose={() => setExportDialogOpen(false)}
+            <AddNumbersBulkForm
+                selectedProviderId={selectedProviderId}
+                selectedCountryId={selectedCountryId}
             />
         </Box>
     );
 };
 
-export default RangeAssignmentPage;
+export default ProviderAdminPage;

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import { ProviderOverview } from "./view/pages/ProviderOverview";
+import { ProviderOverview } from "./view/pages/ProviderOverviewPage/ProviderOverviewPage";
 import fakeApi from "./mocks/fakeApi/fakeApi";
 import { CustomerOverviewPage } from "./view/pages/CustomerOverviewPage";
-import { CustomerTable } from "./view/components/Customer/CustomerTable/CustomerTable";
-import Header, { Page } from "./view/components/Header";
+import { CustomerTable } from "./view/components/CustomerOverview/CustomerTable/CustomerTable";
+import Header, { Page } from "./view/components/common/Header";
 import ProviderAdminPage from "./view/pages/ProviderAdminPage";
 import CustomerRequestOverview from "./view/pages/CustomerRequestOverview";
 import RangeAssignmentPage from "./view/pages/RangeAssignmentPage";

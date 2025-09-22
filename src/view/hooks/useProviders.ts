@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { NumberProvider } from '../../../utils/domain';
+import { NumberProvider } from '../utils/domain';
 
 export const useProviders = () => {
     const [allProviders, setAllProviders] = useState<NumberProvider[]>([]);
