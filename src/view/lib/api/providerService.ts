@@ -1,4 +1,4 @@
-import { NumberProvider } from '../../utils/domain';
+import { NumberProvider } from '../../../utils/domain';
 
 export const ProviderService = {
     fetchProviders: async (signal?: AbortSignal): Promise<NumberProvider[]> => {

@@ -1,4 +1,4 @@
-import { PhoneNumberData } from '../types/providerTypes';
+import { PhoneNumberData } from '../../types/providerTypes';
 
 export const CountryService = {
     fetchPhoneNumbersByCountry: async (countryName: string): Promise<PhoneNumberData[]> => {

@@ -1,4 +1,4 @@
-import { Customer } from '../types/customerOverviewTypes';
+import { Customer } from '../../types/customerOverviewTypes';
 
 const ITEMS_PER_PAGE = 20;
 

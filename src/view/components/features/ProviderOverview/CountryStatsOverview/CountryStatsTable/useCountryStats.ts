@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { PhoneNumberData } from '../../../../../types/providerTypes';
-import { CountryService } from '../../../../../services/countryService';
+import { CountryService } from '../../../../../lib/api/countryService';
 
 export const useCountryStats = () => {
     const [expandedCountries, setExpandedCountries] = useState<Record<string, boolean>>({});

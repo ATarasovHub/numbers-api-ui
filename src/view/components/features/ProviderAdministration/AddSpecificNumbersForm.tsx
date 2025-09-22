@@ -8,7 +8,7 @@ import {
     flexAlignCenterGap1Mb1,
     width120,
     flexGap1
-} from '../styles/ProviderAdminPageStyles';
+} from '../../../styles/ProviderAdminPageStyles';
 
 interface Country {
     countryId: string;

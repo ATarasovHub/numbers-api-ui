@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Paper, TextField, Select, MenuItem, Button, Checkbox, FormControlLabel } from '@mui/material';
-import { paperStyle, subtitle1Style, flexAlignCenterGap1Mb1, width120, width60, flexGap1 } from '../styles/ProviderAdminPageStyles';
+import { paperStyle, subtitle1Style, flexAlignCenterGap1Mb1, width120, width60, flexGap1 } from '../../../styles/ProviderAdminPageStyles';
 
 interface Country {
     countryId: string;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
-import { subtitle1Style, paperNoMargin, tableSubtitle2 } from '../styles/ProviderAdminPageStyles';
+import { subtitle1Style, paperNoMargin, tableSubtitle2 } from '../../../styles/ProviderAdminPageStyles';
 
 interface Provider {
     numberProviderId: string;

@@ -1,4 +1,4 @@
-import { NumberOverview, CustomerData, TechAccountData } from '../types/rangeAssignmentTypes';
+import { NumberOverview, CustomerData, TechAccountData } from '../../types/rangeAssignmentTypes';
 
 export class RangeAssignmentService {
     static async searchNumbers(filterPayload: any, page: number, size: number = 20): Promise<NumberOverview[]> {

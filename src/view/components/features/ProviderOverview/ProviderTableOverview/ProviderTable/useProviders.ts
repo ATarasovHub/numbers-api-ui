@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { NumberProvider } from '../../../../../../utils/domain';
-import { ProviderService } from '../../../../../services/providerService';
+import { ProviderService } from '../../../../../lib/api/providerService';
 
 export const useProviders = () => {
     const [allProviders, setAllProviders] = useState<NumberProvider[]>([]);

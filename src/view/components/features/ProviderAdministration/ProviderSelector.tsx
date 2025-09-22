@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Paper, Select, MenuItem } from '@mui/material';
-import { paperStyle, subtitle1Style, flexAlignCenterGap1, minWidth200 } from '../styles/ProviderAdminPageStyles';
+import { paperStyle, subtitle1Style, flexAlignCenterGap1, minWidth200 } from '../../../styles/ProviderAdminPageStyles';
 
 interface Provider {
     numberProviderId: string;

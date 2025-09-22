@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Paper, TextField } from '@mui/material';
-import { paperStyle, subtitle1Style, gridStyle } from '../styles/ProviderAdminPageStyles';
+import { paperStyle, subtitle1Style, gridStyle } from '../../../styles/ProviderAdminPageStyles';
 
 interface ProviderEditFormProps {
     providerDetails: any;

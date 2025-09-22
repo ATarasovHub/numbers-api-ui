@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, CircularProgress } from '@mui/material';
 
-import ProviderSelector from '../components/ProviderSelector';
-import ProviderEditForm from '../components/ProviderEditForm';
-import AddNumbersRangeForm from '../components/AddNumbersRangeForm';
-import AddSpecificNumbersForm from '../components/AddSpecificNumbersForm';
-import CurrentRangesTable from '../components/CurrentRangesTable';
-import AddNumbersBulkForm from '../components/AddNumbersBulkForm';
+import ProviderSelector from '../components/features/ProviderAdministration/ProviderSelector';
+import ProviderEditForm from '../components/features/ProviderAdministration/ProviderEditForm';
+import AddNumbersRangeForm from '../components/features/ProviderAdministration/AddNumbersRangeForm';
+import AddSpecificNumbersForm from '../components/features/ProviderAdministration/AddSpecificNumbersForm';
+import CurrentRangesTable from '../components/features/ProviderAdministration/CurrentRangesTable';
+import AddNumbersBulkForm from '../components/features/ProviderAdministration/AddNumbersBulkForm';
 
 import { boxStyle, subtitle2Style } from '../styles/ProviderAdminPageStyles';
 

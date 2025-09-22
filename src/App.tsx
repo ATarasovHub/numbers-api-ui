@@ -7,7 +7,7 @@ import { CustomerOverviewPage } from "./view/pages/CustomerOverviewPage";
 import { CustomerTable } from "./view/components/features/CustomerOverview/CustomerTable/CustomerTable";
 import Header, { Page } from "./view/components/common/Header";
 import ProviderAdminPage from "./view/pages/ProviderAdminPage";
-import CustomerRequestOverview from "./view/pages/CustomerRequestOverview";
+import CustomerRequestOverviewPage from "./view/pages/CustomerRequestOverviewPage";
 import RangeAssignmentPage from "./view/pages/RangeAssignmentPage";
 import {calmTheme} from "./view/theme/customerTheme";
 
@@ -21,7 +21,7 @@ function App() {
             case 'customers':
                 return <CustomerOverviewPage />;
             case 'customer_request_overview':
-                return <CustomerRequestOverview />;
+                return <CustomerRequestOverviewPage />;
             case 'range_assignment':
                 return <RangeAssignmentPage />;
             case 'number_assignment':

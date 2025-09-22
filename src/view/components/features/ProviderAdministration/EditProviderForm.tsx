@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Box, Typography, TextField, Button } from '@mui/material';
-import { NumberProvider } from '../../utils/domain';
+import { NumberProvider } from '../../../../utils/domain';
 
 interface EditProviderFormProps {
     open: boolean;

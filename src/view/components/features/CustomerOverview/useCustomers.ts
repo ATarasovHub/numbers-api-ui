@@ -1,6 +1,6 @@
 import {useState, useCallback, useEffect, useRef} from 'react';
 import { Customer } from '../../../types/customerOverviewTypes';
-import { CustomerService } from '../../../services/customerService';
+import { CustomerService } from '../../../lib/api/customerService';
 import { debounce } from '../../../../utils/debounce';
 
 export interface FilterState {

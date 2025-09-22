@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { RangeAssignmentService } from '../../../../services/rangeAssignmentService';
+import { RangeAssignmentService } from '../../../../lib/api/rangeAssignmentService';
 import { NumberOverview, CustomerData, TechAccountData } from '../../../../types/rangeAssignmentTypes';
 
 export const useRangeAssignment = () => {

@@ -18,8 +18,8 @@ import {
     CircularProgress,
     Badge
 } from '@mui/material';
-import { paperStyle, subtitle1Style } from '../styles/ProviderAdminPageStyles';
-import { countsBarStyle, listBoxStyle } from '../styles/AddNumbersBulkFormStyles';
+import { paperStyle, subtitle1Style } from '../../../styles/ProviderAdminPageStyles';
+import { countsBarStyle, listBoxStyle } from '../../../styles/AddNumbersBulkFormStyles';
 
 interface AddNumbersBulkFormProps {
     selectedProviderId: string;
