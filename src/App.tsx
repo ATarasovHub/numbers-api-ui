@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import { ProviderOverview } from "./view/pages/ProviderOverviewPage/ProviderOverviewPage";
+import { ProviderOverview } from "./view/components/features/ProviderOverview/pages/ProviderOverviewPage";
 import fakeApi from "./mocks/fakeApi/fakeApi";
-import { CustomerOverviewPage } from "./view/pages/CustomerOverviewPage";
-import { CustomerTable } from "./view/components/features/CustomerOverview/CustomerTable/CustomerTable";
+import { CustomerOverviewPage } from "./view/components/features/CustomerOverview/pages/CustomerOverviewPage";
+import { CustomerTable } from "./view/components/features/CustomerOverview/components/CustomerTable/CustomerTable";
 import Header, { Page } from "./view/components/common/Header";
-import ProviderAdminPage from "./view/pages/ProviderAdminPage";
-import CustomerRequestOverviewPage from "./view/components/features/ProviderAdministration/pages/CustomerRequestOverviewPage";
-import RangeAssignmentPage from "./view/pages/RangeAssignmentPage";
+import ProviderAdminPage from "./view/components/features/ProviderAdministration/pages/ProviderAdminPage";
+import CustomerRequestOverviewPage from "./view/components/features/CustomerRequestOverview/pages/CustomerRequestOverviewPage";
+import RangeAssignmentPage from "./view/components/features/RangeAssignment/pages/RangeAssignmentPage";
 import {calmTheme} from "./view/theme/customerTheme";
 
 function App() {

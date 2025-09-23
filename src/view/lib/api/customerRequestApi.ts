@@ -1,5 +1,5 @@
 import { apiClient } from './apiClient';
-import { CustomerRequestPayload } from '../../components/features/CustomerRequestOverview/CreateCustomerRequestForm/CreateCustomerRequestForm.types';
+import { CustomerRequestPayload } from '../../components/features/CustomerRequestOverview/components/CreateCustomerRequestForm/CreateCustomerRequestForm.types';
 
 export const customerRequestApi = {
     createCustomerRequest: async (payload: CustomerRequestPayload) => {
