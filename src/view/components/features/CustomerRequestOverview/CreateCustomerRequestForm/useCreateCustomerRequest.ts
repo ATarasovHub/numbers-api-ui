@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { customerRequestApi } from '../../../../lib/api/CustomerRequestApi/customerRequestApi';
+import { customerRequestApi } from '../../../../lib/api/customerRequestApi';
 import { CustomerRequestPayload } from './CreateCustomerRequestForm.types';
 
 export const useCreateCustomerRequest = () => {

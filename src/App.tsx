@@ -7,7 +7,7 @@ import { CustomerOverviewPage } from "./view/pages/CustomerOverviewPage";
 import { CustomerTable } from "./view/components/features/CustomerOverview/CustomerTable/CustomerTable";
 import Header, { Page } from "./view/components/common/Header";
 import ProviderAdminPage from "./view/pages/ProviderAdminPage";
-import CustomerRequestOverviewPage from "./view/pages/CustomerRequestOverviewPage";
+import CustomerRequestOverviewPage from "./view/components/features/ProviderAdministration/pages/CustomerRequestOverviewPage";
 import RangeAssignmentPage from "./view/pages/RangeAssignmentPage";
 import {calmTheme} from "./view/theme/customerTheme";
 

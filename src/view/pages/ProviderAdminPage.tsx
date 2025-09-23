@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, CircularProgress } from '@mui/material';
 
-import ProviderSelector from '../components/features/ProviderAdministration/ProviderSelector';
-import ProviderEditForm from '../components/features/ProviderAdministration/ProviderEditForm';
-import AddNumbersRangeForm from '../components/features/ProviderAdministration/AddNumbersRangeForm';
-import AddSpecificNumbersForm from '../components/features/ProviderAdministration/AddSpecificNumbersForm';
-import CurrentRangesTable from '../components/features/ProviderAdministration/CurrentRangesTable';
-import AddNumbersBulkForm from '../components/features/ProviderAdministration/AddNumbersBulkForm';
+import ProviderSelector from '../components/features/ProviderAdministration/components/ProviderSelector/ProviderSelector';
+import ProviderEditForm from '../components/features/ProviderAdministration/components/ProviderEditForm/ProviderEditForm';
+import AddNumbersRangeForm from '../components/features/ProviderAdministration/components/AddNumbersRangeForm/AddNumbersRangeForm';
+import AddSpecificNumbersForm from '../components/features/ProviderAdministration/components/AddSpecificNumbersForm/AddSpecificNumbersForm';
+import CurrentRangesTable from '../components/features/ProviderAdministration/components/CurrentRangesTable/CurrentRangesTable';
+import AddNumbersBulkForm from '../components/features/ProviderAdministration/components/AddNumbersBulkForm/AddNumbersBulkForm';
 
 import { boxStyle, subtitle2Style } from '../styles/ProviderAdminPageStyles';
 

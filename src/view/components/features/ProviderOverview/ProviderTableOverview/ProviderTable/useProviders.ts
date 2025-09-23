@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { NumberProvider } from '../../../../../../utils/domain';
-import { ProviderService } from '../../../../../lib/api/providerService';
+import { providerService } from '../../../../../lib/services/providerService';
 
 export const useProviders = () => {
     const [allProviders, setAllProviders] = useState<NumberProvider[]>([]);
@@ -28,7 +28,7 @@ export const useProviders = () => {
         const controller = new AbortController();
         abortRef.current = controller;
         try {
-            const data = await ProviderService.fetchProviders(controller.signal);
+            const data = await providerService.fetchProviders(controller.signal);
             setAllProviders(data);
         } catch {
             setAllProviders([]);

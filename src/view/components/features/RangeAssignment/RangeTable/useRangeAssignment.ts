@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { RangeAssignmentService } from '../../../../lib/api/rangeAssignmentService';
+import { rangeAssignmentApi } from '../../../../lib/api/rangeAssignmentApi';
 import { NumberOverview, CustomerData, TechAccountData } from '../../../../types/rangeAssignmentTypes';
 
 export const useRangeAssignment = () => {
@@ -49,7 +49,7 @@ export const useRangeAssignment = () => {
 
         try {
             const filterPayload = buildFilterPayload();
-            const data = await RangeAssignmentService.searchNumbers(filterPayload, currentPage, 20);
+            const data = await rangeAssignmentApi.searchNumbers(filterPayload, currentPage, 20);
 
             if (reset) {
                 setTableData(data);
@@ -78,7 +78,7 @@ export const useRangeAssignment = () => {
     const fetchCustomerOptions = useCallback(async (searchText: string, pageNum: number, reset: boolean) => {
         setCustomerLoading(true);
         try {
-            const data = await RangeAssignmentService.searchCustomers(searchText, pageNum, 10);
+            const data = await rangeAssignmentApi.searchCustomers(searchText, pageNum, 10);
             if (reset) {
                 setCustomerOptions(data.content);
             } else {
@@ -98,7 +98,7 @@ export const useRangeAssignment = () => {
     const fetchTechAccountOptions = useCallback(async (searchText: string, pageNum: number, reset: boolean) => {
         setTechAccountLoading(true);
         try {
-            const data = await RangeAssignmentService.searchTechAccounts(searchText, pageNum, 10);
+            const data = await rangeAssignmentApi.searchTechAccounts(searchText, pageNum, 10);
             if (reset) {
                 setTechAccountOptions(data.content);
             } else {
@@ -129,7 +129,7 @@ export const useRangeAssignment = () => {
 
     const loadAllDataForPrint = async () => {
         const filterPayload = buildFilterPayload();
-        return await RangeAssignmentService.searchAllNumbersForExport(filterPayload);
+        return await rangeAssignmentApi.searchAllNumbersForExport(filterPayload);
     };
 
     return {

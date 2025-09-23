@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { PhoneNumberData } from '../../../../../types/providerTypes';
-import { CountryService } from '../../../../../lib/api/countryService';
+import { countryService } from '../../../../../lib/services/countryService';
 
 export const useCountryStats = () => {
     const [expandedCountries, setExpandedCountries] = useState<Record<string, boolean>>({});
@@ -14,7 +14,7 @@ export const useCountryStats = () => {
         if (!isCurrentlyExpanded && !phoneNumbersData[countryId]) {
             setLoadingPhoneNumbers(prev => ({ ...prev, [countryId]: true }));
             try {
-                const data = await CountryService.fetchPhoneNumbersByCountry(countryName);
+                const data = await countryService.fetchPhoneNumbersByCountry(countryName);
                 setPhoneNumbersData(prev => ({ ...prev, [countryId]: data }));
             } catch (error) {
                 setPhoneNumbersData(prev => ({ ...prev, [countryId]: [] }));

@@ -1,6 +1,6 @@
 import {useState, useCallback, useEffect, useRef} from 'react';
 import { Customer } from '../../../types/customerOverviewTypes';
-import { CustomerService } from '../../../lib/api/customerService';
+import { customerService } from '../../../lib/services/customerService';
 import { debounce } from '../../../../utils/debounce';
 
 export interface FilterState {
@@ -21,7 +21,7 @@ export const useCustomers = () => {
         setLoading(true);
 
         try {
-            const data = await CustomerService.fetchCustomers(pageNum, currentFilters);
+            const data = await customerService.fetchCustomers(pageNum, currentFilters);
 
             setDisplayedCustomers(prev =>
                 pageNum === 0 ? data.content : [...prev, ...data.content]
